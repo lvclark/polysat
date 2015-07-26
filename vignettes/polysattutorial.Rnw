@@ -1,0 +1,1592 @@
+% \VignetteIndexEntry{polysat version 1.4 Tutorial Manual}
+% \VignetteDepends{combinat, methods, polysat}
+
+\documentclass[12pt]{article}
+
+\usepackage{Sweave}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{array}
+\usepackage{hyperref}
+
+\title{\textsc{polysat} version 1.4 Tutorial Manual}
+\author{Lindsay V. Clark <lvclark@illinois.edu>\\
+  University of Illinois, Urbana-Champaign\\
+  Department of Crop Sciences\\
+\url{http://openwetware.org/wiki/Polysat}}
+\date{\today}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+\tableofcontents
+
+<<echo=false, results=hide>>=
+library(polysat)
+options(width=60)
+@
+
+\section{Introduction}
+The R package \textsc{polysat} provides useful tools for
+working with microsatellite data of any ploidy level, including
+populations of mixed ploidy.  It can convert genotype data between
+different formats, including Applied Biosystems GeneMapper\textregistered,
+binary
+presence/absence data, ATetra, Tetra/Tetrasat, GenoDive, SPAGeDi,
+Structure, POPDIST, and STRand.  It can also calculate pairwise genetic 
+distances between
+samples, assist the user in estimating ploidy based on allele number,
+and estimate allele frequencies and $F_{ST}$.  Due to the
+versatility of the R programming environment and the simplicity of how
+genotypes are stored by polysat, the user may find many ways to
+interface other R functions with this package, such as Principal
+Coordinate Analysis or AMOVA.
+
+This manual is written to be accessible to beginning users of R.  If
+you are a complete novice to R, it is recommended that you read
+through \emph{An Introduction to R} (
+\url{http://cran.r-project.org/manuals.html} ) before reading this
+manual or at least have both open at the same time.  If you have the
+console open while reading the manual you can also look at the help
+files for base R functions (for example by typing \texttt{?save}
+or \texttt{?\%in\%}) and also get more detailed information on polysat
+functions (e.g. \texttt{?read.GeneMapper}).
+
+The examples will be easiest to understand if you follow along with
+them and think about the purpose of each line of code.  A file called
+``polysattutorial.R'' in the ``doc'' subdirectory of the package
+installation can be opened with a text editor and contains all of the
+R input found in this manual.
+
+\section{Obtaining and installing \mdseries\textsc{polysat}}
+The R console and base system can be obtained at
+\url{http://www.r-project.org/}.  Once R is installed, \textsc{polysat} can be
+installed and loaded by typing the following commands into the R
+console (note that combinat is only needed if the \texttt{Bruvo.distance} 
+function is being used):
+
+\begin{Schunk}
+  \begin{Sinput}
+> install.packages("combinat")
+> install.packages("polysat")
+> library("polysat")
+\end{Sinput}
+\end{Schunk}
+
+If
+you quit and restart R, you will not have to re-install the package but
+you will need to load it again (using the \texttt{library} function
+as shown above).
+
+\section{Workflow overview}
+
+The flowcharts on the next two pages give an overview of the
+steps required for the most common analyses performed in
+\textsc{polysat}.  The first steps will always be importing or
+inputing the genotype data and making sure that the dataset contains
+information about populations and microsatellite repeat lengths.
+Different analysis and export functions are then available depending
+on whether the ploidy is known, whether the organism is autopolyploid
+or allopolyploid, and whether the selfing rate is known.
+
+\fontsize{11}{15}
+\tikzstyle{decision} = [diamond, draw, text width=7em, text badly
+centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, text width=10em, text centered,
+rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, circle, fill=black, node distance = 3cm,
+minimum height=2em]
+\begin{tikzpicture}
+\node at (0,0) [block] (import) {Import genotype data using a
+  \texttt{read} function, or start from scratch using \texttt{new} and
+  \texttt{editGenotypes}.};
+\node at (5, 0) [block] (summary) {Check dataset with \texttt{summary}.};
+\node at (10, 0) [block] (gendiv) {Analysis with \texttt{assignClones}
+or \texttt{genotypeDiversity}};
+\node at (0, -3) [block] (binary) {Run \texttt{alleleDiversity}, and/or 
+  convert to presence/absence
+  (\texttt{genbinary} class) for analysis or export.};
+\node at (5,-3) [block] (usatnts) {Add population and locus
+  information (\texttt{PopNames}, \texttt{PopInfo},
+  \texttt{Usatnts}).};
+\node at (10,-3) [block] (matrix1) {Calculate genetic distances
+  between individuals with \texttt{meandistance.matrix}.};
+\node at (10,-7) [block] (downstream) {Downstream analysis such as
+  Principal Coordinate Analysis or Neighbor Joining.};
+\node at (5, -7) [decision] (plimport) {Were ploidies imported with
+  the dataset?};
+\node at (0, -7) [decision] (plknown) {Do you know the ploidies?};
+\node at (5, -11) [cloud] (plfilled) {};
+\node at (2, -9.8) [block] (ploidies) {\texttt{reformatPloidies} if 
+  necessary, then add ploidy info with \texttt{Ploidies} function.};
+\node at (-.6, -13) [block] (plest) {Use \texttt{estimatePloidy} function.};
+% \node at (5, -14) [block] (mating) {Use \texttt{clonalScore} and
+%  related functions to determine reproductive mode.};
+\node at (8.5, -10.5) [decision] (allo) {Is organism allopolyploid?};
+\node at (11, -14) [block] (isauto) {See Flowchart 2.};
+\node at (7, -13) [cloud] (isallo) {};
+\node at (6, -15.5) [block] (convallo) {Use \texttt{alleleCorrelations},
+\texttt{testAlGroups}, and \texttt{recodeAllopoly} functions to recode
+the dataset as diploid or polysomic.};
+\node at (1.6, -15.5) [block] (alloexport) {Export tetraploid data to
+  ATetra, Tetra, or Tetrasat software.};
+
+\path [line] (import) |- (summary);
+\path [line] (summary) -- (usatnts);
+\path [line] (usatnts) |- (matrix1);
+\path [line] (matrix1) -- (gendiv);
+\path [line] (matrix1) -- (downstream);
+\path [line] (usatnts) -- (binary);
+\path [line] (usatnts) -- (plimport);
+\path [line] (plimport) -- node[above] {no} (plknown);
+\path [line] (plimport) -- node[right] {yes} (plfilled);
+\path [line] (plknown) -- node[right] {yes} (ploidies);
+\path [line] (ploidies) |- (plfilled);
+\path [line] (plknown) -- node[left] {no} (plest);
+\path [line] (plest) -- (plfilled);
+% \path [line] (plfilled) -- (mating);
+\path [line] (plfilled) -- (allo);
+\path [line] (allo) -- node[above] {no} (isauto);
+\path [line] (allo) -- node[below] {yes} (isallo);
+\path [line] (isallo) -| (alloexport);
+\path [line] (isallo) -- (convallo);
+\path [line] (convallo) -- (isauto);
+
+\end{tikzpicture}
+
+Flowchart 1.  Functions for allopolyploid or autopolyploid data.
+
+\begin{tikzpicture}
+\node at (5,0) [block] (isauto) {Continued from Flowchart 1.};
+\node at (0, -4) [block] (autoexport) {Export to Structure, SPAGeDi,
+  GenoDive, or POPDIST software.};
+\node at (10, -4) [decision] (self) {Does each population have one,
+  even numbered ploidy, and is the self fertilization rate known?};
+\node at (4, -7) [block] (simplefreq) {Use \texttt{simpleFreq} to
+  estimate allele frequencies.};
+\node at (10, -10) [block] (desilva) {Use \texttt{deSilvaFreq} to
+  estimate allele frequencies.};
+\node at (10, -13) [block] (spagfreq) {Export allele frequencies to
+  SPAGeDi.};
+\node at (5, -10) [cloud] (freq) {};
+\node at (0, -10) [block] (adegenet) {Export allele frequencies to
+  \texttt{adegenet}.};
+\node at (2.5, -12) [block] (calcfst) {Get distances between
+  populations with \texttt{calcFst}.};
+\node at (5, -14.5) [block] (matrix2) {Calculate genetic distances
+  between individuals using \texttt{meandistance.matrix2}.};
+\node at (10, -16) [block] (gendiv) {Analysis with \texttt{assignClones}
+or \texttt{genotypeDiversity}};
+\node at (5, -17) [block] (analysis) {Downstream analysis.};
+
+\path [line] (isauto) -- (autoexport);
+\path [line] (isauto) -- (self);
+\path [line] (self) -- node[left] {no} (simplefreq);
+\path [line] (self) -- node[left] {yes} (desilva);
+\path [line] (desilva) -- (spagfreq);
+\path [line] (desilva) -- (freq);
+\path [line] (simplefreq) -- (freq);
+\path [line] (freq) -- (adegenet);
+\path [line] (freq) -- (calcfst);
+\path [line] (freq) -- (matrix2);
+\path [line] (matrix2) -- (analysis);
+\path [line] (matrix2) -- (gendiv);
+\path [line] (calcfst) |- (analysis);
+\end{tikzpicture}
+
+Flowchart 2. Functions for polysomic or diploid data only.
+\fontsize{12}{15}
+
+\section{Getting Started: A Tutorial}
+\subsection{Creating a dataset}
+\label{sec:creatingdataset}
+
+As with any genetic software, the first thing you want to do is import
+your data.  For this tutorial, go into the ``extdata'' directory of
+the polysat package installation, and find a file called
+``GeneMapperExample.txt''.  Open this file in a text editor and
+inspect its contents.  This file contains simulated genotypes of 300
+diploid and tetraploid individuals at three loci.
+Move this text file into the R working
+directory.  The working directory can be changed with the
+\texttt{setwd} function, or identified with the \texttt{getwd}
+function:
+
+<<echo=TRUE>>=
+getwd()
+@
+
+Then read the file using the \texttt{read.GeneMapper} function, and
+assign the dataset a name of your choice (\texttt{simgen} in this
+example) by typing:
+
+<<>>=
+simgen <- read.GeneMapper("GeneMapperExample.txt")
+@
+
+The dataset now exists as an object in R.  The following commands
+display, respectively, some basic information about the dataset, the
+sample and locus names, a subset of
+the genotypes, and a list of which genotypes are missing.
+
+<<echo=TRUE>>=
+summary(simgen)
+Samples(simgen)
+Loci(simgen)
+viewGenotypes(simgen, samples=paste("A", 1:20, sep=""), loci="loc1")
+find.missing.gen(simgen)
+@
+
+Additional information that isn't in ``GeneMapperExample.txt'' can be
+added directly to the dataset in R.  The commands below add a
+description to the dataset, name three populations and assign 100
+individuals to each, and indicate the length of the microsatellite repeats.
+
+<<echo=TRUE>>=
+Description(simgen) <- "Dataset for the tutorial"
+PopNames(simgen) <- c("PopA", "PopB", "PopC")
+PopInfo(simgen) <- rep(1:3, each = 100)
+Usatnts(simgen) <- c(2, 3, 2)
+@
+
+If you need help understanding what the \texttt{PopInfo} assignment
+means, type the following commands (results are hidden here for the
+sake of space):
+
+<<results=hide>>=
+rep(1:3, each = 100)
+PopInfo(simgen)
+@
+
+Samples can now be retrieved by population. (Results hidden as above.)
+
+<<results=hide>>=
+Samples(simgen, populations = "PopA")
+@
+
+The
+\texttt{Usatnts} assignment function above indicates that loc1 and loc3
+have dinucleotide repeats, while loc2 has trinucleotide repeats.  The
+alleles are recorded here in terms of fragment length in nucleotides.
+If the alleles were instead recorded in terms of repeat number, the
+\texttt{Usatnts} values should be 1.  These repeat lengths can be
+examined by typing:
+
+<<>>=
+Usatnts(simgen)
+@
+
+To edit genotypes after importing the data:
+
+\begin{Schunk}
+\begin{Sinput}
+> simgen <- editGenotypes(simgen, maxalleles = 4)
+\end{Sinput}
+\begin{Soutput}
+Edit the alleles, then close the data editor window.
+\end{Soutput}
+\end{Schunk}
+
+You can also add ploidy information to the dataset.  The
+\texttt{estimatePloidy} function allows you to add or edit the ploidy
+information, using a table that shows you the mean and maximum number
+of alleles per sample.  The samples in this dataset should be diploid
+or tetraploid, although many of them may have fewer alleles.
+Therefore, in the data editor that is generated by the command below,
+you should change \texttt{new.ploidy} values to \texttt{2} if the
+sample has a maximum of one allele per locus, and to \texttt{4} if a
+sample has a maximum of three alleles per locus.  See
+\texttt{?Ploidies} or page \pageref{ploidies} for a different way to
+edit ploidy values if they are already known.
+
+\begin{Schunk}
+\begin{Sinput}
+> simgen <- estimatePloidy(simgen)
+\end{Sinput}
+\begin{Soutput}
+Edit the new.ploidy values, then close the data editor window.
+\end{Soutput}
+\end{Schunk}
+
+<<echo=false>>=
+simgen <- reformatPloidies(simgen, output="sample")
+Ploidies(simgen) <- read.table("vignettebuild/simgenPloidies2.txt")[[1]]
+@
+
+Take another look at the summary now that you have added this extra data.
+
+<<echo=TRUE>>=
+summary(simgen)
+@
+
+Now that you have your dataset completed, it is not a bad idea to save
+a copy of it.  It will be automatically saved in your R workspace for
+use in subsequent R sessions.  However, the \texttt{save} function
+creates a separate file containing a copy of the dataset (or any other
+R object), which can be useful as a backup against accidental changes
+or a copy to open on another computer.  The file containing the
+dataset can be opened again at a later date using the \texttt{load} function.
+
+<<echo=TRUE>>=
+save(simgen, file="simgen.RData")
+@
+
+\subsection{Data analysis and export}
+\subsubsection{Genetic distances between individuals}
+\label{sec:gsinddist}
+
+The code below calculates a pairwise
+distance matrix between all samples (using the default distance
+measure \texttt{Bruvo.distance}), performs Principal Coordinate
+Analysis (PCA) on the matrix, and plots the first two principal coordinates,
+with each population represented by a different color.
+
+\begin{Schunk}
+\begin{Sinput}
+> testmat <- meandistance.matrix(simgen)
+\end{Sinput}
+\end{Schunk}
+
+<<echo=false>>=
+load("vignettebuild/testmat.RData")
+@
+
+<<echo=TRUE, results=hide, fig=TRUE>>=
+pca <- cmdscale(testmat)
+mycol <- c("red", "green", "blue")
+plot(pca[,1], pca[,2], col=mycol[PopInfo(simgen)],
+     main = "PCA with Bruvo distance")
+@
+
+To conduct a PCA using the \texttt{Lynch.distance} measure, type:
+
+\begin{Schunk}
+\begin{Sinput}
+> testmat2 <- meandistance.matrix(simgen, distmetric=Lynch.distance)
+\end{Sinput}
+\end{Schunk}
+
+<<echo=false>>=
+load("vignettebuild/testmat2.RData")
+@
+
+<<echo=TRUE, fig=TRUE>>=
+pca2 <- cmdscale(testmat2)
+plot(pca2[,1], pca2[,2], col=rep(c("red", "green", "blue"), each=100),
+     main = "PCA with Lynch distance")
+@
+
+\texttt{Bruvo.distance} takes mutation into account, while
+\texttt{Lynch.distance} does not.  (See \texttt{?Bruvo.distance},
+\texttt{?Lynch.distance}, and  section \ref{sec:indstat}.)  Since mutation
+was not part of the
+simulation that generated this dataset, the latter measure works
+better here for distinguishing populations.
+
+If your data are autopolyploid, also see \texttt{?meandistance.matrix2}
+for another method of calculating inter-individual distances.  If you
+have a mixed ploidy system in which the mechanism(s) for changes in
+ploidy are known, also see \texttt{?Bruvo2.distance}.
+
+\subsubsection{Working with subsets of the data}
+It is likely that you will want to perform some analyses on just a
+subset of your data.  There are several ways to accomplish this in
+\textsc{polysat}.  The \texttt{deleteSamples} and \texttt{deleteLoci} functions
+are designed to be fairly intuitive.
+
+<<echo=TRUE>>=
+simgen2 <- deleteSamples(simgen, c("B59", "C30"))
+simgen2 <- deleteLoci(simgen2, "loc2")
+summary(simgen2)
+@
+
+There are also a couple methods that involve using vectors of samples
+and loci that you \emph{do} want to use.  Let's make a vector of
+samples in populations A and B that are tetraploid, and then exclude a
+few samples that we don't want to analyze.
+
+<<echo=TRUE>>=
+samToUse <- Samples(simgen2, populations=c("PopA", "PopB"), ploidies=4)
+exclude <- c("A50", "A78", "B25", "B60", "B81")
+samToUse <- samToUse[!samToUse %in% exclude]
+samToUse
+@
+
+You can subscript the dataset with square brackets, like you can with
+many other R
+objects.  Note, however, that in this case you can't use square
+brackets to replace a subset of the dataset, just to access a subset of
+the dataset.  A vector of samples should be placed first in the
+brackets, followed by a vector of loci.
+
+<<echo=TRUE>>=
+summary(simgen2[samToUse, "loc1"])
+@
+
+The analysis and data export functions all have optional
+\texttt{samples} and \texttt{loci} arguments where vectors of sample
+and locus names can indicate that only a subset of the data should be used.
+
+<<echo=TRUE, fig=TRUE>>=
+testmat3 <- meandistance.matrix(simgen2, samples = samToUse,
+                                distmetric = Lynch.distance,
+                                progress= FALSE)
+pca3 <- cmdscale(testmat3)
+plot(pca3[,1], pca3[,2], col=c("red", "blue")[PopInfo(simgen2)[samToUse]])
+@
+
+(If you are confused about how I got the color vector, I would
+encourage dissecting it: See what \texttt{PopInfo(simgen2)} gives you,
+what \texttt{PopInfo(simgen2)[samToUse]} gives you, and lastly what
+the result of \texttt{c("red", "blue")[PopInfo(simgen2)[samToUse]]} is.)
+
+\subsubsection{Population statistics}
+\label{sec:gspopstat}
+Allele frequencies are estimated in the example below.  The example
+then uses these allele
+frequencies to calculate pairwise Wright's $F_{ST}$ \cite{nei73}
+values, first using all loci and then just two of the loci.  See Section
+\ref{sec:allelefreq} for important information about allele
+frequency estimation.
+
+\begin{Schunk}
+\begin{Sinput}
+> simfreq <- deSilvaFreq(simgen, self = 0.1, initNull = 0.01,
++                       samples = Samples(simgen, ploidies = 4))
+\end{Sinput}
+\begin{Soutput}
+Starting loc1
+Starting loc1 PopA
+64 repetitions for loc1 PopA
+Starting loc1 PopB
+106 repetitions for loc1 PopB
+Starting loc1 PopC
+84 repetitions for loc1 PopC
+Starting loc2
+Starting loc2 PopA
+54 repetitions for loc2 PopA
+Starting loc2 PopB
+94 repetitions for loc2 PopB
+Starting loc2 PopC
+89 repetitions for loc2 PopC
+Starting loc3
+Starting loc3 PopA
+104 repetitions for loc3 PopA
+Starting loc3 PopB
+117 repetitions for loc3 PopB
+Starting loc3 PopC
+105 repetitions for loc3 PopC
+\end{Soutput}
+\end{Schunk}
+
+<<echo=false>>=
+simfreq <- read.table("vignettebuild/simfreq.txt")
+@
+
+<<echo=TRUE>>=
+simfreq
+simFst <- calcFst(simfreq)
+simFst
+simFst12 <- calcFst(simfreq, loci=c("loc1", "loc2"))
+simFst12
+@
+
+\subsubsection{Genotype data export}
+\label{sec:gsexport}
+Lastly, you may want to export your data for use in another program.
+Below is a simple example of data export for the software Structure.
+Additional export functions are described in sections
+\ref{sec:autoexport} and \ref{sec:alloexport}.  More details on the
+options for all of these functions are found in their respective help
+files.
+
+In this example, both dipliod and tetraploid samples are included in
+the file.  The \texttt{ploidy} argument indicates how many lines per
+individual the file should have.
+
+<<echo=TRUE>>=
+write.Structure(simgen, ploidy = 4, file="simgenStruct.txt")
+@
+
+
+\section{How data are stored in \mdseries\textsc{polysat}}
+
+In the tutorial above, you learned some ways of creating, viewing, and
+editing a dataset in polysat.  This section goes into more details of
+the underlying data structure in polysat.  This is particularly useful
+to understand if you want to extend the functionality of the package,
+but it may clear up some confusion for basic polysat users as well.
+
+\textsc{polysat} uses the S4 class system in R.  ``Class'' and ``object'' are
+two computer science terms that are introduced in Section 3 of
+\emph{An Introduction to R}.  Whenever you create a vector, data frame,
+matrix, list, etc. you are creating an object, and the class of the
+object defines which of these the object is.  Furthermore, a class has
+certain ``methods'' defined for it so that the user can interact with
+the object in pre-specified ways.  For example, if you use
+\texttt{mean} on a matrix, you will get the mean of all elements of
+the matrix, while if you use \texttt{mean} on a data frame, you will
+get the mean of each column; \texttt{mean} is a generic function with
+different methods for these two classes.  S4 classes in R have
+``slots'', where
+each slot can hold an object of a certain class.  Methods define how
+the user can access, replace, and manipulate the data in these slots.
+
+\subsection{The ``genambig'' class}
+\label{sec:genambig}
+
+The object that you created with the \texttt{read.GeneMapper}
+function in the tutorial is of the class \texttt{"genambig"}.  This
+class has the slots \texttt{Description} (a character string or
+character vector describing the dataset), \texttt{Genotypes} (a
+two-dimensional list of vectors, where each vector contains all unique
+alleles for a particular sample at a particular locus),
+\texttt{Missing} (the symbol for a missing genotype),
+\texttt{Usatnts} (a vector containing the repeat length of each locus,
+or 1 if alleles for that locus are already in terms of repeat number
+rather than nucleotides), \texttt{Ploidies} (an object of the class 
+\texttt{"ploidysuper"}, which can contain a single value, a vector indexed 
+by sample or locus, or a matrix indexed by sample and locus, any of which can
+contain integers to indicate ploidy), \texttt{PopNames}
+(the name of each population), and \texttt{PopInfo} (the population
+identity of each sample, using integers that correspond to the
+position of the population name in \texttt{PopNames}).  You'll notice
+that there aren't slots to hold sample or locus names, which
+are stored as the \texttt{names} and \texttt{dimnames} of the objects
+in the other slots.
+
+<<echo=TRUE>>=
+showClass("genambig")
+@
+
+To create a \texttt{"genambig"} object from scratch without using one of
+the data import functions, first create two character vectors to
+contain sample and locus names, respectively.  These vectors are then
+used as arguments to the \texttt{new} function.
+
+<<echo=TRUE>>=
+mysamples <- c("indA", "indB", "indC", "indD", "indE", "indF")
+myloci <- c("loc1", "loc2", "loc3")
+mydataset <- new("genambig", samples=mysamples, loci=myloci)
+@
+
+An object has now been created with all of the appropriate slots named
+according to sample and locus names.
+
+<<echo=TRUE>>=
+mydataset
+@
+
+In the tutorial you used some of the accessor and replacement
+functions for the \texttt{"genambig"} class.  You can see a full list
+of them by typing:
+
+\begin{Schunk}
+\begin{Sinput}
+> ?Samples
+\end{Sinput}
+\end{Schunk}
+
+
+(\texttt{Present} and \texttt{Absent} are just for the
+\texttt{"genbinary"} class.  More on that later.)  Let's use some
+of these functions to fill in and examine the dataset.
+
+<<echo=TRUE>>=
+Loci(mydataset)
+Loci(mydataset) <- c("L1", "L2", "L3")
+Loci(mydataset)
+Samples(mydataset)
+Samples(mydataset)[3] <- "indC1"
+Samples(mydataset)
+PopNames(mydataset) <- c("Yosemite", "Sequoia")
+PopInfo(mydataset) <- c(1,1,1,2,2,2)
+PopInfo(mydataset)
+PopNum(mydataset, "Yosemite")
+PopNum(mydataset, "Sequoia") <- 3
+PopNames(mydataset)
+PopInfo(mydataset)
+Ploidies(mydataset) <- c(4,4,4,4,4,6)
+Ploidies(mydataset)
+@
+\label{ploidies}
+<<>>=
+Ploidies(mydataset)["indC1",] <- 6
+Ploidies(mydataset)
+Usatnts(mydataset) <- c(2,2,2)
+Usatnts(mydataset)
+Description(mydataset) <- "Tutorial, part 2."
+Description(mydataset)
+Genotypes(mydataset, loci="L1") <- list(c(122, 124, 128), c(124,126),
+                     c(120,126,128,130), c(122,124,130), c(128,130,132),
+                     c(126,130))
+Genotype(mydataset, "indB", "L3") <- c(150, 154, 160)
+Genotypes(mydataset)
+Genotype(mydataset, "indD", "L1")
+Missing(mydataset)
+Missing(mydataset) <- -1
+Genotypes(mydataset)
+@
+
+If you know a little bit more about S4 classes, you know that you can
+access the slots directly using the \texttt{@} symbol, for example:
+
+<<echo=true>>=
+mydataset@Genotypes
+mydataset@Genotypes[["indB","L1"]]
+@
+
+However, I STRONGLY recommend against accessing the slots in this way
+in order to replace (edit) the data.  The replacement functions are
+designed to prevent multiple types of errors that could happen if the
+user edited the slots directly.
+
+In section \ref{sec:creatingdataset} you were introduced to the
+\texttt{find.missing.gen}
+function.  There is a related function called \texttt{isMissing} that
+may be more useful from a programming standpoint.
+
+<<echo=TRUE>>=
+isMissing(mydataset, "indA", "L2")
+isMissing(mydataset, "indA", "L1")
+isMissing(mydataset)
+@
+
+To add more samples or loci to your dataset, you can create a second
+\texttt{"genambig"} object and then use the \texttt{merge} function
+to join them.
+
+<<echo=TRUE>>=
+moredata <- new("genambig", samples=c("indG", "indH"), loci=Loci(mydataset))
+Usatnts(moredata) <- Usatnts(mydataset)
+Description(moredata) <- Description(mydataset)
+PopNames(moredata) <- "Kings Canyon"
+PopInfo(moredata) <- c(1,1)
+Ploidies(moredata) <- c(4,4)
+Missing(moredata) <- Missing(mydataset)
+Genotypes(moredata, loci="L1") <- list(c(126,130,136,138), c(124,126,128))
+mydataset2 <- merge(mydataset, moredata)
+mydataset2
+@
+
+\subsection{How ploidy data is stored: ``ploidysuper'' and subclasses}
+\label{sec:ploidies}
+
+You may have noticed that in the above example, ploidy information was stored 
+in a matrix, whereas in section \ref{sec:creatingdataset} it was stored in a 
+vector following the use of the \texttt{estimatePloidy} function.  In fact, 
+ploidy can be stored in four formats: a single value if the entire dataset 
+has uniform ploidy, a vector indexed by sample if ploidy varies by sample, a 
+vector indexed by locus if ploidy varies by locus (\emph{e.g.} if the species
+is polyploid undergoing diploidization), or a matrix indexed by sample and 
+locus (\emph{e.g} if some of your loci are on sex chromosomes, or if some 
+individuals are aneuploid).  The object in
+the \texttt{Ploidies} slot of the dataset is one of four subclasses of the 
+\texttt{"ploidysuper"} class (see table below), and this in turn has a slot
+called \texttt{pld} that contains the ploidy data.  To make things simple from 
+the user's perspective, the \texttt{Ploidies} accessor and replacement 
+functions interact directly with this \texttt{pld} slot.
+\\
+\\
+\begin{tabular}{ | l | m{3cm} | m{5cm} | }
+  \hline
+  \bf{Class} & \bf{Format} & \bf{Use} \\ \hline
+  ploidyone & unnamed vector of length one & 
+  uniform ploidy for entire dataset \\ \hline
+  ploidysample & vector indexed by sample & samples vary in ploidy \\ \hline
+  ploidylocus & vector indexed by locus & loci vary in copy number \\ \hline
+  ploidymatrix & matrix indexed by sample, then locus & 
+  different samples have different numbers of copies of different loci\\
+  \hline
+\end{tabular}
+\\
+\\
+Note that most analyses that use ploidy information assume completely random
+segregation of alleles.  If you are going to specify ploidy as varying by locus,
+make sure that random segregation is actually the case for all loci.  (See 
+sections on working with autopolyploid vs. allopolyploid data.)  For example,
+if a locus is present on two homeologous chromosome pairs, you may record the
+ploidy for that locus as being four.  However, since these chromosomes do not
+pair with each other at meiosis, many of the analyses in \textsc{polysat} that utilize
+ploidy do not apply.
+
+Many of the data import functions for polysat will detect the ploidies of 
+genotypes and automatically create a \texttt{"genambig"} object with the 
+simplest ploidy format possible.  Additionally, when the 
+\texttt{estimatePloidies} function  is used, ploidy is automatically changed to 
+being
+indexed by sample.  However, the user may also want to manually switch formats,
+and the \texttt{reformatPloidies} function exists for this purpose.
+
+<<>>=
+ploidyexample <- new("genambig")
+Samples(ploidyexample)
+Loci(ploidyexample)
+Ploidies(ploidyexample)
+ploidyexample <- reformatPloidies(ploidyexample, output="locus")
+Ploidies(ploidyexample)
+ploidyexample <- reformatPloidies(ploidyexample, output="sample")
+Ploidies(ploidyexample)
+ploidyexample <- reformatPloidies(ploidyexample, output="one")
+Ploidies(ploidyexample)
+Ploidies(ploidyexample) <- 4
+ploidyexample <- reformatPloidies(ploidyexample, output="matrix")
+Ploidies(ploidyexample)
+@ 
+
+See \texttt{?reformatPloidies} for more information on how to change formats
+when there is already data in the \texttt{Ploidies} slot.
+
+Ploidy may be indexed using square brackets, like normal vectors and matrices:
+
+<<>>=
+Ploidies(ploidyexample)["ind1", "loc1"]
+@ 
+
+However, for programming purposes, ploidy can also be indexed by passing
+\texttt{samples} and \texttt{loci} arguments to the \texttt{Ploidies}
+accessor function.  This allows new functions to be robust to the ploidy
+format that is being used.
+
+<<>>=
+Ploidies(ploidyexample, "ind1", "loc1")
+ploidyexample <- reformatPloidies(ploidyexample, output="one")
+Ploidies(ploidyexample, "ind1", "loc1")
+@ 
+
+\subsection{The ``gendata'' and ``genbinary'' classes}
+\label{sec:genbinary}
+
+The \texttt{"genambig"} class is actually a subclass of another
+class called \texttt{"gendata"}.  The \texttt{Description},
+\texttt{PopInfo}, \texttt{PopNames}, \texttt{Ploidies}, \texttt{Missing},
+and \texttt{Usatnts} slots, and their access and
+replacement methods, are all defined for \texttt{"gendata"}, and are
+inherited by \texttt{"genambig"}.  The \texttt{"genambig"} class
+adds the \texttt{Genotypes} slot and the methods for interacting with it.
+
+A second subclass of \texttt{"gendata"} is \texttt{"genbinary"}.
+This class also has a \texttt{Genotypes} slot, but formatted as a
+matrix indicating the presence and absence of alleles.  (See
+\texttt{?genbinary-class} for more details.)  It also adds a
+slot called \texttt{Present} and one called \texttt{Absent} to
+indicate the symbols used to represent the presence or absence of the
+alleles, the same way the \texttt{Missing} slot holds the symbol used
+to indicate missing data.  Like \texttt{"genambig"},
+\texttt{"genbinary"} inherits all of the slots from
+\texttt{"gendata"}, as well as the methods for accessing them.
+
+The code below creates a \texttt{"genbinary"} object using a
+conversion function, then demonstrates how the genotypes are stored
+differently and how the functions from \texttt{"gendata"} remain the same.
+
+<<echo=TRUE>>=
+simgenB <- genambig.to.genbinary(simgen)
+Genotypes(simgenB, samples=paste("A", 1:20, sep=""), loci="loc1")
+PopInfo(simgenB)[Samples(simgenB, ploidies=2)]
+@
+
+The \texttt{"genbinary"} class exists to facilitate the import and export of
+genotype data formatted in a binary presence/absence format, for example:
+
+<<echo=TRUE>>=
+write.table(Genotypes(simgenB), file="simBinaryData.txt")
+@
+
+The \texttt{"genbinary"} class is also used by \textsc{polysat} to
+make some of the allele frequency calculations easier.
+\texttt{simpleFreq} internally converts a \texttt{"genambig"}
+object to a \texttt{"genbinary"} object in order to tally allele
+counts in populations.
+
+The class system in \textsc{polysat} is set up so that anyone can extend
+it to better suit their needs.  There seem to be as many ways
+of formatting genotype data as their are population genetic software,
+and so a new subclass of \texttt{"gendata"} could be created with
+genotypes formatted in a different way.  A user could also create a
+subclass of \texttt{"genambig"}, for example to hold GPS or
+phenotypic data in addition to the data already stored in a
+\texttt{"genambig"} object.  (See \texttt{?setClass},
+\texttt{?setMethod}, and \cite{chambers08}.)
+
+\section{Functions for autopolyploid data}
+In order to properly utilize \textsc{polysat} (and other software for polyploid
+data) it is important to understand the inheritance mode in your
+system.  In an autopolyploid (excluding ancient autopolyploids that have
+undergone diploidization), all homologous chromosomes are equally
+capable of pairing with each other at meiosis, and thus at a given
+microsatellite locus, gametes can receive any combination of alleles
+from the parent.  The same is not true of allopolyploids.  This
+affects the distribution of genotypes in the population, and as a
+result affects all aspects of population genetic analysis.
+
+The functions described below are specifically for autopolyploid
+data.  Their potential (or lack thereof) for use on allopolyploid data
+is described in the next section.  If you have data from an allopolyploid or 
+diploidized autopolyploid organism, you may also want to see the vignette
+``Assigning alleles to isoloci in \textsc{polysat}''.
+
+\subsection{Data import }
+\label{sec:autoimport}
+Four other population genetic programs that I am aware of can handle
+polyploid microsatellite data with allele copy number ambiguity under
+polysomic inheritance (autopolyploidy): Structure \cite{falush07,
+  falush03, pritchard00, hubisz09}, SPAGeDi \cite{hardy02},
+GenoDive \cite{meirmans04}
+(\url{http://www.bentleydrummer.nl/software/software/GenoDive.html}),
+and POPDIST \cite{guldbrandtsen00}\cite{tomiuk09}.
+
+In the ``extdata'' directory of the \textsc{polysat} installation there are
+files called ``structureExample.txt'', ``spagediExample.txt'',
+``genodiveExample.txt'', ``POPDISTexample1.txt'' and ``POPDISTexample2.txt''.
+To import these into \texttt{"genambig"}
+objects, first copy them into your working directory, then perform the
+assignments:
+
+<<>>=
+GDdata <- read.GenoDive("genodiveExample.txt")
+Structdata <- read.Structure("structureExample.txt", ploidy = 8)
+Spagdata <- read.SPAGeDi("spagediExample.txt")
+PDdata <- read.POPDIST(c("POPDISTexample1.txt", "POPDISTexample2.txt"))
+@
+
+Use \texttt{summary}, \texttt{viewGenotypes}, and the accessor
+functions (section \ref{sec:genambig}) to examine the contents of the three
+\texttt{"genambig"} objects that you have just created.  All four of
+these import functions take population information from the file and put it
+into the object.  The Structure, SPAGeDi, and POPDIST files are coded in a way
+that indicates the ploidy of each individual, so this information is
+written to the \texttt{"genambig"} object as well.
+
+The data import functions have some additional options for input and
+output, which are described in more detail in the help files.  In particular,
+any extra columns can optionally be extracted from a Structure file,
+and the spatial coordinates can optionally be extracted from a SPAGeDi
+file.  There are also several options for how ploidy should be interpreted from 
+Structure files.
+
+\begin{Schunk}
+\begin{Sinput}
+> ?read.Structure
+> ?read.SPAGeDi
+\end{Sinput}
+\end{Schunk}
+
+\textsc{polysat} also supports three genotype formats that work for either
+autopolyploids or allopolyploids, but do not contain any population,
+ploidy, or other information: GeneMapper, STRand, and binary
+presence/absence.  The tutorial in the beginning of this manual uses
+\texttt{read.GeneMapper} to import data.  The
+``GenaMapperExample.txt'' file contains the minimum amount of
+information needed in order to be read by the function.  Full
+``Genotypes Table'' files as exported from ABI
+GeneMapper\textregistered  can also be read by
+\texttt{read.GeneMapper}, and further, the function can take a vector
+of file names rather than a single file name if the data are spread
+across multiple files.  There are three additional GeneMapper example
+files in the ``doc'' directory, which can be read into a
+\texttt{"genambig"} object in this way:
+
+<<>>=
+GMdata <- read.GeneMapper(c("GeneMapperCBA15.txt",
+                            "GeneMapperCBA23.txt",
+                            "GeneMapperCBA28.txt"))
+@
+
+\texttt{read.STRand} takes a slightly modified version of the BTH format 
+output by the allele-calling software STRand \cite{toonen01}.  Since this 
+format uses one row 
+per individual, the modified format for \textsc{polysat} includes a column to
+contain population information.
+
+<<>>=
+# view the format
+read.table("STRandExample.txt", sep="\t", header=TRUE)
+# import the data
+STRdata <- read.STRand("STRandExample.txt")
+Samples(STRdata)
+PopNames(STRdata)
+@ 
+
+A binary presence/absence matrix can be read into R using the base
+function \texttt{read.table}.  Arguments to this function give options
+about how the file is delimited and whether it has headers and/or row labels.
+The example file in the ``extdata'' directory can be read in the
+following way:
+
+<<>>=
+domdata <- read.table("dominantExample.txt", header=TRUE,
+                      sep="\t", row.names=1)
+@
+
+Examine the data frame produced, and notice in particular that the
+column names are formatted as the locus and allele separated by a
+period.  After this data frame is converted to a matrix, it can be
+used to create a \texttt{"genbinary"} object.
+
+<<>>=
+domdata
+domdata <- as.matrix(domdata)
+PAdata <- new("genbinary", samples=c("ind1", "ind2", "ind3"),
+              loci=c("ABC1", "ABC2"))
+Genotypes(PAdata) <- domdata
+@
+
+A few functions in \textsc{polysat} will work directly on a
+\texttt{"genbinary"} object, but for most functions you will want to convert
+to a \texttt{"genambig"} object.  Addition of population and
+other information can be done either before or after the conversion.
+
+<<>>=
+PopInfo(PAdata) <- c(1,1,2)
+PAdata <- genbinary.to.genambig(PAdata)
+@
+
+\subsection{Data export}
+\label{sec:autoexport}
+
+Autopolyploid data can also be exported in the same formats that are
+available for import, except STRand.  Additionally, data can be exported to 
+the R package adegenet's ``genind'' presence/absence format  (see 
+\texttt{?gendata.to.genind}).
+
+The \texttt{write.Structure} function requires that an overall ploidy
+for the file be specified, to indicate how many rows per individual to
+write.  Individuals with higher ploidy than the overall ploidy will have
+alleles
+randomly removed, and individuals with lower ploidy will have the
+missing data symbol inserted in the extra rows.  Additional arguments
+give the options to specify extra columns to include, to
+omit or include population information, and to specify the missing data symbol.
+The row of missing data symbols that is automatically written
+underneath marker names is the RECESSIVEALLELES row in Structure,
+indicating that allele copy number is ambiguous.
+
+\texttt{write.Structure} was used in the tutorial in section
+\ref{sec:gsexport}, but below is another example with some of the options
+changed (see \texttt{?write.Structure} for more information).  Here,
+\texttt{myexcol} is an array of data to be written into extra columns in
+the file.
+
+<<echo=TRUE>>=
+myexcol <- array(c(rep(0:1, each=150), seq(0.1, 30, by=0.1)), dim=c(300,2),
+                 dimnames = list(Samples(simgen), c("PopFlag", "Something")))
+myexcol[1:10,]
+write.Structure(simgen, ploidy=4, file="simgenStruct2.txt",
+                writepopinfo = FALSE, extracols = myexcol,
+                missingout = -1)
+@
+
+The \texttt{write.GenoDive} function is fairly straightforward, with
+the only option being whether to code alleles as two or three digits.
+All alleles are converted to repeat number, using the information
+contained in the \texttt{Usatnts} slot of the \texttt{"genambig"} object.
+
+<<>>=
+write.GenoDive(simgen, file="simgenGD.txt")
+@
+
+\texttt{write.SPAGeDi} has options for the number of digits used to
+code alleles as well as the character (or lack thereof) used to
+separate alleles.  Alleles are converted to repeat numbers as in
+\texttt{write.GenoDive}.  Additionally, a data frame of spatial coordinates
+can be supplied to the function to be written to the file.  By
+default, the function will create two dummy columns for spatial
+coordinates, which the user can then fill in using a text editor or
+spreadsheet software.  (See \texttt{?write.SPAGeDi})
+
+<<>>=
+write.SPAGeDi(simgen, file="simgenSpag.txt")
+@
+
+If you are using SPAGeDi to calculate relationship and kinship
+coefficients, also see the function \texttt{write.freq.SPAGeDi} for
+exporting allele frequencies from \textsc{polysat} to SPAGeDi for use in these
+calculations.
+
+The \texttt{write.POPDIST} function does not have any options for
+formatting.  In the example below, the \texttt{samples} argument is
+used to ensure that each population has uniform ploidy, which is a
+requirement of the POPDIST software.
+
+<<>>=
+write.POPDIST(simgen, samples = Samples(simgen, ploidies=4),
+              file = "simgenPOPDIST.txt")
+@
+
+\texttt{write.GeneMapper} is very straightforward, without any special
+formatting options.  This function was used to create the
+``GeneMapperExample.txt'' file that is provided with the package.  I
+do not know of any other software that will read the GeneMapper
+format, but it may be a convenient way for the user to store and edit
+genotypes.
+
+<<>>=
+write.GeneMapper(simgen, file="simgenGM.txt")
+@
+
+To export a table of genotypes in binary presence/absence format,
+first convert the \texttt{"genambig"} object to a
+\texttt{"genbinary"} object, then write the \texttt{Genotypes} slot
+to a text file, adjusting the options of \texttt{write.table} to suit
+your needs.  (See \texttt{?write.table}.)
+
+<<>>=
+simgenPA <- genambig.to.genbinary(simgen)
+write.table(Genotypes(simgenPA), file="simgenPA.txt", quote=FALSE,
+            sep = ",")
+@
+
+\subsection{Individual-level statistics}
+\label{sec:indstat}
+
+\subsubsection{Estimating and exporting ploidies}
+The \texttt{estimatePloidy} function, which was demonstrated in
+section \ref{sec:creatingdataset}, is equally appropriate for autopolyploid
+and allopolyploid data.  If you want to export the ploidy data, one method
+is the following:
+
+<<>>=
+write.table(data.frame(Ploidies(simgen), row.names=Samples(simgen)),
+            file="simgenPloidies.txt")
+@
+
+\subsubsection{Inter-individual distances}
+\label{sec:inddist}
+A matrix of pairwise distances between individuals can be generated
+using the \texttt{meandistance.matrix} function, which was
+demonstrated in section \ref{sec:gsinddist}.  The most important
+argument is \texttt{distmetric}, or the distance measure that is
+used.  The three options that are provided with \textsc{polysat} are
+\texttt{Bruvo.distance} and \texttt{Bruvo2.distance}, which take
+mutational distance between alleles into account
+\cite{bruvo04}, and \texttt{Lynch.distance}, which is a simple
+band-sharing measure \cite{lynch90}.  (The user can create functions
+to serve as additional distance measures, as long as the arguments are
+the same as those for \texttt{Bruvo.distance} and
+\texttt{Lynch.distance}.)  The \texttt{progress} argument
+can be set to \texttt{TRUE} or \texttt{FALSE} to indicate whether the
+progress of the computation should be printed to the screen.  The
+\texttt{all.distances} argument can also be set to \texttt{TRUE} or
+\texttt{FALSE} to indicate whether, in addition to the mean distance
+matrix, a three-dimensional array of distances by locus should be
+returned.  There is also a \texttt{maxl} argument to indicate the
+threshold for \texttt{Bruvo.distance} to skip calculations that are
+too computationally intensive (see \texttt{?Bruvo.distance}).  The
+function \texttt{Bruvo2.distance} has two additional arguments called
+\texttt{add} and \texttt{loss}, which when set to \texttt{TRUE}
+indicate that the models of genome addition and/or genome loss should
+be used, respectively.
+
+A second means of calculating inter-individual distances was introduced in
+\textsc{polysat} 1.2 and is called \texttt{meandistance.matrix2}.  Whereas
+\texttt{meandistance.matrix} passes genotypes directly to
+\texttt{distmetric} with each allele present in only one copy,
+\texttt{meandistance.matrix2} uses ploidy, selfing rate, and allele
+frequencies to calculate the probabilities that a given ambiguous
+genotype represents any possible unambiguous genotype.  Unambiguous
+genotypes are then passed to \texttt{distmetric}.  The distance is
+a weighted average across all possible combinations of unambiguous
+genotypes.  There is no advantage to using \texttt{Lynch.distance} with
+this function, but it may give improved results for
+\texttt{Bruvo.distance}, \texttt{Bruvo2.distance}, or a user-defined
+distance measure.
+
+\begin{Schunk}
+\begin{Sinput}
+> testmat4 <- meandistance.matrix2(simgen, samples=samToUse, freq=simfreq,
++                                  self=0.2)
+\end{Sinput}
+\end{Schunk}
+
+<<echo=FALSE>>=
+load("vignettebuild/testmat4.RData")
+@
+<<echo=TRUE, fig=TRUE>>=
+pca4 <- cmdscale(testmat4)
+plot(pca4[,1], pca4[,2], col=c("red", "blue")[PopInfo(simgen)[samToUse]],
+     main="Bruvo distance with meandistance.matrix2")
+@
+
+Besides the \texttt{cmdscale} function for performing Principal
+Coordinate Analysis on the resulting matrix, you may want to create a
+histogram to view the distribution of distances, or you may want to
+export the distance matrix for use in other software.
+
+<<fig=true>>=
+hist(as.vector(testmat))
+@
+<<fig=true>>=
+hist(as.vector(testmat2))
+@
+<<>>=
+write.table(testmat2, file="simgenDistMat.txt")
+@
+
+\texttt{meandist.from.array} can take a three-dimensional array such
+as that produced when \texttt{all.distances=TRUE} and recalculate a
+mean distance matrix from it.  This could be useful, for example, if
+you want to try omitting loci from your analysis.  If
+\texttt{Bruvo.distance} skips some calculations because \texttt{maxl}
+is exceeded, you may also want to estimate these distances and fill
+them into the array manually, then recalculate the mean distance
+matrix.  See the help file for \texttt{meandist.from.array} for some
+additional functions that can help to locate missing values in the
+three-dimensional distance array.
+
+The following example first creates a vector indicating the subset of samples
+to use, both to save
+on computation time for the example and because missing data can be a
+problem for Principal Coordinate Analysis if fewer than three loci are
+used.  An array of distances is then calculated, followed by the mean distance
+matrix for each combination of two loci.
+
+<<>>=
+subsamples <- Samples(simgen, populations=1)
+subsamples <- subsamples[!isMissing(simgen, subsamples, "loc1") &
+                         !isMissing(simgen, subsamples, "loc2") &
+                         !isMissing(simgen, subsamples, "loc3")]
+Larray <- meandistance.matrix(simgen, samples=subsamples,
+                              progress=FALSE,
+                 distmetric=Lynch.distance, all.distances=TRUE)[[1]]
+mdist1.2 <- meandist.from.array(Larray, loci=c("loc1","loc2"))
+mdist2.3 <- meandist.from.array(Larray, loci=c("loc2","loc3"))
+mdist1.3 <- meandist.from.array(Larray, loci=c("loc1","loc3"))
+@
+
+As before, you can use \texttt{cmdscale} to perform Principal
+Coordinate Analysis and \texttt{plot} to visualize the results.
+Differences between plots reflect the effects of excluding loci.
+
+\subsubsection{Determining groups of asexually-related samples}
+\label{sec:assignclones}
+
+Very similarly to the software GenoType \cite{meirmans04}, \textsc{polysat} can use a
+matrix of inter-individual distances to assign samples to groups of
+asexually-related individuals.  This analysis can be performed on any
+matrix of distances calculated with \texttt{meandistance.matrix},
+\texttt{meandistance.matrix2}, or a user-defined function that
+produces matrices in the same format.  As in GenoType, a histogram
+such as those produced above may be useful for determining a distance
+threshold for distinguishing sexually- and asexually-related pairs of
+individuals.  The data in \texttt{simgen} were simulated in a
+sexually-reproducing population, but let's pretend for the moment that
+there was some asexual reproduction, and we saw a bimodal distribution
+of distances with a cutoff of 0.2 between modes.
+
+<<>>=
+clones <- assignClones(testmat, samples=paste("A", 1:100, sep=""),
+                       threshold=0.2)
+clones
+@
+
+Some of the individuals with similar genotypes have been assigned to
+the same clonal group.
+
+Diversity statistics based on genotype frequencies are also available;
+see section \ref{sec:genofreq}.
+
+\subsection{Population statistics}
+\label{sec:popstat}
+
+\subsubsection{Allele diversity and frequencies}
+\label{sec:allelefreq}
+Allele diversity, \emph{i.e.} the number of alleles found at each locus, is
+easily calculated in \textsc{polysat}.
+
+<<>>=
+simal <- alleleDiversity(simgen)
+simal$counts
+simal$alleles[["PopA","loc1"]]
+@ 
+
+There are two functions in \textsc{polysat} for estimating allele
+frequencies.  If all of your individuals are the same, even-numbered
+ploidy and if you have a reasonable estimate of the selfing rate in
+your system, \texttt{deSilvaFreq} will give the most accurate
+estimate.  For mixed ploidy systems, the \texttt{simpleFreq} function
+is available, but will be biased toward underestimating common allele
+frequencies and overestimating rare allele frequencies, which will
+cause an underestimation of $F_{ST}$.  \texttt{deSilvaFreq} uses an iterative
+algorithm to estimate genotype frequencies based on allele
+frequencies and ``allelic phenotype'' frequencies, then recalculate
+allele frequencies from genotype frequencies \cite{desilva05}.
+\texttt{simpleFreq} simply assumes that in a partially heterozygous
+genotype, all
+alleles have an equal chance of being present in more than one copy.
+
+Both allele frequency estimators take as the first argument a
+\texttt{"genambig"} or \texttt{"genbinary"} object, which must
+have the \texttt{PopInfo} and \texttt{Ploidies} slots filled in.  The
+\texttt{self} argument for supplying the selfing rate is only
+applicable for \texttt{deSilvaFreq}.  (See \texttt{?deSilvaFreq} for
+some other arguments that can be adjusted.)  Both functions produce a
+data frame of allele frequencies, with populations in rows and alleles
+in columns.  \texttt{deSilvaFreq} adds a null allele for each locus,
+while \texttt{simpleFreq} does not.  In both cases the data frame will
+also have a column indicating the population size in number of genomes
+(\emph{e.g.} four hexaploid individuals = 24 genomes).
+
+The function \texttt{calcFst} takes the data frame produced by either
+allele frequency estimation, and produces a matrix containing pairwise
+$F_{ST}$ values according to the original calculation by Wright
+\cite{nei73}.  Population sizes are weighted by number of genomes,
+rather than number of individuals.
+
+Continuing the example from section \ref{sec:gspopstat}, and comparing
+the results of \texttt{deSilvaFreq} and \texttt{simpleFreq}:
+
+<<echo=TRUE>>=
+simFst
+simfreqSimple <- simpleFreq(simgen, samples = Samples(simgen, ploidies=4))
+simFstSimple <- calcFst(simfreqSimple)
+simFstSimple
+@
+
+Average allele frequencies can also be used by SPAGeDi for the
+calculation of relationship and kinship coefficients.  SPAGeDi v1.3
+can estimate allele frequencies using the same method as
+\texttt{simpleFreq}.  However, if your data are appropriate for allele
+frequency estimation using \texttt{deSilvaFreq}, exporting the
+estimated allele frequencies to SPAGeDi should improve the accuracy of
+the relationship and kinship calculations.  The
+\texttt{write.freq.SPAGeDi} function creates a file of allele
+frequencies in the format that is read by SPAGeDi.
+
+<<>>=
+write.freq.SPAGeDi(simfreq, usatnts=Usatnts(simgen), file="SPAGfreq.txt")
+@
+
+The R package \texttt{adegenet}\cite{jombart08} can perform a number of
+calculations
+from allele frequencies, including five inter-population distance
+measures as well as Correspondance Analysis.  The allele frequency
+tables produced by \textsc{polysat} can be converted to a format that
+can be read by \texttt{adegenet}.
+
+<<>>=
+gpsimfreq <- freq.to.genpop(simfreq)
+@
+
+The object \texttt{gpsimfreq} that you just created can now be passed
+to the function \texttt{genpop} as the \texttt{tab} argument.  See
+\texttt{?freq.to.genpop} for example code.
+
+\subsubsection{Genotype frequencies}
+\label{sec:genofreq}
+For asexual organisms, you many want to calculate statistics based on
+the frequencies of genotypes in your populations.  Two popular
+statistics for this, the Shannon index \cite{shannon48} and Simpson index
+\cite{simpson49}, are provided with \textsc{polysat}.  The function
+\texttt{genotypeDiversity} calculates either of these statistics or any
+user-defined statistic that can be calculated from a vector of
+counts.  \texttt{genotypeDiversity} uses the function
+\texttt{assignClones} internally, so the same \texttt{threshold}
+argument may be set to allow for mutation or scoring error, or to
+group individuals by a larger distance threshold.  This function
+examines loci individiually as well as the mean distance across all
+loci.  Where ordinary allelic diversity statistics are not
+available due to allele copy number ambiguity, genotype diversity
+statistics for individual loci may be useful.
+
+\begin{Schunk}
+  \begin{Sinput}
+> testmat5 <- meandistance.matrix(simgen, all.distances=TRUE)
+  \end{Sinput}
+\end{Schunk}
+
+<<echo=FALSE>>=
+load("vignettebuild/testmat5.RData")
+@
+<<>>=
+simdiv <- genotypeDiversity(simgen, d=testmat5, threshold=0.2, index=Shannon)
+simdiv
+simdiv2 <- genotypeDiversity(simgen, d=testmat5, threshold=0.2, index=Simpson)
+simdiv2
+@
+
+The variance of the Simpson index may also be calculated, enabling the 
+calculation of upper and lower bounds for a 95\% confidence interval.
+
+<<>>=
+simdiv2var <- genotypeDiversity(simgen, d=testmat5, threshold=0.2,
+                                index=Simpson.var)
+simdiv2 - 2*simdiv2var^0.5
+simdiv2 + 2*simdiv2var^0.5
+@ 
+
+\section{Functions for allopolyploid data}
+
+In order to properly analyze microsatellites as codominant markers in
+allopolyploids, knowledge is required about which alleles belong to
+which genome.  In an autopolyploid, all alleles for a given marker
+will segregate according to Mendelian laws.  In an allopolyploid, a
+microsatellite marker represents two or more loci that are behaving in
+a Mendelian fashion, but if treated as one locus will not appear to
+behave according to random segregation.  For example, an autotetraploid with
+the genotype ABCD that self fertilizes can produce offspring with
+the genotype AABB.  An allotetraploid with the same four alleles, but
+distributed as AB and CD across two genomes, cannot self to produce an
+AABB individual as both of these alleles come from one genome.
+
+If you have knowledge from other analyses about which alleles belong
+to which genomes, when importing your data you can code each
+microsatellite marker as multiple loci.  As long as each ``locus'' in
+the \texttt{"genambig"} object is behaving according to random
+segregation, the analysis and export functions for autopolyploid data
+described in the previous section are appropriate.  See the separate
+vignette ``Assigning alleles to isoloci in \textsc{polysat}'' to learn
+more about how to determine which alleles belong to which genomes.
+
+If you are not able split microsatellite markers into independently-segregating
+isoloci, the following functionality is available for allopolyploids
+in \textsc{polysat}:
+
+\subsection{Data import and export}
+\label{sec:alloexport}
+Data can be formatted for the software Tetrasat \cite{markwith06},
+Tetra \cite{liao08}, and ATetra \cite{vanpuyvelde10}
+using \textsc{polysat}.  These programs are intended to be robust to lack of knowledge 
+of inheritance patterns of alleles in allotetraploids and will estimate allele
+frequencies and other statistics.  See the help files for
+\texttt{write.Tetrasat} and \texttt{write.ATetra}.
+
+\texttt{read.Tetrasat} (which produces a format readable by both
+Tetrasat and Tetra) and \texttt{read.ATetra} both take, as their
+only argument, the file name to be read.  To import data from the
+example files
+``ATetraExample.txt'' and ``tetrasatExample.txt'', use the commands:
+
+<<>>=
+ATdata <- read.ATetra("ATetraExample.txt")
+Tetdata <- read.Tetrasat("tetrasatExample.txt")
+@
+
+The functions for writing these two file formats only require a
+\texttt{"genambig"} object and a file name.  \texttt{Ploidies} and
+\texttt{PopInfo} are required in the object for both functions.
+\texttt{write.Tetrasat} additionally requires information in the
+\texttt{Usatnts} slot.  Since ATetra does not allow missing data, any
+missing genotypes that are encountered by \texttt{write.ATetra} are
+written to the console.
+
+<<>>=
+write.ATetra(simgen, samples=Samples(simgen, ploidies=4), file="simgenAT.txt")
+write.Tetrasat(simgen, samples=Samples(simgen, ploidies=4),
+               file="simgenTet.txt")
+@
+
+Data for allopolyploids can also be imported and exported in GeneMapper,
+STRand, adegenet genind,
+and binary presence/absence formats, as described in the sections
+\ref{sec:autoimport} and \ref{sec:autoexport}.
+
+\subsection{Individual-level and population statistics}
+
+The \texttt{Bruvo.distance} measure of inter-individual distances is
+best suited to autopolyploids but may work for allopolyploids under a
+special case.  \texttt{Bruvo.distance} measures distances between all
+alleles at a locus for the two individuals being compared, under the
+premise that
+these alleles could be closely related to each other by mutation.  If
+two alleles belong to two different allopolyploid genomes, it is not
+possible for them to be
+be closely related to each other even if their sizes are similar,
+since they are derived from different ancestral species.  In the case
+where no allele from one allopolyploid genome is within three or four
+mutation steps of any allele from the other genome, it is possible for
+the value produced by \texttt{Bruvo.distance} to accurately reflect
+the genetic similarity of two allopolyploid individuals.  Along the
+same logic, \texttt{Lynch.distance} will only be appropriate if the
+two homeologous genomes have no alleles in common at a given locus.
+If either of these distance measures are appropriate for your data,
+see the description of the \texttt{meandistance.matrix} function in
+sections \ref{sec:gsinddist} and \ref{sec:inddist}.  The
+\texttt{meandistance.matrix2} function is never appropriate under
+allopolyploid inheritance, since it assumes random segregation of
+alleles when calculating genotype probabilities.
+\texttt{Bruvo2.distance} is unlikely to be appropriate for an
+allopolyploid system, although I would encourage reading the
+paper\cite{bruvo04} and thinking about it for yourself.
+
+Assuming a distance matrix can be calculated using
+\texttt{meandistance.matrix}, all downstream analyses (principal
+coordinate analysis, clone assignment, genotype diversity) are appropriate.
+
+The \texttt{estimatePloidy}, \texttt{assignClones}, \texttt{genotypeDiversity},
+and \texttt{alleleDiversity} functions work equally well on
+autopolyploids and allopolyploids.
+
+Both \texttt{simpleFreq} and \texttt{deSilvaFreq} work under the
+assumption of polysomic inheritance and should therefore not be used
+on allopolyploid data.
+
+\section{Treating microsatellite alleles as dominant markers}
+
+Both autopolyploid and allopolyploid microsatellite data can
+be converted to ``allelic phenotypes'' based on the presence and
+absence of alleles.  Although much information is
+lost using this
+method, it can enable the user to perform a wider range of analyses,
+such as parentage analysis or AMOVA.
+
+The \texttt{Lynch.distance} measure, described earlier, essentially
+treats alleles in this way.  Alleles are assumed to be present in only
+one copy, and two alleles from two individuals are either identical or
+not.  However, alleles are still grouped by locus and distances are
+averaged across all loci.
+
+The \texttt{"genbinary"} class stores data in a binary
+presence/absence format, the same way that dominant data is typically
+coded.  (See earlier description of the
+\texttt{genambig.to.genbinary} function in section \ref{sec:autoexport}.)
+This is intended to
+facilitate further analysis in R or other software that takes such a
+format.  By default, \texttt{1} indicates that an allele is present,
+\texttt{0} indicates that an allele is absent, and \texttt{-9}
+indicates that the data point is missing.  There are replacement
+functions to change these symbols, for example (continuing from
+section \ref{sec:genbinary}):
+
+<<>>=
+Present(simgenB) <- "P"
+Absent(simgenB) <- 2
+Missing(simgenB) <- 0
+Genotypes(simgenB)[1:10, 1:6]
+@
+
+If you want to further manipulate the format of the genotype matrix,
+you can assign it to a new object name and then make the desired edits.
+
+<<>>=
+genmat <- Genotypes(simgenB)
+dimnames(genmat)[[2]] <- paste("M", 1:dim(genmat)[2], sep="")
+genmat[1:10, 1:10]
+@
+
+As demonstrated previously, the \texttt{write.table} function can
+write the matrix to a text file for use in other software.  The
+arguments for \texttt{write.table} allow the user to control which
+character is used to delimit fields, whether row and column names
+should be written to the file, and whether quotation marks should be
+used for character strings.
+
+\section{How to cite \mdseries\textsc{polysat}}
+
+\begin{itemize}
+
+\item Clark, LV and Jasieniuk, M.  2011.  {\sc polysat}: an R package for polyploid
+microsatellite analysis.  \emph{Molecular Ecology Resources}
+11(3):562--566.
+
+\item Clark, LV and Drauch Schreier, A. 2015.  Resolving microsatellite genotype
+ambiguity in populations of allopolyploid and diploidized autopolyploid organisms
+using negative correlations between alleles.  \emph{BioRxiv}.  DOI: 10.1101/020610
+
+\end{itemize}
+
+Feel free to email me at lvclark@illinois.edu with any questions,
+comments, or bug reports!
+
+\begin{thebibliography}{99}
+  \bibitem{bruvo04}
+    BRUVO, R., MICHIELS, N. K., D'SOUZA, T. G. and SCHULENBURG,
+    H. 2004. A simple method for the calculation of microsatellite
+    genotype distances irrespective of ploidy level. \emph{Molecular
+      Ecology}, 13, 2101-2106.
+
+    \bibitem{chambers08}
+      CHAMBERS, J. M. 2008.  \emph{Software for Data Analysis: Programming
+      with R} Springer.
+
+    \bibitem{desilva05}
+      DE SILVA, H. N, HALL, A. J., RIKKERINK, E., MCNEILAGE, M. A.,
+      and FASER, L. G. 2005.  Estimation of allele frequencies in
+      polyploids under certain patterns of inheritance.
+      \emph{Heredity}, 95, 327-334.
+
+  \bibitem{falush03}
+FALUSH, D., STEPHENS, M. and PRITCHARD, J. K. 2003. Inference of
+population structure using multilocus genotype data: Linked loci and
+correlated allele frequencies. \emph{Genetics}, 164, 1567-1587.
+
+\bibitem{falush07}
+FALUSH, D., STEPHENS, M. and PRITCHARD, J. K. 2007. Inference of
+population structure using multilocus genotype data: dominant markers
+and null alleles. \emph{Molecular Ecology Notes}, 7, 574-578.
+
+\bibitem{guldbrandtsen00}
+  GULDBRANDTSEN, B., TOMIUK, J. AND LOESCHCKE, B.  2000.  POPDIST version
+1.1.1: A program to calculate population genetic distance and identity
+measures.  \emph{Journal of Heredity}, 91, 178-179.
+
+\bibitem{hardy02}
+HARDY, O. J. and VEKEMANS, X. 2002. SPAGEDi: a versatile computer
+program to analyse spatial genetic structure at the individual or
+population levels. \emph{Molecular Ecology Notes}, 2, 618-620.
+
+\bibitem{hubisz09}
+HUBISZ, M. J., FALUSH, D., STEPHENS, M. and PRITCHARD,
+J. K. 2009. Inferring weak population structure with the assistance of
+sample group information. \emph{Molecular Ecology Resources}, 9, 1322-1332.
+
+\bibitem{jombart08}
+  JOMBART, T. 2008.  adegenet: a R package for the multivariate
+  analysis of genetic markers.  \emph{Bioinformatics}, 24, 1403-1405.
+
+\bibitem{liao08}
+LIAO, W. J., ZHU, B. R., ZENG, Y. F. and ZHANG, D. Y. 2008. TETRA: an
+improved program for population genetic analysis of allotetraploid
+microsatellite data. \emph{Molecular Ecology Resources}, 8, 1260-1262.
+
+\bibitem{lynch90}
+LYNCH, M. 1990. THE SIMILARITY INDEX AND DNA FINGERPRINTING. \emph{Molecular
+Biology and Evolution}, 7, 478-484.
+
+\bibitem{markwith06}
+MARKWITH, S. H., STEWART, D. J. and DYER, J. L. 2006. TETRASAT: a
+program for the population analysis of allotetraploid microsatellite
+data. \emph{Molecular Ecology Notes}, 6, 586-589.
+
+\bibitem{meirmans04}
+MEIRMANS, P. G. and VAN TIENDEREN, P. H. 2004. GENOTYPE and GENODIVE:
+two programs for the analysis of genetic diversity of asexual
+organisms. \emph{Molecular Ecology Notes}, 4, 792-794.
+
+\bibitem{nei73}
+  NEI, M.  1973.  Analysis of gene diversity in subdivided
+  populations.  \emph{Proceedings of the National Academy of Sciences
+    of the United States of America} 70, 3321-3323.
+
+\bibitem{pritchard00}
+PRITCHARD, J. K., STEPHENS, M. and DONNELLY, P. 2000. Inference of population
+structure using multilocus genotype data. \emph{Genetics}, 155, 945-959.
+
+\bibitem{shannon48}
+  SHANNON, C. E. 1948. A mathematical theory of communication.
+\emph{Bell System Technical Journal}, 27, 379-423 and 623-656.
+
+\bibitem{simpson49}
+  SIMPSON, E. H. 1949. Measurement of diversity.  \emph{Nature}, 163, 688.
+
+\bibitem{tomiuk09}
+  TOMIUK, J. GULDGRANDTSEN, B. AND LOESCHCKE, B.  2009.  Genetic
+similarity of polyploids: a new version of the computer program POPDIST
+(version 1.2.0) considers intraspecific genetic differentiation.
+\emph{Molecular Ecology Resources}, 9, 1364-1368.
+
+\bibitem{toonen01}
+  TOONEN, R. J. and HUGHES, S.  2001.  Increased Throughput for Fragment
+  Analysis on ABI Prism 377 Automated Sequencer Using a Membrane Comb
+  and STRand Software.  \emph{Biotechniques}, 31, 1320-1324.
+
+\bibitem{vanpuyvelde10}
+VAN PUYVELDE, K., VAN GEERT, A. and TRIEST, L. 2010. ATETRA, a new software program to analyse tetraploid microsatellite data: comparison with TETRA and TETRASAT. \emph{Molecular Ecology Resources}, 10, 331-334.
+
+
+\end{thebibliography}
+
+\end{document}

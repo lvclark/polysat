@@ -1,0 +1,10 @@
+This is a test for POPDIST
+bcgA
+cvrT
+cfgB
+Pop
+Idaho	, 030304 000205 010607
+Idaho	, 030000 010200 060607
+Pop
+Montana	, 040500 030404 010203
+Montana	, 030506 030204 030407

@@ -1,0 +1,10 @@
+This is a test for POPDIST
+bcgA
+cvrT
+cfgB
+Pop
+North Dakota	, 050600 010300 090000
+North Dakota	, 040408 000000 060900
+pop
+South Dakota	, 070508 030400 040203
+South Dakota	, 030400 030405 020206

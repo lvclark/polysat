@@ -1,0 +1,21 @@
+Plot.color	Plot.symbol
+FCR1	blue	16
+FCR2	blue	15
+FCR3	blue	5
+FCR4	red	10
+FCR5	blue	2
+FCR6	blue	4
+FCR7	red	13
+FCR8	red	13
+FCR9	red	13
+FCR10	red	13
+FCR11	red	13
+FCR12	red	13
+FCR13	red	13
+FCR14	red	13
+FCR15	red	13
+FCR16	red	10
+FCR17	red	13
+FCR18	red	13
+FCR19	red	13
+FCR20	red	13

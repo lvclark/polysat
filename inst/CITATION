@@ -1,0 +1,20 @@
+bibentry(bibtype="Article",
+	title = "polysat: an R package for polyploid microsatellite analysis",
+        author = c(person("Lindsay V.", "Clark"), person("Marie", "Jasieniuk")),
+	journal = "Molecular Ecology Resources",
+  	year = "2011",
+	volume = "11",
+	pages = "562--566",
+	number = "3",
+  doi = "10.1111/j.1755-0998.2011.02985.x",
+        header = "Version 1.1 is published in Molecular Ecology Resources:"
+         )
+
+bibentry(bibtype="Unpublished",
+	title = "Resolving microsatellite genotype ambiguity in populations of allopolyploid and diploidized autopolyploid organisms using negative correlations between alleles",
+        author = c(person("Lindsay V.", "Clark"), person("Andrea", "Drauch Schreier")),
+  	year = "2015",
+        note = "Available on BioRxiv",
+        doi = "10.1101/020610",
+        header = "Functions for splitting loci into isoloci available in version 1.4 are described in:"
+         )

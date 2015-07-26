@@ -1,0 +1,10 @@
+example input file (includes this comment line)
+5	2	2	3	2
+pop1
+pop2
+pop	ind	loc1	loc2
+1	John	102	1214
+1	Paul	202	0
+2	George	101	121213
+2	Ringo	10304	131414
+1	Yoko	10303	120014

@@ -1,0 +1,27 @@
+export(Bruvo.distance,
+       meandistance.matrix, read.GeneMapper, write.Structure,
+       read.ATetra, read.Tetrasat, genambig.to.genbinary,
+       genbinary.to.genambig, read.GenoDive, write.GenoDive,
+       write.ATetra, write.Tetrasat, read.Structure,
+       write.GeneMapper, calcFst, simpleFreq, deSilvaFreq,
+       find.missing.gen,
+       meandist.from.array, find.na.dist, find.na.dist.not.missing,
+       Lynch.distance, write.SPAGeDi, read.SPAGeDi, write.freq.SPAGeDi,
+       read.POPDIST, write.POPDIST, freq.to.genpop, genotypeProbs,
+       meandistance.matrix2, assignClones, Shannon, Simpson, genotypeDiversity,
+       Bruvo2.distance, reformatPloidies,alleleDiversity,read.STRand,
+gendata.to.genind, Simpson.var, simAllopoly, catalanAlleles, alleleCorrelations,
+       testAlGroups, mergeAlleleAssignments, recodeAllopoly)
+exportMethods(estimatePloidy, Samples, "Samples<-", Loci, "Loci<-", PopInfo,
+              "PopInfo<-", PopNames, "PopNames<-", Ploidies, "Ploidies<-",
+              Usatnts,
+              "Usatnts<-", deleteSamples, deleteLoci, Missing, "Missing<-",
+              Description, "Description<-", PopNum, "PopNum<-", Genotype,
+              "Genotype<-", Genotypes, "Genotypes<-", isMissing, viewGenotypes,
+              editGenotypes, Present, "Present<-", Absent, "Absent<-", summary,
+              merge, pld, "pld<-", plCollapse)
+exportClasses(gendata, genambig, genbinary, ploidysuper, ploidymatrix, 
+              ploidylocus, ploidysample, ploidyone)
+import(methods)
+importFrom("stats", "as.dist", "cutree", "fisher.test", "hclust", "kmeans")
+importFrom("utils", "combn", "edit", "read.table", "stack", "write.table")

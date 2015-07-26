@@ -1,0 +1,27 @@
+Package: polysat
+Version: 1.4-1
+Date: 2015-07-26
+Title: Tools for Polyploid Microsatellite Analysis
+Authors@R: person("Lindsay V.", "Clark", email = "lvclark@illinois.edu", role = c("aut", "cre"))
+Author: Lindsay V. Clark [aut, cre]
+Maintainer: Lindsay V. Clark <lvclark@illinois.edu>
+Imports: methods, stats, utils
+Suggests: combinat, ade4, adegenet, ape
+Description: A collection of tools to handle microsatellite data of
+ any ploidy (and samples of mixed ploidy) where allele copy number is not
+ known in partially heterozygous genotypes.  It can import and export data in
+ ABI 'GeneMapper', 'Structure', 'ATetra', 'Tetrasat'/'Tetra', 'GenoDive', 'SPAGeDi',
+ 'POPDIST', 'STRand', and binary presence/absence formats.  It can calculate 
+ pairwise distances between individuals using a stepwise mutation model or 
+ infinite alleles model, with or without taking ploidies and allele frequencies 
+ into account.  These distances can be used for the calculation of clonal 
+ diversity statistics or used for further analysis in R.  Allelic diversity 
+ statistics are also available.  polysat can assist the user in estimating the 
+ ploidy of samples, and it can estimate allele frequencies in 
+ populations, calculate pairwise Fst values based on those frequencies, and 
+ export allele frequencies to 'SPAGeDi' and 'adegenet'.  Functions are also 
+ included for assigning alleles to isoloci in cases where one pair of 
+ microsatellite primers amplifies alleles from two or more independently 
+ segregating isoloci.
+License: GPL-2
+URL: http://openwetware.org/wiki/Polysat
