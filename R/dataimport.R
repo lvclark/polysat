@@ -41,6 +41,7 @@ read.GeneMapper<-function(infiles, forceInteger=TRUE){
         }
     }
 
+    validObject(object)
     return(object)
 }
 
@@ -96,6 +97,7 @@ read.GenoDive <- function(infile){
             Genotype(object, s, L) <-thesealleles
         }
     }
+    validObject(object) # check validity, give errors if invalid
     # return the object
     return(object)
 }
@@ -197,6 +199,7 @@ read.Structure<-function(infile,ploidy,missingin=-9,sep="\t",markernames=TRUE,
         }
     }
 
+    validObject(object)
     # return extra columns and genotypes
     if(getexcols){
         return(list(ExtraCol=Extracol, Dataset=object))
@@ -281,7 +284,7 @@ read.SPAGeDi<-function(infile, allelesep="/", returnspatcoord=FALSE){
                 if(thesegenotypes[[L]][1] != Missing(object)){
                   Ploidies(object)[s,L] <- length(thesegenotypes[[L]])
                 }
-              
+
                 # remove zeros on the right
                 thesegenotypes[[L]]<-thesegenotypes[[L]][thesegenotypes[[L]] != 0]
                 # get unique alleles
@@ -315,7 +318,7 @@ read.SPAGeDi<-function(infile, allelesep="/", returnspatcoord=FALSE){
                 if(thesegenotypes[[L]][1] != Missing(object)){
                   Ploidies(object)[s,L] <- length(thesegenotypes[[L]])
                 }
-                
+
                 # remove zeros on the right
                 thesegenotypes[[L]]<-
                   thesegenotypes[[L]][thesegenotypes[[L]] != 0]
@@ -327,6 +330,7 @@ read.SPAGeDi<-function(infile, allelesep="/", returnspatcoord=FALSE){
         }
     }
     object <- reformatPloidies(object, output="collapse", na.rm=TRUE)
+    validObject(object)
 
     # return the genotypes, popinfo, ploidies, and spatial coordinates
     if(!returnspatcoord){
@@ -383,6 +387,7 @@ read.Tetrasat <- function(infile){
             Genotype(object, i,j)<-thesealleles
         }
     }
+    validObject(object)
     #return genotype and pop data
     return(object)
 }
@@ -436,6 +441,8 @@ read.ATetra<-function(infile){
         Genotype(object,as.integer(rawdata[[m]][4]),
                  as.integer(rawdata[[m]][2]))<-thesealleles
     }
+    # check validity
+    validObject(object)
     #return population data and genotypes
     return(object)
 }
@@ -502,6 +509,7 @@ read.POPDIST <- function(infiles){
     }
     object <- reformatPloidies(object, output="collapse")
 
+    validObject(object)
     return(object)
 }
 
@@ -537,6 +545,7 @@ read.STRand <- function(file, sep="\t", popInSam=TRUE){
   }
   Loci(genobject) <- gsub(".", "-", loci, fixed=TRUE)
 
+  validObject(genobject)
   # return the dataset
   return(genobject)
 }

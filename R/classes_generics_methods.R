@@ -282,6 +282,12 @@ setClass("genambig", representation(Genotypes="array"), contains="gendata",
           validity = function(object){
     failures <- character(0)
 
+    # do validity testing from gendata
+    gendatatest <- getValidity(getClassDef("gendata"))(object)
+    if(!identical(TRUE, gendatatest)){
+        failures <- c(failures, gendatatest)
+    }
+
     # check to see that the Genotypes list is two-dimensional
     if(length(dim(object@Genotypes)) != 2)
        failures <- c(failures, "Genotypes should be a two-dimensional list.")
@@ -340,6 +346,12 @@ setClass("genbinary", representation(Genotypes = "matrix", Present = "ANY",
          prototype(Present = as.integer(1), Absent = as.integer(0)),
          validity = function(object){
              failures <- character(0)
+
+             # do validity testing from gendata
+             gendatatest <- getValidity(getClassDef("gendata"))(object)
+             if(!identical(TRUE, gendatatest)){
+                 failures <- c(failures, gendatatest)
+             }
 
              # check that there is only one element for Present and Absent
              if(length(object@Present)!=1) failures <- c(failures,

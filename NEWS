@@ -9,6 +9,12 @@ with R 3.3.
 Validation function for gendata, as well as Samples and Loci replacement functions,
 edited to prevent samples and loci from having non-unique names.
 
+Validation functions for genambig and genbinary edited to call the validation function
+from gendata.
+
+All data import functions now call validObject immediately before returning the
+object, in order to confirm that genambig objects are formatted correctly.
+
 Changes in version 1.4
 
 Polysat 1.4 introduces a set of functions for assigning alleles to isoloci in
