@@ -1,6 +1,6 @@
 Package: polysat
 Version: 1.4-1
-Date: 2015-07-26
+Date: 2015-08-13
 Title: Tools for Polyploid Microsatellite Analysis
 Authors@R: person("Lindsay V.", "Clark", email = "lvclark@illinois.edu", role = c("aut", "cre"))
 Author: Lindsay V. Clark [aut, cre]
