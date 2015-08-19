@@ -266,6 +266,11 @@ setClass("gendata", representation(Description="character", Missing="ANY",
                  failures <- c(failures, "Not all locus names are unique.")
              }
 
+             # check to see that locus names do not contain periods
+             if(length(grep(".", names(object@Usatnts), fixed=TRUE)) > 0){
+                 failures <- c(failures, "Locus names may not contain periods.")
+             }
+
              # return TRUE or failures
              if(length(failures) == 0){
                  return(TRUE)
@@ -592,6 +597,10 @@ setReplaceMethod("Loci", "gendata", function(object, value){
     # check that all locus names are unique
     if(length(unique(value)) < length(value)){
         stop("Not all locus names are unique")
+    }
+    # check that locus names do not contain periods
+    if(length(grep(".", value, fixed=TRUE)) > 0){
+        stop("Locus names may not contain periods.")
     }
   # Replace Ploidies names if necessary
   if(is(object@Ploidies,"ploidylocus"))
