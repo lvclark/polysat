@@ -5,8 +5,7 @@ This is an R package for the analysis of microsatellite genotype data in polyplo
 is the development version.  The stable version of polysat is available on
 [CRAN](http://cran.r-project.org/web/packages/polysat/).
 
-I plan to make GitHub the main website for sharing information regarding polysat.  In the meantime, the old polysat
-webpage can be found at [OpenWetWare](http://openwetware.org/wiki/Polysat).
+To learn more about polysat, see the [wiki](https://github.com/lvclark/polysat/wiki).
 
 ## Citation
 
