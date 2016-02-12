@@ -471,7 +471,7 @@ setMethod("initialize",
         if(missing(loci)) loci <- c("loc1","loc2")
 
         # fix locus names so that they can be column headers if necessary
-        loci <- fixloci
+        loci <- fixloci(loci)
 
         # make a vector to contain repeat lengths
         usatnts <- as.integer(rep(NA, length(loci)))

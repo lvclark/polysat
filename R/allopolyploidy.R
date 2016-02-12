@@ -57,7 +57,7 @@ simAllopoly <- function(ploidy=c(2,2),
             freq[[i]] <- temp/sum(temp)
         }
     }
-    
+
     # errors
     if(!is.list(alleles) || !is.list(freq))
         stop("alleles and freq must each be a list of vectors")
@@ -186,7 +186,7 @@ alleleCorrelations <- function(object, samples=Samples(object), locus=1,
     }
     # make a second copy of assignment matrix for UPGMA
     clustmat2 <- clustmat1
-    
+
     ### how the function will normally work (all alleles variable): ###
     if(sum(rowSums(clustmat1)==0)>1){
 
@@ -260,11 +260,11 @@ alleleCorrelations <- function(object, samples=Samples(object), locus=1,
     myclust1 <- kres$cluster
         mytotss <- kres$totss
         mybss <- kres$betweenss
-        
-    # UPGMA clustering    
+
+    # UPGMA clustering
         myclust2 <- cutree(hclust(as.dist(mydist), method="average"),
                            k = n.subgen.adj)
-    
+
     # put clusters into matrix
     for(i in (n.subgen - n.subgen.adj + 1):n.subgen){
         clustmat1[i,alleles[myclust1==(i - n.subgen + n.subgen.adj)]] <- 1
@@ -420,7 +420,7 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
         num.error <- 0 # number of genotypes with scoring or meiotic error
         for(s in Samples(genobject)){
             gen <- as.character(Genotype(genobject, s, L)) # the genotype
- 
+
             # get 1/0 matrix for presence of these alleles in subgenomes
             subG <- G[,gen, drop=FALSE]
             # Start checking the genotype.
@@ -454,7 +454,7 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
                 }
             }
         } # end of Samples loop
-        
+
         # calculate the proportion inconsistent with allele assignments
         prop.error <- num.error/nind
 
@@ -562,7 +562,7 @@ catalanAlleles <- function(object, samples=Samples(object), locus=1,
         result <- list(locus=Loci(object), SGploidy=SGploidy,
     assignments="Homoplasy or null alleles: some genotypes have too few alleles")
     } else {
-        # set up results matrix 
+        # set up results matrix
         alleles <- .unal1loc(object, Samples(object), locus)
         G <- matrix(0, nrow=n.subgen, ncol=length(alleles),
                     dimnames=list(NULL, as.character(alleles)))
@@ -581,7 +581,7 @@ catalanAlleles <- function(object, samples=Samples(object), locus=1,
             Xrank <- sapply(X, function(x) sum(AlFreqInX[as.character(x)]))
             # sort genotypes, putting the most interconnected first
             X <- X[order(Xrank, decreasing=TRUE)]
-            
+
             # use the first one
             gen <- as.character(X[[1]])
             for(i in 1:n.subgen){
@@ -589,7 +589,7 @@ catalanAlleles <- function(object, samples=Samples(object), locus=1,
             }
             ToAssign <- alleles[colSums(G)==0] # alleles to assign
             Xa <- X[sapply(X, function(x) sum(ToAssign %in% x)==1)]
-            
+
             # try using the rest of the genotypes with n.subgen alleles
              while(length(Xa)>0){
                  gen <- as.character(Xa[[1]])
@@ -618,7 +618,7 @@ catalanAlleles <- function(object, samples=Samples(object), locus=1,
                     thissubgen <- rowSums(g) == min(rowSums(g))
                     thisallele <- dimnames(g)[[2]][colSums(g)==0]
                     G[thissubgen,thisallele] <- 1
-                    
+
                     # update list of unassigned alleles and useful genotypes
                     ToAssign <- alleles[colSums(G)==0]
                     Xa <- X[sapply(X, function(x) (sum(ToAssign %in% x)==1 &&
@@ -742,7 +742,7 @@ mergeAlleleAssignments <- function(x){
                     toremove <- c(toremove,i) # done with this matrix
                 }
                 # get rid of matrices that have already been used
-                if(length(toremove)>0) A <- A[-toremove] 
+                if(length(toremove)>0) A <- A[-toremove]
             }
         }
         results[[L]] <- list(locus=locus, SGploidy=thisSGp,
@@ -800,7 +800,7 @@ recodeAllopoly <- function(object, x, allowAneuploidy=TRUE,
     # set up new object
     # duplicate the loci that should be duplicated
     newloci <- paste(rep(lociA, times=nSG),unlist(lapply(nSG, function(y) 1:y)),
-                     sep="-")
+                     sep="_")
     extraloci <- loci[!loci %in% lociA]
     newloci <- c(newloci, extraloci)
     result <- new("genambig", samples, newloci)
@@ -812,7 +812,7 @@ recodeAllopoly <- function(object, x, allowAneuploidy=TRUE,
                              ncol=sum(!newloci %in% extraloci),
                              byrow=TRUE)
     # transfer ploidy data for loci that aren't being recoded
-    if(length(extraloci) > 0){ 
+    if(length(extraloci) > 0){
         if(is(object@Ploidies, "ploidymatrix")){
             newploidies <- cbind(newploidies,
                                  Ploidies(object, samples=samples,
@@ -841,7 +841,7 @@ recodeAllopoly <- function(object, x, allowAneuploidy=TRUE,
     # start assignments
     for(L in loci){
         # get positions of isoloci in new object
-        Lindex <- which(sapply(strsplit(newloci, "-"), function(y) y[1]) == L)
+        Lindex <- which(sapply(strsplit(newloci, "_"), function(y) y[1]) == L)
         # copy over microsat repeat lengths
         Usatnts(result)[Lindex] <- Usatnts(object)[L]
         if(length(Lindex)==1){ # for loci with no assignments:
@@ -856,7 +856,7 @@ recodeAllopoly <- function(object, x, allowAneuploidy=TRUE,
                                  is.numeric, USE.NAMES=FALSE))
             # If there are any alleles that are unassigned, make them
             # fully homoplasious.
-            AL <- A[[L]]  
+            AL <- A[[L]]
             allelesL <- as.character(.unal1loc(object, xsamples, L))
             allelesUA <- allelesL[!allelesL %in% dimnames(AL)[[2]]]
             if(length(allelesUA)>0){
@@ -934,7 +934,7 @@ recodeAllopoly <- function(object, x, allowAneuploidy=TRUE,
             }
             # convert zero-length genotypes to missing data
             alBySG[nAl==0] <- Missing(result)
-            
+
             # add genotypes to genambig object
             Genotypes(result, samples=s,loci=Lindex) <- alBySG
         } # end of sample loop
@@ -942,6 +942,6 @@ recodeAllopoly <- function(object, x, allowAneuploidy=TRUE,
     } # end of locus loop
     return(result)
 } # end of function
-                           
+
 # polysat should have its own theme song to the tune of "Smelly Cat" from
 # Friends.
