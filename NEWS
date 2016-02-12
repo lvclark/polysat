@@ -3,6 +3,8 @@ Changes in version 1.4-2
 gendata validity function and Loci replacement method edited to prevent locus names
 from containing periods.
 
+deSilvaFreq edited to be compatible with ploidymatrix format.
+
 Changes in version 1.4-1
 
 Documentation for freq.to.genpop and gendata.to.genind updated to be compatible with
