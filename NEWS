@@ -1,7 +1,9 @@
 Changes in version 1.4-2
 
-gendata validity function and Loci replacement method edited to prevent locus names
+gendata validity function edited to prevent locus names
 from containing periods.
+
+fixloci function added to clean up locus names so that they can be column headers.
 
 deSilvaFreq edited to be compatible with ploidymatrix format.
 

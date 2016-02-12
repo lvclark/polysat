@@ -454,6 +454,13 @@ setGeneric("Present<-", function(object, value) standardGeneric("Present<-"))
 setGeneric("Absent", function(object) standardGeneric("Absent"))
 setGeneric("Absent<-", function(object, value) standardGeneric("Absent<-"))
 
+# function for making locus names compatible as column headers
+fixloci <- function(loci){
+    loci <- make.names(loci)
+    loci <- gsub(".", "", loci, fixed = TRUE)
+    return(loci)
+}
+
 #### gendata methods
 # initialization for a gendata object
 setMethod("initialize",
@@ -462,6 +469,9 @@ setMethod("initialize",
     {
         if(missing(samples)) samples <- c("ind1","ind2")
         if(missing(loci)) loci <- c("loc1","loc2")
+
+        # fix locus names so that they can be column headers if necessary
+        loci <- fixloci
 
         # make a vector to contain repeat lengths
         usatnts <- as.integer(rep(NA, length(loci)))
@@ -594,14 +604,16 @@ setMethod("Loci", signature(object = "gendata", usatnts = "numeric", ploidies="n
 
 ## Replacement method for locus names
 setReplaceMethod("Loci", "gendata", function(object, value){
+    # fix names so that they can be column headers if necessary
+    value <- fixloci(value)
     # check that all locus names are unique
     if(length(unique(value)) < length(value)){
         stop("Not all locus names are unique")
     }
     # check that locus names do not contain periods
-    if(length(grep(".", value, fixed=TRUE)) > 0){
-        stop("Locus names may not contain periods.")
-    }
+#    if(length(grep(".", value, fixed=TRUE)) > 0){
+#        stop("Locus names may not contain periods.")
+#    }
   # Replace Ploidies names if necessary
   if(is(object@Ploidies,"ploidylocus"))
     names(object@Ploidies@pld) <- value
