@@ -5,7 +5,7 @@
 simpleFreq <- function(object, samples=Samples(object), loci=Loci(object)){
   # subset the object to avoid a lot of indexing later in the function
   object <- object[samples,loci]
-  
+
     # we need PopInfo and Ploidies; check for these
     if(!all(!is.na(PopInfo(object)))){
         cat("PopInfo needed for samples:",
@@ -53,7 +53,7 @@ simpleFreq <- function(object, samples=Samples(object), loci=Loci(object)){
     } else { # or if loci have different ploidies
       freqtable <- data.frame(row.names=pops)
     }
-    
+
     # loop to get frequency data
     for(L in loci){
         # get all samples without missing data at this locus
@@ -274,9 +274,9 @@ deSilvaFreq <- function(object, self,
     if("genbinary" %in% class(object)) object <- genbinary.to.genambig(object,
                                                                        samples,
                                                                        loci)
-    
+
     # get the ploidy (m2), and check that there is only one and that it is even
-    m2 <- unique(Ploidies(object,samples,loci))
+    m2 <- unique(as.vector(Ploidies(object,samples,loci)))
     if(length(m2) != 1)
       stop("Only one ploidy allowed.  Try running subsets of data one ploidy at a time.")
     if(is.na(m2)) stop("Function requires information in Ploidies slot.")
