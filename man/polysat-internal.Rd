@@ -5,12 +5,16 @@
 \alias{.ranmul}
 \alias{.selfmat}
 \alias{.unal1loc}
+\alias{fixloci}
 \title{Internal Functions in polysat}
 \description{
-  The internal functions .G, .indexg, .genlist, .ranmul, and .selfmat
+  The internal functions \code{.G}, \code{.indexg}, \code{.genlist},
+  \code{.ranmul}, and \code{.selfmat}
   are used for calculating
   genotype probabilities under partial selfing.  The internal function
-  .unal1loc finds all unique alleles at a single locus.
+  \code{.unal1loc} finds all unique alleles at a single locus.  The internal
+  function \code{fixloci} converts locus names to a format that will be
+  compatible as column headers for allele frequency tables.
 }
 \usage{
 .G(q, n)
@@ -19,6 +23,7 @@
 .ranmul(ng, na1, ag, m2)
 .selfmat(ng, na1, ag, m2)
 .unal1loc(object, samples, locus)
+fixloci(loci)
 }
 \arguments{
   \item{q}{Integer.}
@@ -32,7 +37,9 @@
   \item{object}{A \code{"genambig"} object.}
   \item{samples}{Optional, a numeric or character vector indicating
     which samples to use.}
-  \item{locus}{A character string or number indicating which locus to use.}
+  \item{locus}{A character string or number indicating which locus to
+    use.}
+  \item{loci}{A character vector of locus names.}
 }
 \value{
   \code{.G} returns
@@ -58,6 +65,8 @@
 
   \code{.unal1loc} returns a vector containing all unique alleles, not
   including \code{Missing(object)}.
+
+  \code{fixloci} returns a character vector of corrected locus names.
 }
 
 \references{
