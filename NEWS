@@ -4,6 +4,11 @@ gendata validity function edited to prevent locus names
 from containing periods.
 
 fixloci function added to clean up locus names so that they can be column headers.
+This has the consequence that characters such as spaces, hyphens, and parentheses
+will be automatically removed from locus names.  Underscores are allowed.
+
+Genotype and Genotypes assignment methods for the "genambig" class edited to 
+prevent empty vectors or NA values from being assigned to genotypes.
 
 deSilvaFreq edited to be compatible with ploidymatrix format.
 

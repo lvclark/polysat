@@ -23,7 +23,7 @@
 .ranmul(ng, na1, ag, m2)
 .selfmat(ng, na1, ag, m2)
 .unal1loc(object, samples, locus)
-fixloci(loci)
+fixloci(loci, warn = TRUE)
 }
 \arguments{
   \item{q}{Integer.}
@@ -40,6 +40,8 @@ fixloci(loci)
   \item{locus}{A character string or number indicating which locus to
     use.}
   \item{loci}{A character vector of locus names.}
+  \item{warn}{Boolean indicating whether a warning should be issued if 
+  locus names are changed.}
 }
 \value{
   \code{.G} returns

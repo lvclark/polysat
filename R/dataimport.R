@@ -36,7 +36,7 @@ read.GeneMapper<-function(infiles, forceInteger=TRUE){
                 untrimmedgenotype<-locusdata[[m]][j,alleleindex]
                 #Gives an error if there are loci or samples not in the arguments
                 Genotype(object,locusdata[[m]][j, "Sample.Name"],
-                              fixloci(locusdata[[m]][j, "Marker"]))<-
+                              fixloci(locusdata[[m]][j, "Marker"], warn = FALSE))<-
                     unique(untrimmedgenotype[!is.na(untrimmedgenotype)])
         }
     }
@@ -158,11 +158,11 @@ read.Structure<-function(infile,ploidy,missingin=-9,sep="\t",markernames=TRUE,
                 thesealleles<-thesealleles[thesealleles != missingin]
                 # get ploidy
                 if(ploidyoutput!="one"){
-                    Ploidies(object)[s,fixloci(L)] <-
+                    Ploidies(object)[s,fixloci(L, warn = FALSE)] <-
                        length(rawalleles[rawalleles != missingin])
                 }
             }
-            Genotype(object,s,fixloci(L))<-thesealleles
+            Genotype(object,s,fixloci(L, warn = FALSE))<-thesealleles
         }
         # get popinfo
         if(!is.na(popinfocol)){
@@ -282,7 +282,7 @@ read.SPAGeDi<-function(infile, allelesep="/", returnspatcoord=FALSE){
 
                 # get ploidy
                 if(thesegenotypes[[L]][1] != Missing(object)){
-                  Ploidies(object)[s,fixloci(L)] <- length(thesegenotypes[[L]])
+                  Ploidies(object)[s,fixloci(L, warn = FALSE)] <- length(thesegenotypes[[L]])
                 }
 
                 # remove zeros on the right
@@ -316,7 +316,7 @@ read.SPAGeDi<-function(infile, allelesep="/", returnspatcoord=FALSE){
 
                 # get ploidy
                 if(thesegenotypes[[L]][1] != Missing(object)){
-                  Ploidies(object)[s,fixloci(L)] <- length(thesegenotypes[[L]])
+                  Ploidies(object)[s,fixloci(L, warn = FALSE)] <- length(thesegenotypes[[L]])
                 }
 
                 # remove zeros on the right
@@ -537,9 +537,9 @@ read.STRand <- function(file, sep="\t", popInSam=TRUE){
       thisgen <- strsplit(mydata[s,L], split="*", fixed=TRUE)[[1]]
       thisgen <- unique(as.integer(strsplit(thisgen, split="/")[[1]]))
       if(thisgen[1]==0){
-        Genotype(genobject, s, fixloci(L)) <- Missing(genobject)
+        Genotype(genobject, s, fixloci(L, warn = FALSE)) <- Missing(genobject)
       } else {
-        Genotype(genobject, s, fixloci(L)) <- thisgen
+        Genotype(genobject, s, fixloci(L, warn = FALSE)) <- thisgen
       }
     }
   }
