@@ -37,7 +37,9 @@ whether two alleles are significantly correlated.
 }
   \item{n.subgen}{
 The number of subgenomes (number of isoloci) for this locus.  This would
-be two for an allotetraploid or three for an allohexaploid.
+be \code{2} for an allotetraploid or \code{3]} for an allohexaploid.  For an 
+allo-octoploid, the value would be \code{2} if there were two tetraploid 
+subgenomes, or \code{4} if there were four diploid subgenomes.
 }
   \item{n.start}{
 Integer, passed directly to the \code{nstart} argument of the R base
@@ -51,7 +53,8 @@ most cases.
 }
 \item{SGploidy}{
   The ploidy of each subgenome (each isolocus).  This is \code{2} for an
-    allotetraploid or allohexaploid, or \code{4} for an allo-octaploid with
+    allotetraploid, an allohexaploid, or an allo-octoploid with four tetraploid 
+    subgenomes, or \code{4} for an allo-octoploid with
     two tetraploid genomes.
   }
   \item{null.weight}{
