@@ -751,6 +751,152 @@ mergeAlleleAssignments <- function(x){
     return(results)
 }
 
+# function to plot results of K-means clustering, to get a sense of clustering quality.
+# takes 2D array of results of AlleleCorrelations; locus x population
+plotSSAllo <- function(AlCorrArray){
+  loci <- dimnames(AlCorrArray)[[1]] # locus names
+  pops <- dimnames(AlCorrArray)[[2]] # population names
+  n.subgen <- dim(AlCorrArray[[1,1]]$Kmeans.groups)[1] # number of isoloci
+  
+  # get array of sums of squares ratios, to evaluate clustering qualities
+  SSarray <- array(sapply(AlCorrArray, FUN = function(x) x$betweenss/x$totss), dim = dim(AlCorrArray),
+                   dimnames = list(loci, pops))
+  # get array of index of evenness of distribution of alleles among isoloci
+  Earray <- array(sapply(AlCorrArray, FUN = function(x){
+    propAl <- rowMeans(x$Kmeans.groups) # proportion of alleles belonging to each isolocus
+    return(1 - sum(propAl^2))
+  }), dim = dim(AlCorrArray), dimnames = list(loci, pops))
+  
+  # colors for populations
+  if(length(pops) == 1){  # black and white if one pop
+    popCol = "black"
+    bgCol = "white"
+  } else {                # colors for multiple pops, with grey background for visibility
+    bgCol = "lightgrey"
+    if(length(pops) == 2){
+      popCol = c("red", "blue")
+    } else {
+      popCol = rainbow(length(pops))
+    }
+  }
+  
+  # set background color
+  oldBg = par()$bg
+  par(bg = bgCol)
+  
+  # determine plot range
+  maxE <- 1 - n.subgen * 1/n.subgen^2 # maximum evenness
+  # maximum number of alleles
+  maxNalleles <- max(sapply(AlCorrArray, FUN = function(x) dim(x$Kmeans.groups)[2]))
+  # minimum evenness
+  minE <- 1 - (n.subgen - 1) * 1/maxNalleles^2 - ((maxNalleles - n.subgen + 1)/maxNalleles)^2
+  # sums of squares, minimum and maximum
+  minSS <- 0
+  maxSS <- 1
+  # xlim and ylim
+  if(length(pops) == 1){
+    Xlim <- c(minSS, maxSS)
+  } else { # leave room for legend if there are multiple pops
+    Xlim <- c(minSS, maxSS + (maxSS - minSS)/4)
+  }
+  Ylim <- c(minE, maxE)
+  
+  # set up plot
+  plot(as.vector(SSarray), as.vector(Earray), col = bgCol, main = "K-means results",
+       xlab = "Sums of squares between isoloci/total sums of squares",
+       ylab = "Evenness of number of alleles among isoloci", xlim = Xlim, ylim = Ylim)
+  # text to indicate good vs. bad
+  text(minSS, minE, labels = "Low quality allele clustering", adj = 0)
+  text(maxSS, maxE, labels = "High quality allele clustering", adj = 1)
+  
+  # plot all loci by population
+  for(p in 1:length(pops)){
+    text(SSarray[,p], Earray[,p], labels = loci, col = popCol[p])
+  }
+  
+  # add legend if there are multiple populations
+  if(length(pops) > 1){
+    legend(maxSS, 0.75 * (Ylim[2] - Ylim[1]) + Ylim[1], legend = pops,
+           text.col = popCol, title = "Populations", title.col = "black")
+  }
+  
+  # restore background color
+  par(bg = oldBg)
+  
+  # return the two arrays invisibly
+  return(invisible(list(ssratio = SSarray, evenness = Earray, 
+                        max.evenness = maxE, min.evenness = minE)))
+} # end plotSSAllo function
+
+# function to process an entire dataset and find optimal parameters 
+# for testAlGroups
+# plotsfile can be NULL
+# usePops: should allele assignments be performed separately by PopInfo in the object?
+processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(object),
+                               n.subgen = 2, SGploidy = 2, n.start = 50, alpha = 0.05,
+                               parameters = data.frame(tolerance     = c(0.05, 0.05, 0.05),
+                                                       rare.al.check = c(0.2,  0,    0.2),
+                                                       null.weight   = c(0.5,  0.5,  0)),
+                               plotsfile = "alleleAssignmentPlots.pdf", usePops = FALSE){
+  if(!all(samples %in% Samples(object))){
+    stop("Sample names in samples and object do not match.")
+  }
+  if(!all(loci %in% Loci(object))){
+    stop("Locus names in loci and object do not match.")
+  }
+  if(!all(c("tolerance", "rare.al.check", "null.weight") %in% names(parameters))){
+    stop("Parameters data frame needs column headers tolerance, rare.al.check, and null.weight.")
+  }
+  
+  object <- object[samples,]
+  nparam <- dim(parameters)[1] # number of parameter sets
+  
+  # set up population groups
+  if(usePops){
+    popinfo <- PopInfo(object)
+    if(any(is.na(popinfo))){
+      stop("PopInfo needed in object if usePops = TRUE.")
+    }
+    popnamesTemp <- PopNames(object)[popinfo]
+    
+    allpops <- unique(popnamesTemp)          # names of all populations
+    popinfo <- match(popnamesTemp, allpops)  # numbers for inviduals, corresponding to those names
+    npops <- length(allpops)                 # number of populations
+  } else {
+    popinfo <- rep(1, length(samples))
+    allpops <- "AllInd"
+    npops <- 1
+  }
+  
+  # set up arrays to contain results
+  # results of alleleCorrelations; 2D array, locus x population
+  CorrResults <- array(list(), dim = c(length(loci), npops), 
+                       dimnames = list(loci, allpops))
+  # results of testAlGroups; 3D array, locus x population x parameter set
+  TAGresults <- array(list(), dim = c(length(loci), npops, nparam),
+                     dimnames = list(loci, allpops, NULL))
+  
+  for(p in 1:npops){  # loop through populations
+    thesesamples <- samples[popinfo == p] # samples in this population
+    for(L in loci){  # loop through loci
+      CorrResults[[L, p]] <- alleleCorrelations(object, samples = thesesamples, locus = L,
+                                                alpha = alpha, n.subgen = n.subgen, n.start = n.start)
+      for(pm in 1:nparam){
+        TAGresults [[L, p, pm]] <- testAlGroups(object, CorrResults[[L, p]], SGploidy = SGploidy,
+                                                samples = thesesamples, null.weight = parameters$null.weight[pm],
+                                                tolerance = parameters$tolerance[pm], rare.al.check = parameters$rare.al.check[pm])
+      } # end of parameter set loop
+    } # end of locus loop
+  } # end of populations loop
+  
+  ## plots: distribution of betweenss/totss, heatmaps
+  
+  
+  # choose best assignments for each locus
+  
+  return(list(AlCorrArray = CorrResults, TAGarray = TAGresults))
+} # end of processDatasetAllo function
+
 # function to rewrite genambig object using allele assignments
 # object = genambig or genbinary object
 # x = list of results (e.g. list of catalanAlleles outputs)
