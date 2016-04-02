@@ -251,7 +251,7 @@ Lindsay V. Clark
 
 \seealso{
   \code{\link{recodeAllopoly}}, \code{\link{mergeAlleleAssignments}},
-  \code{\link{catalanAlleles}}
+  \code{\link{catalanAlleles}}, \code{\link{processDatasetAllo}}
 }
 \examples{
 # randomly generate example data for an allotetraploid

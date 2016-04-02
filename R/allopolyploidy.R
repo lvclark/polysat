@@ -767,6 +767,10 @@ plotSSAllo <- function(AlCorrArray){
     return(1 - sum(propAl^2))
   }), dim = dim(AlCorrArray), dimnames = list(loci, pops))
   
+  # identify loci with positive allele correlations
+  posCor <- sapply(AlCorrArray, FUN = function(x) any(x$significant.pos, na.rm = TRUE))
+  posCor <- array(posCor, dim = dim(AlCorrArray), dimnames = list(loci, pops))
+  
   # colors for populations
   if(length(pops) == 1){  # black and white if one pop
     popCol = "black"
@@ -811,7 +815,7 @@ plotSSAllo <- function(AlCorrArray){
   
   # plot all loci by population
   for(p in 1:length(pops)){
-    text(SSarray[,p], Earray[,p], labels = loci, col = popCol[p])
+    text(SSarray[,p], Earray[,p], labels = loci, col = popCol[p], font = ifelse(posCor[,p], 3, 1))
   }
   
   # add legend if there are multiple populations
@@ -823,10 +827,34 @@ plotSSAllo <- function(AlCorrArray){
   # restore background color
   par(bg = oldBg)
   
-  # return the two arrays invisibly
+  # return the three arrays invisibly
   return(invisible(list(ssratio = SSarray, evenness = Earray, 
-                        max.evenness = maxE, min.evenness = minE)))
+                        max.evenness = maxE, min.evenness = minE,
+                        posCor = posCor)))
 } # end plotSSAllo function
+
+# for one population, plot the proportion of alleles that are homoplasious for
+# each locus and parameter set.
+plotHomoplasious <- function(propHomoplasiousMat, popname = "AllInd", col = grey.colors(12)[12:1]){
+  if(length(dim(propHomoplasiousMat)) == 3){
+    # index by population if not already done
+    propHomoplasiousMat <- propHomoplasiousMat[,popname,]
+  }
+  if(length(dim(propHomoplasiousMat)) != 2){
+    stop("propHomoplasiousMat must have two dimensions.")
+  }
+  nloc <- dim(propHomoplasiousMat)[1]
+  nparam <- dim(propHomoplasiousMat)[2]
+  image(1:nparam, 1:nloc, t(propHomoplasiousMat), xlab = "Parameter sets", ylab = "Loci",
+        main = popname, axes = FALSE, col = col, zlim = c(0,1))
+  axis(1, at = 1:nparam)
+  axis(2, at = 1:nloc, labels = dimnames(propHomoplasiousMat)[[1]])
+  
+  # highlight the best parameter set for each locus
+  for(i in 1:nloc){
+    text(which.min(propHomoplasiousMat[i,]),i, "best")
+  }
+}
 
 # function to process an entire dataset and find optimal parameters 
 # for testAlGroups
@@ -889,12 +917,58 @@ processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(ob
     } # end of locus loop
   } # end of populations loop
   
-  ## plots: distribution of betweenss/totss, heatmaps
+  # get the proportion of alleles that are homoplasious for each locus, population, and parameter set
+  propHomoplasious <- sapply(TAGresults, FUN = function(x){mean(colSums(x$assignments) > 1)})
+  propHomoplasious <- array(propHomoplasious, dim = dim(TAGresults), dimnames = dimnames(TAGresults))
   
+  # merge allele assignments across populations within parameter sets
+  if(usePops){
+    mergedAssignments <- array(list(), dim = c(length(loci), nparam),
+                               dimnames = list(loci, NULL))
+    for(L in loci){
+      for(pm in 1:nparam){
+        mergedAssignments[L,pm] <- mergeAlleleAssignments(TAGresults[L,,pm])
+      }
+    }
+    
+    # get the proportion of homoplasious alleles for each merged assignment set
+    propHomoplMerged <- sapply(mergedAssignments, FUN = function(x){
+      if(is.matrix(x$assignments)){
+        return(mean(colSums(x$assignments) > 1))
+      } else {  # if merged assignments were unresolvable
+        return(1)
+      }
+    })
+    propHomoplMerged <- array(propHomoplMerged, dim = dim(mergedAssignments),
+                              dimnames = dimnames(mergedAssignments))
+  } else {
+    mergedAssignments <- TAGresults[,1,]
+    propHomoplMerged <- propHomoplasious[,1,]
+  }
+  
+  ## plots: distribution of betweenss/totss, heatmaps
+  pdf(plotsfile) # open connection to PDF file for making plots
+  plotSS <- plotSSAllo(CorrResults) # make plot of sums-of-squares ratio vs. allele distribution evenness
+  # heatmaps
+  for(L in loci){
+    for(p in allpops){
+      heatmap(CorrResults[[L,p]]$heatmap.dist, main = paste(L, p, sep = ", "))
+    }
+  }
+  for(p in allpops){
+    plotHomoplasious(propHomoplasious[,p,], popname = p)
+  }
+  if(usePops){
+    plotHomoplasious(propHomoplMerged, popname = "Merged across populations")
+  }
+  dev.off()      # close connection to PDF file
   
   # choose best assignments for each locus
+  # consider not only looking at the amount of homoplasy, but running recodeAllopoly and looking at the amount of missing data.
   
-  return(list(AlCorrArray = CorrResults, TAGarray = TAGresults))
+  return(list(AlCorrArray = CorrResults, TAGarray = TAGresults, plotSS = plotSS,
+              propHomoplasious = propHomoplasious, mergedAssignments = mergedAssignments,
+              propHomoplMerged = propHomoplMerged))
 } # end of processDatasetAllo function
 
 # function to rewrite genambig object using allele assignments

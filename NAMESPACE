@@ -11,7 +11,8 @@ export(Bruvo.distance,
        meandistance.matrix2, assignClones, Shannon, Simpson, genotypeDiversity,
        Bruvo2.distance, reformatPloidies,alleleDiversity,read.STRand,
 gendata.to.genind, Simpson.var, simAllopoly, catalanAlleles, alleleCorrelations,
-       testAlGroups, mergeAlleleAssignments, recodeAllopoly)
+       testAlGroups, mergeAlleleAssignments, recodeAllopoly, plotSSAllo,
+       processDatasetAllo)
 exportMethods(estimatePloidy, Samples, "Samples<-", Loci, "Loci<-", PopInfo,
               "PopInfo<-", PopNames, "PopNames<-", Ploidies, "Ploidies<-",
               Usatnts,
