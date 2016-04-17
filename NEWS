@@ -1,5 +1,8 @@
 Changes in version 1.4-2
 
+The functions processDatasetAllo, plotSSAllo, and plotParamHeatmap have been added
+to simplify the workflow when using alleleCorrelations and testAlGroups.
+
 gendata validity function edited to prevent locus names
 from containing periods.
 

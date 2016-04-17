@@ -834,25 +834,27 @@ plotSSAllo <- function(AlCorrArray){
 } # end plotSSAllo function
 
 # for one population, plot the proportion of alleles that are homoplasious for
-# each locus and parameter set.
-plotHomoplasious <- function(propHomoplasiousMat, popname = "AllInd", col = grey.colors(12)[12:1]){
-  if(length(dim(propHomoplasiousMat)) == 3){
+# each locus and parameter set.  Can also be used to plot missing data rate for
+# each parameter set and locus.
+plotParamHeatmap <- function(propMat, popname = "AllInd", col = grey.colors(12)[12:1],
+                             main = ""){
+  if(length(dim(propMat)) == 3){
     # index by population if not already done
-    propHomoplasiousMat <- propHomoplasiousMat[,popname,]
+    propMat <- propMat[,popname,]
   }
-  if(length(dim(propHomoplasiousMat)) != 2){
-    stop("propHomoplasiousMat must have two dimensions.")
+  if(length(dim(propMat)) != 2){
+    stop("propMat must have two dimensions.")
   }
-  nloc <- dim(propHomoplasiousMat)[1]
-  nparam <- dim(propHomoplasiousMat)[2]
-  image(1:nparam, 1:nloc, t(propHomoplasiousMat), xlab = "Parameter sets", ylab = "Loci",
-        main = popname, axes = FALSE, col = col, zlim = c(0,1))
+  nloc <- dim(propMat)[1]
+  nparam <- dim(propMat)[2]
+  image(1:nparam, 1:nloc, t(propMat), xlab = "Parameter sets", ylab = "Loci",
+        main = paste(main,popname), axes = FALSE, col = col, zlim = c(0,1))
   axis(1, at = 1:nparam)
-  axis(2, at = 1:nloc, labels = dimnames(propHomoplasiousMat)[[1]])
+  axis(2, at = 1:nloc, labels = dimnames(propMat)[[1]])
   
   # highlight the best parameter set for each locus
   for(i in 1:nloc){
-    text(which.min(propHomoplasiousMat[i,]),i, "best")
+    text(which.min(propMat[i,]),i, "best")
   }
 }
 
@@ -946,6 +948,63 @@ processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(ob
     propHomoplMerged <- propHomoplasious[,1,]
   }
   
+  # find the best assignment set for each locus
+  bestpm <- integer(length(loci)) # index of best parameter set for each locus
+  names(bestpm) <- loci
+  # matrix to hold missing data rate when data are recoded
+  missRate <- matrix(NA, nrow = length(loci), ncol = nparam, dimnames = list(loci, NULL))
+  for(L in loci){
+    theseAssign <- list() # contain all unique assignments
+    theseAssignIndex <- integer(nparam) # for each parameter set, which unique assignment goes with it
+    # find all unique assignments
+    for(pm in 1:nparam){
+      if(!is.matrix(mergedAssignments[[L,pm]]$assignments)) next # skip if unresolvable
+      
+      thisAssign <- data.frame(mergedAssignments[[L,pm]]$assignments)
+      # sort the assignments
+      thisAssign <- thisAssign[do.call(order, thisAssign),]
+      # order the row names for consistency
+      row.names(thisAssign) <- 1:dim(thisAssign)[1] 
+      
+      # check if it should be added to list of uniques assignments, and do so
+      matchUn <- sapply(theseAssign, function(x) identical(x, thisAssign))
+      if(length(theseAssign) == 0 || all(!matchUn)){
+        theseAssign[[length(theseAssign) + 1]] <- thisAssign
+        theseAssignIndex[pm] <- 1
+      } else {
+        theseAssignIndex[pm] <- which(matchUn)
+      }
+    }
+    
+    if(all(theseAssignIndex == 0)) next # skip whole locus if totally unresolvable across pops
+    
+    # test recoding the data using each parameter set
+    for(a in 1:length(theseAssign)){
+      # turn assignments back into matrix
+      amat <- as.matrix(theseAssign[[a]])
+      dimnames(amat)[[2]] <- gsub("X", "", dimnames(amat)[[2]])
+      # recode genotypes
+      r <- recodeAllopoly(object, list(list(locus = L, SGploidy = SGploidy,
+                                            assignments = amat)),
+                           allowAneuploidy = FALSE, loci = L)
+      # proportion of genotypes present in the original that are missing now
+      oldMissing <- sum(isMissing(object, loci = L))
+      miss <- (sum(isMissing(r))/n.subgen - oldMissing)/(length(samples) - oldMissing)
+      # add to matrix for all matching parameter sets
+      missRate[L, which(theseAssignIndex == a)] <- miss
+    }
+    # identify the best set using missing data rate and amount of homoplasy
+    bestMiss <- which(missRate[L,] == min(missRate[L,], na.rm = TRUE))
+    bestpm[L] <- bestMiss[which.min(propHomoplMerged[L, bestMiss])]
+  } # end of locus loop for recoding and picking best parameter set
+  
+  # make a list of the best assignments
+  bestpm[bestpm == 0] <- 1 # for non-resolvable loci
+  bestAssign <- list()
+  for(l in 1:length(loci)){
+    bestAssign[[l]] <- mergedAssignments[[l, bestpm[l]]]
+  }
+  
   ## plots: distribution of betweenss/totss, heatmaps
   pdf(plotsfile) # open connection to PDF file for making plots
   plotSS <- plotSSAllo(CorrResults) # make plot of sums-of-squares ratio vs. allele distribution evenness
@@ -956,19 +1015,17 @@ processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(ob
     }
   }
   for(p in allpops){
-    plotHomoplasious(propHomoplasious[,p,], popname = p)
+    plotParamHeatmap(propHomoplasious[,p,], popname = p, main = "Proportion homoplasious loci:")
   }
   if(usePops){
-    plotHomoplasious(propHomoplMerged, popname = "Merged across populations")
+    plotParamHeatmap(propHomoplMerged, popname = "Merged across populations", main = "Proportion homoplasious loci:")
   }
+  plotParamHeatmap(missRate, popname = "All Individuals", main = "Missing data after recoding:")
   dev.off()      # close connection to PDF file
-  
-  # choose best assignments for each locus
-  # consider not only looking at the amount of homoplasy, but running recodeAllopoly and looking at the amount of missing data.
   
   return(list(AlCorrArray = CorrResults, TAGarray = TAGresults, plotSS = plotSS,
               propHomoplasious = propHomoplasious, mergedAssignments = mergedAssignments,
-              propHomoplMerged = propHomoplMerged))
+              propHomoplMerged = propHomoplMerged, missRate = missRate, bestAssign = bestAssign))
 } # end of processDatasetAllo function
 
 # function to rewrite genambig object using allele assignments

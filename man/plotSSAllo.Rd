@@ -1,6 +1,6 @@
 \name{plotSSAllo}
 \alias{plotSSAllo}
-\alias{plotHomoplasious}
+\alias{plotParamHeatmap}
 \alias{processDatasetAllo}
 \title{
 Perform Allele Assignments across Entire Dataset
@@ -8,14 +8,15 @@ Perform Allele Assignments across Entire Dataset
 \description{
 \code{processDatasetAllo} runs \code{\link{alleleCorrelations}} on every locus in 
 a \code{"\linkS4class{genambig}"} object, then runs \code{\link{testAlGroups}} on every locus
-using several user-specified parameter sets.  % additional functions; picking parameters, plots
+using several user-specified parameter sets.  It chooses a single best set of allele assignments
+for each locus, and produces plots to help the user evaluate assignment quality.
 \code{plotSSAllo} assists the user in evaluating the quality of allele assignments by plotting
-the results of K-means clustering.  \code{plotHomoplasious} assists the user in choosing the
+the results of K-means clustering.  \code{plotParamHeatmap} assists the user in choosing the
 best parameter set for \code{testAlGroups} for each locus.
 }
 \usage{
 plotSSAllo(AlCorrArray)
-plotHomoplasious(propHomoplasiousMat, popname = "AllInd", col = grey.colors(12)[12:1])
+plotParamHeatmap(propMat, popname = "AllInd", col = grey.colors(12)[12:1], main = "")
 processDatasetAllo(object, samples = Samples(object), loci = Loci(object),
                    n.subgen = 2, SGploidy = 2, n.start = 50, alpha = 0.05,
                    parameters = data.frame(tolerance     = c(0.05, 0.05, 0.05),
@@ -30,13 +31,15 @@ A two-dimensional list, where each item in the list is the output of \code{allel
 The first dimension represents loci, and the second dimension represents populations.  Both 
 dimensions are named.  This is the \code{$AlCorrArray} output of \code{processDatasetAllo}.
 }
-\item{propHomoplasiousMat}{A two-dimensional array, with loci in the first dimension and parameter sets in the
-second dimension, indicating the proportion of alleles that were found to be homoplasious by \code{testAlGroups}.
-This is the \code{$propHomoplasious} output of \code{processDatasetAllo}, indexed by a single population.  If a 
+\item{propMat}{A two-dimensional array, with loci in the first dimension and parameter sets in the
+second dimension, indicating the proportion of alleles that were found to be homoplasious by \code{testAlGroups}
+or the proportion of genotypes that could not be recoded using a given set of allele assignments.
+This can be the \code{$propHomoplasious} output of \code{processDatasetAllo}, indexed by a single population.  If a 
 three-dimensional array is provided, it will be indexed in the second dimension by \code{popname}.  The 
-\code{$propHomoplMerged} output of \code{processDatasetAllo} may also be passed to this argument.}
-\item{popname}{The name of the population corresponding to the data in \code{propHomoplasiousMat}.}
+\code{$propHomoplMerged} or \code{$missRate} output of \code{processDatasetAllo} may also be passed to this argument.}
+\item{popname}{The name of the population corresponding to the data in \code{propMat}.}
 \item{col}{The color scale for representing the proportion of loci that are homoplasious.}
+\item{main}{A title for the plot.}
 \item{object}{A \code{"genambig"} object.}
 \item{samples}{An optional character vector indicating which samples to include in analysis.}
 \item{loci}{An optional character vector indicating which loci to include in analysis.}
@@ -50,7 +53,8 @@ primarily for identifying potentially problematic positive correlations.  Passed
 \item{plotsfile}{A PDF output file name for drawing plots to help assess assignment quality.  Can be \code{NULL} if no
 plots are desired.}
 \item{usePops}{If \code{TRUE}, population assignments are taken from the \code{PopInfo} slot of \code{object}, and 
-populations are analyzed separately.}
+populations are analyzed separately with \code{alleleCorrelations} and \code{testAlGroups}, before merging the 
+results with \code{mergeAlleleAssignments}.}
 }
 \details{
 \code{plotSSAllo} produces a plot of loci by population, with the sums-of-squares ratio on the x-axis and the evenness of allele distribution
@@ -59,11 +63,14 @@ by population, and a legend is provided for colors.  Loci with high-quality alle
 quadrant of the plot.  If locus names are in italics, it indicates that positive correlations were found between some alleles, indicating
 population structure or scoring error that could interfere with assignment quality.
 
-\code{plotHomoplasious} produces an image to indicate the proportion of alleles found to be homoplasious for each locus and
-parameter set for a given population.  Darker colors indicate more homoplasy.  The word \dQuote{best} indicates, for each
-locus, the parameter set that found the least homoplasy.
+\code{plotParamHeatmap} produces an image to indicate the proportion of alleles found to be homoplasious, or the proportion of genotypes that
+could not be unambiguously recoded using allele assignments, for each locus and
+parameter set for a given population (when looking at homoplasy) or merged across populations (for homoplasy or the proportion of non-recodeable
+genotypes).  Darker colors indicate more homoplasy or more genotypes that could not be recoded.  
+The word \dQuote{best} indicates, for each
+locus, the parameter set that found the least homoplasy or smallest number of non-recodeable genotypes.
 
-By default, \code{processDatasetAllo} generates a PDF file containing output from \code{plotSSAllo} and \code{plotHomoplasious},
+By default, \code{processDatasetAllo} generates a PDF file containing output from \code{plotSSAllo} and \code{plotParamHeatmap},
 as well as heatmaps of the \code{$heatmap.dist} output of \code{alleleCorrelations} for each locus and population.  It also
 generates a list of R objects containing allele assignments under different parameters, as well as statistics for evaluating 
 clustering quality and choosing the optimal parameter sets, as described below.
@@ -97,7 +104,14 @@ second dimension, containing allele assignments merged across populations.  This
 \item{propHomoplMerged }{A two-dimensional array, of the same dimensions as \code{$mergedAssignments}, indicating
 the proportion of alleles that were homoplasious, for each locus and parameter set, for allele assignments that
 were merged across populations.}
-% additional items as the function is added to.
+\item{missRate }{A matrix with the same dimensions as \code{$mergedAssignments} indicating the proportion of 
+non-missing genotypes from the original dataset that cannot be unambiguously recoded, without invoking
+aneuploidy, using the merged allele assignments from each parameter set for each locus.}
+\item{bestAssign }{A one-dimensional list with a single best set of allele assignments, from \code{$mergedAssignments}, 
+for each locus.  The best set of assignments is chosen using \code{$missRate}, then in the case of a tie using 
+\code{$propHomoplMerged}, then in the case of a tie using the parameter set that was listed first.}
+
+\code{plotParamHeatmap} draws a plot and does not return anything.
 }
 \references{
 Clark, L. V. and Drauch Schreier, A. (2015) Resolving microsatellite genotype ambiguity in
@@ -123,6 +137,10 @@ Genotype(mydata, 43, 2) <- Missing(mydata)
 # allele assignments
 myassign <- processDatasetAllo(mydata, loci = c("Loc3", "Loc6"),
                                plotsfile = NULL, usePops = TRUE)
+
+# view best assignments for each locus
+myassign$bestAssign
+                               
 # plot K-means results
 plotSSAllo(myassign$AlCorrArray)
 
