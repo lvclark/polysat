@@ -120,7 +120,7 @@ Arnaud-Haond, S., Duarte, M., Alberto, F. and Serrao, E. A.  (2007)
 Standardizing methods to address clonality in population studies.
 \emph{Molecular Ecology} \bold{16}:5115--5139.
 
-\url{http://darwin.phyloviz.net/ComparingPartitions/index.php?link=Tut4}
+\url{http://www.comparingpartitions.info/index.php?link=Tut4}
 }
 \author{
 Lindsay V. Clark

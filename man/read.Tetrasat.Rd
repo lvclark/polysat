@@ -40,8 +40,6 @@ adjacent to each other.
 A \code{genambig} object containing data from the file.
 }
 \references{
-  \url{http://markwith.freehomepage.com/tetrasat.html}
-
   Markwith, S. H., Stewart, D. J. and Dyer, J. L.  (2006)
   TETRASAT: a program for the population analysis of
   allotetraploid microsatellite data. \emph{Molecular Ecology Notes}

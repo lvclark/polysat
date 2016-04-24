@@ -63,9 +63,11 @@ of \code{Loci(object)}.
 A file is written but no value is returned.
 }
 \references{
-  \url{http://www.appliedbiosystems.com/genemapper}
+%  \url{http://www.appliedbiosystems.com/genemapper}
 % Note that this URL redirects to a different page depending on the user's
 % location.  Causes libcurl error code 52 in R CMD check.
+
+GeneMapper website: \url{https://www.thermofisher.com/order/catalog/product/4475073}
 }
 \author{
 Lindsay V. Clark

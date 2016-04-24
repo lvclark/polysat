@@ -53,8 +53,6 @@ file to be read correctly by Tetrasat or Tetra.
 A file is written but no value is returned.
 }
 \references{
-  \url{http://markwith.freehomepage.com/tetrasat.html}
-
   Markwith, S. H., Stewart, D. J. and Dyer, J. L.  (2006)
   TETRASAT: a program for the population analysis of
   allotetraploid microsatellite data. \emph{Molecular Ecology Notes}
