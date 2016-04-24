@@ -952,7 +952,7 @@ processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(ob
   bestpm <- integer(length(loci)) # index of best parameter set for each locus
   names(bestpm) <- loci
   # matrix to hold missing data rate when data are recoded
-  missRate <- matrix(NA, nrow = length(loci), ncol = nparam, dimnames = list(loci, NULL))
+  missRate <- matrix(1, nrow = length(loci), ncol = nparam, dimnames = list(loci, NULL))
   for(L in loci){
     theseAssign <- list() # contain all unique assignments
     theseAssignIndex <- integer(nparam) # for each parameter set, which unique assignment goes with it
