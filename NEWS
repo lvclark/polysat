@@ -15,6 +15,8 @@ prevent empty vectors or NA values from being assigned to genotypes.
 
 deSilvaFreq edited to be compatible with ploidymatrix format.
 
+Broken URLs in documentation fixed or removed.
+
 Changes in version 1.4-1
 
 Documentation for freq.to.genpop and gendata.to.genind updated to be compatible with
