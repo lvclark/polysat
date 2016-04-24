@@ -123,7 +123,7 @@ Lindsay V. Clark
 }
 
 \seealso{
-\code{\link{alleleCorrelations}}
+\code{\link{alleleCorrelations}}, \code{\link{recodeAllopoly}}
 }
 \examples{
 # get example dataset
@@ -145,9 +145,12 @@ myassign$bestAssign
 plotSSAllo(myassign$AlCorrArray)
 
 # plot proportion of homoplasious alleles
-plotHomoplasious(myassign$propHomoplasious, "Pop1")
-plotHomoplasious(myassign$propHomoplasious, "Pop2")
-plotHomoplasious(myassign$propHomoplMerged, "Merged across populations")
+plotParamHeatmap(myassign$propHomoplasious, "Pop1")
+plotParamHeatmap(myassign$propHomoplasious, "Pop2")
+plotParamHeatmap(myassign$propHomoplMerged, "Merged across populations")
+
+# plot proportion of missing data, after recoding, for each locus and parameter set
+plotParamHeatmap(myassign$missRate, main = "Missing data:")
 }
 
 \keyword{ hplot }
