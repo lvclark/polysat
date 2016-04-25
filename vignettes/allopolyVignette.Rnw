@@ -16,7 +16,7 @@
 
 \section{Introduction}
 
-This tutorial accompanies the R package \textsc{polysat} versions 1.4 and later,
+This tutorial accompanies the R package \textsc{polysat} versions 1.5 and later,
 and demonstrates how to use functions in \textsc{polysat} for recoding data from 
 allopolyploid or diploidized autopolyploid organisms such that each 
 microsatellite marker is split into multiple isoloci.  The data can then be 
@@ -43,9 +43,12 @@ them before starting.
 
 It is assumed that the reader is already familiar with R and with \textsc{polysat}.
 If you aren't, please spend some time with ``An Introduction to R'' and with the
-``polysat version 1.4 Tutorial Manual''.  Additionally, there is a manuscript on 
+``polysat version 1.5 Tutorial Manual''.  Additionally, there is a manuscript on 
 BioRxiv at \url{http://dx.doi.org/10.1101/020610} that describes in detail the 
 rationale and limitations of the allele assignment tools described in this manual.
+You may also find the documentation for individuals functions to be helpful
+(\emph{e.g.} see \texttt{?alleleCorrelations}, \texttt{?processDatasetAllo},
+and \texttt{?recodeAllopoly}).
 I'm always happy to answer questions over email, but I greatly appreciate it if 
 you have taken the time first to think carefully about your study system and 
 dataset, understand the methodology and assumptions of any software that you want to
@@ -204,6 +207,8 @@ separately.
 <<>>=
 pop1ind <- Samples(mydata)[mypca[,1] <= 0]
 pop2ind <- Samples(mydata)[mypca[,1] > 0]
+PopInfo(mydata)[pop1ind] <- 1
+PopInfo(mydata)[pop2ind] <- 2
 @
 
 \section{The \textsc{polysat} algorithm for allele assignment}
@@ -235,48 +240,30 @@ Homoplasy                        & \texttt{rare.al.check = 0} \\
 
 \vspace{5mm}
 Because you may not know whether the last three issues are present in your
-dataset, I recomment trying several parameter sets.
+dataset, I recomment trying several parameter sets.  The function 
+\texttt{processDatasetAllo} is a wrapper for \texttt{alleleCorrelations} and
+\texttt{testAlGroups} that will test several parameter combinations across
+all loci in the dataset.
 
 \subsection{Running the algorithm}
 
-Below, I create a loop to run the algorithm on both populations and all
-seven loci, using a few different parameter sets.  If your data are not
-tetraploid, please see \texttt{?alleleCorrelations} and
-\texttt{?testAlGroups} for how you should adjust the \texttt{n.subgen}
-and \texttt{SGploidy} arguments.
+Now we will use \texttt{processDatasetAllo} to make allele assignments.
+Because this is an allotetraploid we will use \texttt{n.subgen = 2}
+(two subgenomes) and \texttt{SGploidy = 2} (each subgenome is diploid).
+Because we divided our dataset into two subpopulations that appear to have
+different allele frequencies, we will set \texttt{usePops = TRUE} to 
+analyze the two populations separately according to \texttt{PopInfo(mydata)}.
+We will leave the \texttt{parameters} argument at the default, which includes
+one parameter set optimized for no alleles and no homoplasy, one optimized
+for homoplasy, and one optimized for null alleles.
 
-<<>>=
-nloc <- length(Loci(mydata)) # 7 loci
-# lists to contain results of alleleCorrelations
-CorrPop1 <- CorrPop2 <- list()
-length(CorrPop1) <- length(CorrPop2) <- nloc
-names(CorrPop1) <- names(CorrPop2) <- Loci(mydata)
-# lists to contain results of testAlGroups
-TAGpop1param1 <- list()
-length(TAGpop1param1) <- nloc
-names(TAGpop1param1) <- Loci(mydata)
-TAGpop1param2 <- TAGpop1param3 <- TAGpop1param1
-TAGpop2param1 <- TAGpop2param2  <- TAGpop2param3 <- TAGpop1param1
+<<eval=FALSE>>=
+myassign <- processDatasetAllo(mydata, n.subgen = 2, SGploidy = 2, usePops = TRUE)
+@
 
-# loop through loci
-for(L in Loci(mydata)){
-  # allele correlations
-  CorrPop1[[L]] <- alleleCorrelations(mydata, samples=pop1ind, locus = L)
-  CorrPop2[[L]] <- alleleCorrelations(mydata, samples=pop2ind, locus = L)
-  # default parameter set
-  TAGpop1param1[[L]] <- testAlGroups(mydata, CorrPop1[[L]], samples=pop1ind)
-  TAGpop2param1[[L]] <- testAlGroups(mydata, CorrPop2[[L]], samples=pop2ind)
-  # optimized for homoplasy
-  TAGpop1param2[[L]] <- testAlGroups(mydata, CorrPop1[[L]], samples=pop1ind,
-                                     rare.al.check=0)
-  TAGpop2param2[[L]] <- testAlGroups(mydata, CorrPop2[[L]], samples=pop2ind,
-                                     rare.al.check=0)
-  # optimized for null alleles
-  TAGpop1param3[[L]] <- testAlGroups(mydata, CorrPop1[[L]], samples=pop1ind,
-                                     null.weight=0)
-  TAGpop2param3[[L]] <- testAlGroups(mydata, CorrPop2[[L]], samples=pop2ind,
-                                     null.weight=0)
-}
+<<echo=FALSE>>=
+myassign <- processDatasetAllo(mydata, n.subgen = 2, SGploidy = 2, usePops = TRUE,
+                               plotsfile = NULL)
 @
 
 \subsection{Inspecting the results}
@@ -288,9 +275,15 @@ a serious problem, we would have gotten warnings about most or all loci.  Let's 
 a look at which alleles had positive correlations for Loc6, to see if there may 
 have been a scoring problem.
 
+The \texttt{myassign} object is a list, and it has an element called \texttt{AlCorrArray}
+that contains the results of \texttt{alleleCorrelations} for each locus and population,
+which is also a list.  The list element called \texttt{significant.pos} indicates any
+significantly positive associations between alleles.  We will look at the Loc6 results
+for both populations.
+
 <<>>=
-CorrPop1[["Loc6"]]$significant.pos
-CorrPop2[["Loc6"]]$significant.pos
+myassign$AlCorrArray[["Loc6", 1]]$significant.pos
+myassign$AlCorrArray[["Loc6", 2]]$significant.pos
 @
 
 We see positive correlations between alleles 330 and 327, 339 and 336, and 348 
@@ -307,192 +300,208 @@ mydata <- deleteLoci(mydata, loci="Loc6")
 
 \subsubsection{Quality of clustering}
 
-It is a good idea to manually inspect the results at each locus.
-Let's start with the first one.
+In your working directory, you should now find a file called ``alleleAssignmentPlots.pdf''
+containing several plots to help you evaluate clustering quality.  We will recreate
+some of those plots here and discuss their interpretation.
 
 <<fig=TRUE>>=
-# Population 1
-heatmap(CorrPop1[["Loc1"]]$heatmap.dist, symm=TRUE)
+par(mfrow = c(1,1))
+plotSSAllo(myassign$AlCorrArray)
 @
+
+This plot gives an indication of clustering quality using the K-means method
+(from \texttt{alleleCorrelations}) alone, and is intended to help identify 
+problematic loci or populations.  The x-axis essentially shows how much of the
+variation in \textit{P}-values for correlations between alleles could be 
+explained by clustering alleles into groups.  The y-axis indicates how 
+similar in size the groups of alleles are, \textit{e.g} two groups of five 
+alleles each would give a high value, and one group with one allele and one
+group with nine alleles would give a low value.  So, loci and populations
+in the upper-right quadrant performed well in allele assignment, but 
+others should be subject to scrutiny.
+
+In the last section we identified Loc6 as a locus that we should exclude.  In this plot, for 
+both populations, Loc6 has a relatively low value on the x-axis.  It is also marked in
+italics to indicate that there were positive correlations between alleles, in case we
+hadn't noticed this problem when the algorithm ran.
+
+It looks like Loc7 may also have a problem, given that it got a low value 
+on the y-axis in both populations.
+
+We can also make heatmaps of the \textit{P}-values for correlations between alleles
+to get a sense of how well the clustering went.  Let's compare a locus that 
+seemed to work very well (Loc5) to one that we expect to cluster poorly (Loc6),
+then compare them to Loc7.
+
+<<fig=TRUE>>=
+heatmap(myassign$AlCorrArray[["Loc5", "Pop1"]]$heatmap.dist,
+        main = "Loc5, Pop1")
+@
+
+The big red blocks neatly divide the alleles into two groups.
+
 <<fig=TRUE, height=3>>=
 # A plot to show how the colors correspond to p-values in the
 # heat map; you can repeat this for the other heat maps in this
 # tutorial if you wish.
-plot(x=seq(min(CorrPop1[["Loc1"]]$heatmap.dist),
-           max(CorrPop1[["Loc1"]]$heatmap.dist), length.out=12),
+plot(x=seq(min(myassign$AlCorrArray[["Loc5", "Pop1"]]$heatmap.dist),
+           max(myassign$AlCorrArray[["Loc5", "Pop1"]]$heatmap.dist), length.out=12),
      y=rep(1,12), xlab="P-values", ylab="", bg=heat.colors(12), 
      pch=22, cex=3)
 @
-<<>>=
-CorrPop1[["Loc1"]]$Kmeans.groups
-CorrPop1[["Loc1"]]$UPGMA.groups
-TAGpop1param1[["Loc1"]]$assignments
-TAGpop1param2[["Loc1"]]$assignments
-TAGpop1param3[["Loc1"]]$assignments
-@
 <<fig=TRUE>>=
-# Population 2
-heatmap(CorrPop2[["Loc1"]]$heatmap.dist, symm=TRUE)
-@
-<<>>=
-CorrPop2[["Loc1"]]$Kmeans.groups
-CorrPop2[["Loc1"]]$UPGMA.groups
-TAGpop2param1[["Loc1"]]$assignments
-TAGpop2param2[["Loc1"]]$assignments
-TAGpop2param3[["Loc1"]]$assignments
+heatmap(myassign$AlCorrArray[["Loc6", "Pop1"]]$heatmap.dist,
+        main = "Loc6, Pop1")
 @
 
-Although the different assignments are not in complete agreement with
-each other among populations and parameter sets, we always see one 
-homoplasious allele in the results from \texttt{testAlGroups}, which suggests
-that the second parameter set will be the most accurate.  (Note that homoplasious
-alleles will never show up in the output of \texttt{alleleCorrelations}.)  Using the
-second parameter set, identical assignments were produced in both
-populations, and those assignments are consistent with the clustering
-that we see in the heatmaps for both populations.  Let's start a 
-list of assignments that we will use when we recode the dataset.
-
-<<>>=
-AssignToUse <- list()
-AssignToUse[[1]] <- TAGpop1param2[["Loc1"]]
-@
-
-I will leave it as an exercise for the reader to inspect all of
-the remaining loci in the same way.  Below are the assignment
-sets that I chose.
-
-<<echo=FALSE, eval=FALSE>>=
-heatmap(CorrPop1[["Loc2"]]$heatmap.dist, symm=TRUE)
-CorrPop1[["Loc2"]]$Kmeans.groups
-CorrPop1[["Loc2"]]$UPGMA.groups
-TAGpop1param1[["Loc2"]]$assignments
-TAGpop1param2[["Loc2"]]$assignments
-TAGpop1param3[["Loc2"]]$assignments
-# Population 2
-heatmap(CorrPop2[["Loc2"]]$heatmap.dist, symm=TRUE)
-CorrPop2[["Loc2"]]$Kmeans.groups
-CorrPop2[["Loc2"]]$UPGMA.groups
-TAGpop2param1[["Loc2"]]$assignments
-TAGpop2param2[["Loc2"]]$assignments
-TAGpop2param3[["Loc2"]]$assignments
-
-heatmap(CorrPop1[["Loc3"]]$heatmap.dist, symm=TRUE)
-CorrPop1[["Loc3"]]$Kmeans.groups
-CorrPop1[["Loc3"]]$UPGMA.groups
-TAGpop1param1[["Loc3"]]$assignments
-TAGpop1param2[["Loc3"]]$assignments
-TAGpop1param3[["Loc3"]]$assignments
-# Population 2
-heatmap(CorrPop2[["Loc3"]]$heatmap.dist, symm=TRUE)
-CorrPop2[["Loc3"]]$Kmeans.groups
-CorrPop2[["Loc3"]]$UPGMA.groups
-TAGpop2param1[["Loc3"]]$assignments
-TAGpop2param2[["Loc3"]]$assignments
-TAGpop2param3[["Loc3"]]$assignments
-
-heatmap(CorrPop1[["Loc4"]]$heatmap.dist, symm=TRUE)
-CorrPop1[["Loc4"]]$Kmeans.groups
-CorrPop1[["Loc4"]]$UPGMA.groups
-TAGpop1param1[["Loc4"]]$assignments
-TAGpop1param2[["Loc4"]]$assignments
-TAGpop1param3[["Loc4"]]$assignments
-# Population 2
-heatmap(CorrPop2[["Loc4"]]$heatmap.dist, symm=TRUE)
-CorrPop2[["Loc4"]]$Kmeans.groups
-CorrPop2[["Loc4"]]$UPGMA.groups
-TAGpop2param1[["Loc4"]]$assignments
-TAGpop2param2[["Loc4"]]$assignments
-TAGpop2param3[["Loc4"]]$assignments
-
-heatmap(CorrPop1[["Loc5"]]$heatmap.dist, symm=TRUE)
-CorrPop1[["Loc5"]]$Kmeans.groups
-CorrPop1[["Loc5"]]$UPGMA.groups
-TAGpop1param1[["Loc5"]]$assignments
-TAGpop1param2[["Loc5"]]$assignments
-TAGpop1param3[["Loc5"]]$assignments
-# Population 2
-heatmap(CorrPop2[["Loc5"]]$heatmap.dist, symm=TRUE)
-CorrPop2[["Loc5"]]$Kmeans.groups
-CorrPop2[["Loc5"]]$UPGMA.groups
-TAGpop2param1[["Loc5"]]$assignments
-TAGpop2param2[["Loc5"]]$assignments
-TAGpop2param3[["Loc5"]]$assignments
-@
-
-
-<<echo=TRUE, eval=TRUE>>=
-AssignToUse[[2]] <- TAGpop1param1[["Loc2"]]
-AssignToUse[[3]] <- TAGpop1param1[["Loc3"]]
-AssignToUse[[4]] <- TAGpop1param1[["Loc4"]]
-AssignToUse[[5]] <- TAGpop1param1[["Loc5"]]
-@
-
-Loc7 looks a bit different from the others.
+For Loc6, it is not nearly as obvious how to divide the alleles into two groups.
 
 <<fig=TRUE>>=
-heatmap(CorrPop1[["Loc7"]]$heatmap.dist, symm=TRUE)
+heatmap(myassign$AlCorrArray[["Loc7", "Pop1"]]$heatmap.dist,
+        main = "Loc7, Pop1")
 @
 <<fig=TRUE>>=
-heatmap(CorrPop2[["Loc7"]]$heatmap.dist, symm=TRUE)
-@
-<<>>=
-TAGpop1param1[["Loc7"]]$assignments
-TAGpop1param2[["Loc7"]]$assignments
-TAGpop1param3[["Loc7"]]$assignments
-TAGpop2param1[["Loc7"]]$assignments
-TAGpop2param2[["Loc7"]]$assignments
-TAGpop2param3[["Loc7"]]$assignments
+heatmap(myassign$AlCorrArray[["Loc7", "Pop2"]]$heatmap.dist,
+        main = "Loc7, Pop2")
 @
 
-On the heatmaps, we don't see clustering of alleles into two
-distinct groups.  When we look at allele assignments we see a
-lot of homoplasy, as well as disagreement between the results for the
-two populations.  This is what it looks like when a marker is not
-actually segregating as multiple isoloci.  When I simulated this
-locus, I simulated it as being a single tetrasomic locus instead of 
+For Loc7, the alleles also don't seem to go into two neat groups.  In fact, the 
+dendrograms on both heatmaps first split off a single allele from the rest,
+but that allele is different for Pop1 (125) versus Pop2 (150).
+When I simulated Loc7, I actually simulated it as being a single tetrasomic locus instead of 
 a pair of disomic isoloci.  If you have a large sample
 size and no positive correlations between alleles, but the results
 for all of your loci look like this, you can probably treat the data
-as being autopolyploid (polysomic).  Since for our dataset it was 
-just one locus, we will exclude this locus from analysis.
+as being autopolyploid (polysomic).  It is also quite possible for an organism
+to have some disomic loci and some polysomic loci.  We will leave Loc7 in the 
+dataset but won't attempt to do allele assignment or genotype recoding with it.
 
-<<>>=
-mydata <- deleteLoci(mydata, loci="Loc7")
+\subsection{Evaluating the parameter sets}
+
+Now we will take a look at the results of \texttt{testAlGroups}.  As you may
+recall, there are several parameters that can be adjusted for that function,
+and we tried out the default three sets of parameters with 
+\texttt{processDatasetAllo}.  One way to evaluate the quality of the assignments
+produced by \texttt{testAlGroups} is by seeing how many alleles it decided
+to make homoplasious, \emph{i.e.} how many alleles were assigned to multiple
+isoloci.  Let's plot those proportions separately for the two populations.
+
+<<fig=TRUE>>=
+plotParamHeatmap(myassign$propHomoplasious, popname = "Pop1", 
+                 main = "Proportion homoplasious loci:")
 @
 
-\subsection{Merging assignments across populations}
+Loc7 had a lot of homoplasious alleles, but that is not a surprise given
+that it is one tetrasomic locus rather than two disomic loci.  In Pop1,
+Loc4 worked best with the third parameter set (allowing null alleles),
+but the other loci worked equally well regardless of parameter set.
 
-Although it was not necessary with this dataset, note that it is 
-possible to merge allele assignments across data from two populations.
-This may be especially useful if some populations have alleles that
-are absent in other populations.  For example, if we wanted to 
-merge the different allele assignments from Loc1 using the first
-parameter set:
-
-<<>>=
-Loc1Param1Merged <- mergeAlleleAssignments(list(TAGpop1param1[["Loc1"]], 
-                                                TAGpop2param1[["Loc1"]]))
-Loc1Param1Merged[[1]]$assignments
+<<fig=TRUE>>=
+plotParamHeatmap(myassign$propHomoplasious, popname = "Pop2", 
+                 main = "Proportion homoplasious loci:")
 @
 
-You can put assignments for multiple loci within the list that is passed
-to \texttt{mergeAlleleAssignments}, and the list that it returns will
-have one set of assignments per locus.
+For all loci in Pop2, we see the same proportion of homoplasious loci
+regardless of parameter set.
 
-\subsection{Testing assignment accuracy using simulated datasets}
+\texttt{processDatasetAllo} also runs the \texttt{mergeAlleleAssignments}
+function to combine allele assignments across populations, within loci
+and parameter sets.  We take a look at how many more homoplasious
+alleles we get after merging the assignments (since the same allele may
+have been assigned to different isoloci in different populations).
 
-The simulated data in this tutorial, as well as the simulations for the 
-manuscript, were created using the \texttt{simAllopoly} function.  If you
-have a different ploidy, number of individuals, or
-number of alleles from the datasets simulated in the manuscript, you can
-run your own simulations to estimate the accuracy of allele assignment.
-By default, the alleles are given names that start with A, B, \emph{etc.} to 
-indicate to which isolocus they belong, so that it is easy to see 
-whether the output of \texttt{testAlGroups} is correct.  See
-\texttt{?simAllopoly} for more information.  The \texttt{\detokenize{tables_figs.R}}
-file that is included as supplementary information for the manuscript can
-serve as a guide for how to run a large number of simulations and test 
-their accuracy.
+<<fig=TRUE>>=
+plotParamHeatmap(myassign$propHomoplMerged, popname = "Merged across populations", 
+                 main = "Proportion homoplasious loci:")
+@
+
+Now we see that Loc6 and Loc7 look a lot worse, since their allele 
+assignments were different between populations.  For Loc1, the 
+second parameter set (optimized for homoplasy) was clearly the best
+in terms of minimizing homoplasious alleles.  For Loc2, either the first
+or third parameter set works best.  For the other loci,
+we have the same number of homoplasious alleles regardless of
+parameter set.
+
+We can also examine, for each locus and parameter set, what proportion of
+genotypes would be replaced with missing data if we used that set of
+allele assignments to recode the data.  Genotypes are recoded as missing
+if homoplasy prevents them from being unambiguously determined.
+\texttt{processDatasetAllo} runs \texttt{recodeAllopoly} in order to 
+determine these missing data rates.  When it does so, it uses the
+\texttt{allowAneuploidy=FALSE} option so that genotypes that have too
+many alleles ($>$ \texttt{SGploidy}) for an isolocus will also be recoded
+as missing.
+
+<<fig=TRUE>>=
+plotParamHeatmap(myassign$missRate, popname = "All Individuals", 
+                 main = "Missing data after recoding:")
+@
+
+We can see that except for Loc1, the parameter set does not affect the 
+amount of missing data.
+
+\texttt{processDatasetAllo} suggests a best set of allele assignments based
+on missing data after recoding and the proportion of homoplasious alleles.
+For each locus, it picks the parameter set that results in the lowest missing
+data rate, then in the case of a tie the parameter set with the least 
+amount of homoplasy (after merging across populations), then in the case of a
+tie the lowest numbered parameter set.  So in this case, parameter set 2 would 
+be chosen for Loc1, and parameter set 1 for all other loci.
+
+Let's extract that list of optimal assignments from the results.  We will also
+eliminate Loc6 and Loc7 from the list since we discarded Loc6 and don't want to
+recode Loc7.
+
+<<>>=
+myBestAssign <- myassign$bestAssign
+myBestAssign
+myBestAssign <- myBestAssign[1:5]
+@
+
+We can see a large amount of homoplasy for Loc6 and Loc7, since the allele
+assignment algorithm was not appropriate for those two loci.  We can also
+see that Loc1 and Loc4 each have one homoplasious allele.  This accounts
+for the much higher proportion of missing data when recoding Loc1 and Loc4 as 
+opposed to Loc2, Loc3, and Loc5.
+
+It is possible to take a deeper look at the allele assignments that were
+produced before the best set was chosen.  Let's look at Loc1, since it has
+such a high missing data rate after recoding.
+
+<<>>=
+myassign$AlCorrArray[["Loc1", "Pop1"]]$Kmeans.groups
+myassign$AlCorrArray[["Loc1", "Pop2"]]$Kmeans.groups
+myassign$AlCorrArray[["Loc1", "Pop1"]]$UPGMA.groups
+myassign$AlCorrArray[["Loc1", "Pop2"]]$UPGMA.groups
+@
+
+Both K-means clustering and UPGMA placed allele 236 in a different isolocus
+depending on population.  This is the same allele that was ultimately 
+assigned to be homoplasious in the "best" assignment set.
+
+\texttt{testAlGroups} results for Loc1:
+
+<<>>=
+myassign$TAGarray[["Loc1", "Pop1", 1]]$assignments
+myassign$TAGarray[["Loc1", "Pop2", 1]]$assignments
+myassign$mergedAssignments[["Loc1", 1]]$assignments
+myassign$TAGarray[["Loc1", "Pop1", 2]]$assignments
+myassign$TAGarray[["Loc1", "Pop2", 2]]$assignments
+myassign$mergedAssignments[["Loc1", 2]]$assignments
+myassign$TAGarray[["Loc1", "Pop1", 3]]$assignments
+myassign$TAGarray[["Loc1", "Pop2", 3]]$assignments
+myassign$mergedAssignments[["Loc1", 3]]$assignments
+@
+
+We can see that with parameter set 1, the swapping of allele 233 to a different
+isolocus in Pop2 caused the increased homoplasy when assignments were merged
+across populations.  With parameter set 2, however, assignments were consistent
+between the two populations.  Parameter set 3 produced allele assignments that
+were very different from those produced by parameter sets 1 and 2.  Moreover,
+the assignments produced by parameter set 3 were so different between the two
+populations that it was not possible to merge them.
+
 
 \subsection{Recoding the data}
 
@@ -500,11 +509,11 @@ Now that we've chosen sets of allele assignments to use and thrown away
 loci that had problems, we can recode the dataset.
 
 <<>>=
-recodedData <- recodeAllopoly(mydata, AssignToUse)
+recodedData <- recodeAllopoly(mydata, myBestAssign)
 summary(recodedData)
 @
 
-You'll notice that we have twice as many loci now that each marker has
+You'll notice that we have more loci now that each marker (except Loc7) has
 been split into two isoloci.  We also have a lot of missing data, since
 homoplasy can lead to uncertainty about what the true genotype is.  We had
 homoplasy for Loc1 and Loc 4.
@@ -525,9 +534,22 @@ genotypes are diploid though.
 table(Ploidies(recodedData))
 @
 
+We can manually add in the ploidy for Loc7, since it was not recoded.
+
+<<>>=
+Ploidies(recodedData)[,"Loc7"] <- 4
+@
+
 The recoded data may now be analyzed with any \textsc{polysat} function,
 or exported to other software using any of the various \texttt{write}
-functions in polysat.
+functions in polysat.  For example, it is now appropriate to estimate
+allele frequencies from the data and use those to estimate $F_{ST}$.
+
+<<>>=
+myfreq <- simpleFreq(recodedData)
+myFst <- calcFst(myfreq)
+myFst
+@
 
 \section{The Catal\'{a}n method of allele assignment}
 
@@ -556,5 +578,20 @@ meiotic error.
 
 The results of \texttt{catalanAlleles} can be passed to \texttt{recodeAllopoly}
 in the same way as the results of \texttt{testAlGroups}.
+
+\subsection{Testing assignment accuracy using simulated datasets}
+
+The simulated data in this tutorial, as well as the simulations for the 
+manuscript, were created using the \texttt{simAllopoly} function.  If you
+have a different ploidy, number of individuals, or
+number of alleles from the datasets simulated in the manuscript, you can
+run your own simulations to estimate the accuracy of allele assignment.
+By default, the alleles are given names that start with A, B, \emph{etc.} to 
+indicate to which isolocus they belong, so that it is easy to see 
+whether the output of \texttt{testAlGroups} is correct.  See
+\texttt{?simAllopoly} for more information.  The \texttt{\detokenize{tables_figs.R}}
+file that is included as supplementary information for the manuscript can
+serve as a guide for how to run a large number of simulations and test 
+their accuracy.
 
 \end{document}
