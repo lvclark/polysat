@@ -9,6 +9,10 @@
 \date{\today}
 \author{Lindsay V. Clark \\ University of Illinois, Urbana-Champaign}
 
+\hyphenation{processDatasetAllo}
+\hyphenation{alleleCorrelations}
+\hyphenation{testAlGroups}
+
 \begin{document}
 \SweaveOpts{concordance=TRUE}
 
@@ -150,7 +154,8 @@ no genotypes have more than four alleles, and eliminate any that do.
 <<>>=
 # Calculate the length of each genotype vector (= the number of alleles) and
 # construct a TRUE/FALSE matrix of whether that number is greater than four.
-tooManyAlleles <- apply(Genotypes(mydata), c(1,2), function(x) length(x[[1]])) > 4
+tooManyAlleles <- apply(Genotypes(mydata), c(1,2), 
+                        function(x) length(x[[1]])) > 4
 # Find position(s) in the matrix that are TRUE.
 which(tooManyAlleles, arr.ind=TRUE) # 43rd sample, second locus
 # Look at the identified genotype, then replace it with missing data.
@@ -215,8 +220,9 @@ PopInfo(mydata)[pop2ind] <- 2
 
 \subsection{General considerations and parameters}
 
-There are two functions in \textsc{polysat} that are intended to be used one
-after the other for assigning alleles to isoloci.  \texttt{alleleCorrelations}
+To assign alleles to isoloci, you will primarily be using the function
+\texttt{processDatasetAllo}.  This function internally calls two other functions
+from \textsc{polysat}: \texttt{alleleCorrelations}
 looks for negative correlations between alleles and uses those correlations to make
 preliminary assignments, then \texttt{testAlGroups} adjusts those assignments if 
 necessary after checking them against individual genotypes.  \texttt{testAlGroups}
@@ -241,8 +247,7 @@ Homoplasy                        & \texttt{rare.al.check = 0} \\
 \vspace{5mm}
 Because you may not know whether the last three issues are present in your
 dataset, I recomment trying several parameter sets.  The function 
-\texttt{processDatasetAllo} is a wrapper for \texttt{alleleCorrelations} and
-\texttt{testAlGroups} that will test several parameter combinations across
+\texttt{processDatasetAllo} tests several parameter combinations across
 all loci in the dataset.
 
 \subsection{Running the algorithm}
@@ -258,7 +263,8 @@ one parameter set optimized for no alleles and no homoplasy, one optimized
 for homoplasy, and one optimized for null alleles.
 
 <<eval=FALSE>>=
-myassign <- processDatasetAllo(mydata, n.subgen = 2, SGploidy = 2, usePops = TRUE)
+myassign <- processDatasetAllo(mydata, n.subgen = 2, SGploidy = 2, 
+                               usePops = TRUE)
 @
 
 <<echo=FALSE>>=
@@ -276,8 +282,8 @@ a look at which alleles had positive correlations for Loc6, to see if there may
 have been a scoring problem.
 
 The \texttt{myassign} object is a list, and it has an element called \texttt{AlCorrArray}
-that contains the results of \texttt{alleleCorrelations} for each locus and population,
-which is also a list.  The list element called \texttt{significant.pos} indicates any
+that contains the results of \texttt{alleleCorrelations} for each locus and population.
+Each set of results is also a list.  The list element called \texttt{significant.pos} indicates any
 significantly positive associations between alleles.  We will look at the Loc6 results
 for both populations.
 
@@ -345,7 +351,8 @@ The big red blocks neatly divide the alleles into two groups.
 # heat map; you can repeat this for the other heat maps in this
 # tutorial if you wish.
 plot(x=seq(min(myassign$AlCorrArray[["Loc5", "Pop1"]]$heatmap.dist),
-           max(myassign$AlCorrArray[["Loc5", "Pop1"]]$heatmap.dist), length.out=12),
+           max(myassign$AlCorrArray[["Loc5", "Pop1"]]$heatmap.dist), 
+           length.out=12),
      y=rep(1,12), xlab="P-values", ylab="", bg=heat.colors(12), 
      pch=22, cex=3)
 @
@@ -478,7 +485,7 @@ myassign$AlCorrArray[["Loc1", "Pop2"]]$UPGMA.groups
 
 Both K-means clustering and UPGMA placed allele 236 in a different isolocus
 depending on population.  This is the same allele that was ultimately 
-assigned to be homoplasious in the "best" assignment set.
+assigned to be homoplasious in the ``best'' assignment set.
 
 \texttt{testAlGroups} results for Loc1:
 
@@ -502,6 +509,48 @@ were very different from those produced by parameter sets 1 and 2.  Moreover,
 the assignments produced by parameter set 3 were so different between the two
 populations that it was not possible to merge them.
 
+\subsection{Re-analyzing individual loci}
+For problematic loci, you may wish to try different population splits or 
+parameter sets.  It is not necessary to re-run \texttt{processDatasetAllo}
+on the entire dataset in order to accomplish this; we can run 
+\texttt{alleleCorrelations} and \texttt{testAlGroups} on individual loci instead.
+
+Continuing to examine Loc1, what assignments do we get from K-means clustering and 
+UPGMA if we don't split the datset into two populations?
+
+<<>>=
+corrLoc1AllInd <- alleleCorrelations(mydata, locus = "Loc1", n.subgen = 2)
+corrLoc1AllInd$Kmeans.groups
+corrLoc1AllInd$UPGMA.groups
+@
+
+Analyzing both populations together gives us clustering identical to the 
+previous clustering from Pop1.
+
+We'll try \texttt{testAlGroups} with a parameter set identical to parameter set 2
+from our previous analysis.  We'll also try increasing \texttt{tolerance} a little
+bit to see if it eliminates homoplasy.  Increasing \texttt{tolerance} could be useful 
+if Loc1 does not in fact segregate in a completely disomic manner.
+
+<<>>=
+TaLoc1.param2 <- testAlGroups(mydata, corrLoc1AllInd, SGploidy = 2,
+                              null.weight = 0.5, tolerance = 0.05, 
+                              rare.al.check = 0)
+TaLoc1.param4 <- testAlGroups(mydata, corrLoc1AllInd, SGploidy = 2,
+                              null.weight = 0.5, tolerance = 0.1, 
+                              rare.al.check = 0)
+TaLoc1.param2$assignments
+TaLoc1.param4$assignments
+@
+
+In both cases we get the same allele assignments as before, so we will leave it as is.
+
+Hypothetically though, if we liked the new assignments better and wanted to use them
+to replace the old assignments, here is how it would be done:
+
+<<>>=
+myBestAssign[[1]] <- TaLoc1.param4
+@
 
 \subsection{Recoding the data}
 
@@ -551,6 +600,12 @@ myFst <- calcFst(myfreq)
 myFst
 @
 
+We can also export the data if we want to do analysis using other software.
+
+<<>>=
+write.GeneMapper(recodedData, file = "tutorialRecodedData.txt")
+@
+
 \section{The Catal\'{a}n method of allele assignment}
 
 An alternative method of allele assignment available in \textsc{polysat}
@@ -579,7 +634,7 @@ meiotic error.
 The results of \texttt{catalanAlleles} can be passed to \texttt{recodeAllopoly}
 in the same way as the results of \texttt{testAlGroups}.
 
-\subsection{Testing assignment accuracy using simulated datasets}
+\section{Testing assignment accuracy using simulated datasets}
 
 The simulated data in this tutorial, as well as the simulations for the 
 manuscript, were created using the \texttt{simAllopoly} function.  If you
