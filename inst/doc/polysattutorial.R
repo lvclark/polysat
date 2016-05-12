@@ -75,10 +75,18 @@ simfreq <- deSilvaFreq(simgen, self = 0.1, initNull = 0.01,
                        samples = Samples(simgen, ploidies = 4))
 
 simfreq
-simFst <- calcFst(simfreq)
+simFst <- calcPopDiff(simfreq, metric = "Fst")
 simFst
-simFst12 <- calcFst(simfreq, loci=c("loc1", "loc2"))
+simFst12 <- calcPopDiff(simfreq, metric = "Fst", loci=c("loc1", "loc2"))
 simFst12
+simGst <- calcPopDiff(simfreq, metric = "Gst")
+simGst
+simGst12 <- calcPopDiff(simfreq, metric = "Gst", loci=c("loc1", "loc2"))
+simGst12
+simD <- calcPopDiff(simfreq, metric = "Jost's D")
+simD
+simD12 <- calcPopDiff(simfreq, metric = "Jost's D", loci=c("loc1", "loc2"))
+simD12
 
 ### Genotype data export
 write.Structure(simgen, ploidy = 4, file="simgenStruct.txt")
@@ -267,7 +275,7 @@ simal$alleles[["PopA","loc1"]]
 
 simFst
 simfreqSimple <- simpleFreq(simgen, samples = Samples(simgen, ploidies=4))
-simFstSimple <- calcFst(simfreqSimple)
+simFstSimple <- calcPopDiff(simfreqSimple, metric = "Fst")
 simFstSimple
 
 write.freq.SPAGeDi(simfreq, usatnts=Usatnts(simgen), file="SPAGfreq.txt")

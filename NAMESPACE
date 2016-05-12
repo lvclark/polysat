@@ -12,7 +12,7 @@ export(Bruvo.distance,
        Bruvo2.distance, reformatPloidies,alleleDiversity,read.STRand,
 gendata.to.genind, Simpson.var, simAllopoly, catalanAlleles, alleleCorrelations,
        testAlGroups, mergeAlleleAssignments, recodeAllopoly, plotSSAllo,
-       processDatasetAllo, plotParamHeatmap)
+       processDatasetAllo, plotParamHeatmap, calcPopDiff)
 exportMethods(estimatePloidy, Samples, "Samples<-", Loci, "Loci<-", PopInfo,
               "PopInfo<-", PopNames, "PopNames<-", Ploidies, "Ploidies<-",
               Usatnts,

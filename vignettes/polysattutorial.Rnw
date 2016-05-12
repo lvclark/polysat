@@ -1,4 +1,4 @@
-% \VignetteIndexEntry{polysat version 1.4 Tutorial Manual}
+% \VignetteIndexEntry{polysat version 1.5 Tutorial Manual}
 % \VignetteDepends{combinat, methods, polysat}
 
 \documentclass[12pt]{article}
@@ -9,7 +9,7 @@
 \usepackage{array}
 \usepackage{hyperref}
 
-\title{\textsc{polysat} version 1.4 Tutorial Manual}
+\title{\textsc{polysat} version 1.5 Tutorial Manual}
 \author{Lindsay V. Clark <lvclark@illinois.edu>\\
   University of Illinois, Urbana-Champaign\\
   Department of Crop Sciences\\
@@ -175,7 +175,7 @@ Flowchart 1.  Functions for allopolyploid or autopolyploid data.
 \node at (0, -10) [block] (adegenet) {Export allele frequencies to
   \texttt{adegenet}.};
 \node at (2.5, -12) [block] (calcfst) {Get distances between
-  populations with \texttt{calcFst}.};
+  populations with \texttt{calcPopDiff}.};
 \node at (5, -14.5) [block] (matrix2) {Calculate genetic distances
   between individuals using \texttt{meandistance.matrix2}.};
 \node at (10, -16) [block] (gendiv) {Analysis with \texttt{assignClones}
@@ -447,7 +447,8 @@ the result of \texttt{c("red", "blue")[PopInfo(simgen2)[samToUse]]} is.)
 \label{sec:gspopstat}
 Allele frequencies are estimated in the example below.  The example
 then uses these allele
-frequencies to calculate pairwise Wright's $F_{ST}$ \cite{nei73}
+frequencies to calculate pairwise Wright's $F_{ST}$ \cite{nei73},
+Nei's $G_{ST}$ \cite{nei73,nei83}, and Jost's $D$ \cite{jost08}
 values, first using all loci and then just two of the loci.  See Section
 \ref{sec:allelefreq} for important information about allele
 frequency estimation.
@@ -488,10 +489,18 @@ simfreq <- read.table("vignettebuild/simfreq.txt")
 
 <<echo=TRUE>>=
 simfreq
-simFst <- calcFst(simfreq)
+simFst <- calcPopDiff(simfreq, metric = "Fst")
 simFst
-simFst12 <- calcFst(simfreq, loci=c("loc1", "loc2"))
+simFst12 <- calcPopDiff(simfreq, metric = "Fst", loci=c("loc1", "loc2"))
 simFst12
+simGst <- calcPopDiff(simfreq, metric = "Gst")
+simGst
+simGst12 <- calcPopDiff(simfreq, metric = "Gst", loci=c("loc1", "loc2"))
+simGst12
+simD <- calcPopDiff(simfreq, metric = "Jost's D")
+simD
+simD12 <- calcPopDiff(simfreq, metric = "Jost's D", loci=c("loc1", "loc2"))
+simD12
 @
 
 \subsubsection{Genotype data export}
@@ -1242,7 +1251,7 @@ the results of \texttt{deSilvaFreq} and \texttt{simpleFreq}:
 <<echo=TRUE>>=
 simFst
 simfreqSimple <- simpleFreq(simgen, samples = Samples(simgen, ploidies=4))
-simFstSimple <- calcFst(simfreqSimple)
+simFstSimple <- calcPopDiff(simfreqSimple, metric = "Fst")
 simFstSimple
 @
 
@@ -1338,8 +1347,11 @@ microsatellite marker as multiple loci.  As long as each ``locus'' in
 the \texttt{"genambig"} object is behaving according to random
 segregation, the analysis and export functions for autopolyploid data
 described in the previous section are appropriate.  See the separate
-vignette ``Assigning alleles to isoloci in \textsc{polysat}'' to learn
-more about how to determine which alleles belong to which genomes.
+vignette \textbf{``Assigning alleles to isoloci in \textsc{polysat}''} to learn
+more about how to determine which alleles belong to which genomes.  The functions
+\texttt{processDatasetAllo} and \texttt{recodeAllopoly} can, respectively, assign alleles
+to isoloci and recode the dataset so that each marker is split into multiple
+isoloci according to allele assignments.
 
 If you are not able split microsatellite markers into independently-segregating
 isoloci, the following functionality is available for allopolyploids
@@ -1533,6 +1545,10 @@ HUBISZ, M. J., FALUSH, D., STEPHENS, M. and PRITCHARD,
 J. K. 2009. Inferring weak population structure with the assistance of
 sample group information. \emph{Molecular Ecology Resources}, 9, 1322-1332.
 
+\bibitem{jost08}
+JOST, L.  2008.  $G_{ST}$ and its relatives do not measure differentiation.
+\emph{Molecular Ecology} 17, 4015-4026.
+
 \bibitem{jombart08}
   JOMBART, T. 2008.  adegenet: a R package for the multivariate
   analysis of genetic markers.  \emph{Bioinformatics}, 24, 1403-1405.
@@ -1560,6 +1576,10 @@ organisms. \emph{Molecular Ecology Notes}, 4, 792-794.
   NEI, M.  1973.  Analysis of gene diversity in subdivided
   populations.  \emph{Proceedings of the National Academy of Sciences
     of the United States of America} 70, 3321-3323.
+    
+\bibitem{nei83}
+NEI, M. and CHESSER, R.  1983. Estimation of fixation indices and gene diversities.
+\emph{Annals of Human Genetics} 47, 253-259.
 
 \bibitem{pritchard00}
 PRITCHARD, J. K., STEPHENS, M. and DONNELLY, P. 2000. Inference of population

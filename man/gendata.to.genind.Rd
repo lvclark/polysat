@@ -23,8 +23,8 @@ A character vector indicating the loci to include in the output.
 \details{
 \code{gendata.to.genind} converts a \code{"genambig"} or
 \code{"genbinary"} object to a \code{"genind"} object using the package
-\pkg{adegenet}.  The data being converted must all be of a single
-ploidy.  Ploidy and population information are carried over to the new
+\pkg{adegenet}.  Each individual must have a single ploidy.  
+Ploidy and population information are carried over to the new
 object.  Data will be coded as presence/absence in the new object.  The
 locus names in the new object are locus and allele names
 seperated by a hyphen.

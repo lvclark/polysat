@@ -1,7 +1,9 @@
-Changes in version 1.4-2
+Changes in version 1.5-0
 
 The functions processDatasetAllo, plotSSAllo, and plotParamHeatmap have been added
 to simplify the workflow when using alleleCorrelations and testAlGroups.
+
+The function calcPopDiff has been added to allow estimation of Gst and Jost's D.
 
 gendata validity function edited to prevent locus names
 from containing periods.
@@ -14,6 +16,9 @@ Genotype and Genotypes assignment methods for the "genambig" class edited to
 prevent empty vectors or NA values from being assigned to genotypes.
 
 deSilvaFreq edited to be compatible with ploidymatrix format.
+
+gendata.to.genind edited to allow multiple ploidies in the dataset, to be compatible
+with newer versions of adegenet.
 
 Broken URLs in documentation fixed or removed.
 

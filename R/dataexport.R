@@ -547,18 +547,21 @@ write.POPDIST <- function(object, samples=Samples(object),
 
 gendata.to.genind <- function(object, samples=Samples(object),
                               loci=Loci(object)){
-  # Errors
+  # Errors and setup
   if(!is(object, "gendata")) stop("genambig or genbinary object needed.")
-  ploidy <- unique(Ploidies(object, samples, loci))
-  if(length(ploidy)>1) stop("Single ploidy needed for genind.")
-  if(is.na(ploidy)) stop("Please specify ploidy.")
+  object <- object[samples,loci]
+  if(!"ploidysample" %in% class(object@Ploidies)){
+    object <- reformatPloidies(object, output = "sample")
+  }
+  ploidy <- Ploidies(object)
+  if(any(is.na(ploidy))) stop("Please specify ploidy.")
 
   # Get genbinary if necessary
   if(is(object, "genambig"))
     object <- genambig.to.genbinary(object)
 
   # export genotypes table
-  tab <- Genotypes(object, samples, loci)
+  tab <- Genotypes(object)
   # convert missing data to NA
   tab[tab == Missing(object)] <- NA
   # make column headings usable

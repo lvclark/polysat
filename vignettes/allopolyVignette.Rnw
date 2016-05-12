@@ -592,12 +592,12 @@ Ploidies(recodedData)[,"Loc7"] <- 4
 The recoded data may now be analyzed with any \textsc{polysat} function,
 or exported to other software using any of the various \texttt{write}
 functions in polysat.  For example, it is now appropriate to estimate
-allele frequencies from the data and use those to estimate $F_{ST}$.
+allele frequencies from the data and use those to estimate $G_{ST}$.
 
 <<>>=
 myfreq <- simpleFreq(recodedData)
-myFst <- calcFst(myfreq)
-myFst
+myGst <- calcPopDiff(myfreq, metric = "Gst")
+myGst
 @
 
 We can also export the data if we want to do analysis using other software.
