@@ -38,7 +38,8 @@ manner.
 The methods described in this tutorial are designed for natural populations of 
 one hundred or more individuals.  They will also work for certain types of 
 mapping populations, such as an F2 population derived from two inbred 
-grandparents.  They will be much less effective for small sample sizes, and for
+grandparents.  They will be much less effective for small sample sizes 
+($<50$ for tetraploids, $<200$ for higher ploidies), and for
 datasets with multiple species or highly-diverged ecotypes.  The methods in 
 this tutorial are also inappropriate for species that reproduce asexually.  If
 you have duplicate genotypes in your dataset (either as a result of asexual reproduction,
@@ -50,7 +51,7 @@ If you aren't, please spend some time with ``An Introduction to R'' and with the
 ``polysat version 1.5 Tutorial Manual''.  Additionally, there is a manuscript on 
 BioRxiv at \url{http://dx.doi.org/10.1101/020610} that describes in detail the 
 rationale and limitations of the allele assignment tools described in this manual.
-You may also find the documentation for individuals functions to be helpful
+You may also find the documentation for individual functions to be helpful
 (\emph{e.g.} see \texttt{?alleleCorrelations}, \texttt{?processDatasetAllo},
 and \texttt{?recodeAllopoly}).
 I'm always happy to answer questions over email, but I greatly appreciate it if 
@@ -215,6 +216,13 @@ pop2ind <- Samples(mydata)[mypca[,1] > 0]
 PopInfo(mydata)[pop1ind] <- 1
 PopInfo(mydata)[pop2ind] <- 2
 @
+
+Of course, principal coordinates analysis is not the only method of assigning
+individuals to populations.
+If you have already analyzed your data with other software (for example, Structure)
+before importing it into \textsc{polysat}, you could instead use population 
+assignments from that software, and construct the \texttt{PopInfo} vector
+accordingly to indicate population assignments.
 
 \section{The \textsc{polysat} algorithm for allele assignment}
 
@@ -398,6 +406,8 @@ plotParamHeatmap(myassign$propHomoplasious, popname = "Pop1",
                  main = "Proportion homoplasious loci:")
 @
 
+Lighter colors indicate fewer homoplasious alleles, which in turn indicates
+better quality allele assignment.
 Loc7 had a lot of homoplasious alleles, but that is not a surprise given
 that it is one tetrasomic locus rather than two disomic loci.  In Pop1,
 Loc4 worked best with the third parameter set (allowing null alleles),
@@ -454,7 +464,9 @@ For each locus, it picks the parameter set that results in the lowest missing
 data rate, then in the case of a tie the parameter set with the least 
 amount of homoplasy (after merging across populations), then in the case of a
 tie the lowest numbered parameter set.  So in this case, parameter set 2 would 
-be chosen for Loc1, and parameter set 1 for all other loci.
+be chosen for Loc1, and parameter set 1 for all other loci.  (Loc1 had an equal
+amount of missing data for parameter sets 1 and 2, but less homoplasy for parameter
+set 2.)
 
 Let's extract that list of optimal assignments from the results.  We will also
 eliminate Loc6 and Loc7 from the list since we discarded Loc6 and don't want to
