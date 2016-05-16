@@ -311,6 +311,12 @@ this is a simulated dataset, we will simply exclude Loc6 from further analysis.
 mydata <- deleteLoci(mydata, loci="Loc6")
 @
 
+Occasionally, a locus with no population structure or scoring error will produce a
+warning about positive correlations between alleles simply due to sampling error in the dataset.  
+If you only get the warning
+for one locus and population in your dataset, and it does not look like there was scoring error
+(\emph{i.e.} the alleles that are positively correlated are not close in 
+amplicon size), you can safely ignore the warning.
 
 \subsubsection{Quality of clustering}
 
