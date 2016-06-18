@@ -864,9 +864,9 @@ plotParamHeatmap <- function(propMat, popname = "AllInd", col = grey.colors(12)[
 # usePops: should allele assignments be performed separately by PopInfo in the object?
 processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(object),
                                n.subgen = 2, SGploidy = 2, n.start = 50, alpha = 0.05,
-                               parameters = data.frame(tolerance     = c(0.05, 0.05, 0.05),
-                                                       rare.al.check = c(0.2,  0,    0.2),
-                                                       null.weight   = c(0.5,  0.5,  0)),
+                               parameters = data.frame(tolerance     = c(0.05, 0.05, 0.05, 0.05),
+                                                       rare.al.check = c(0.2,  0,    0.2,  0),
+                                                       null.weight   = c(0.5,  0.5,  0,    0)),
                                plotsfile = "alleleAssignmentPlots.pdf", usePops = FALSE){
   if(!all(samples %in% Samples(object))){
     stop("Sample names in samples and object do not match.")

@@ -19,9 +19,9 @@ plotSSAllo(AlCorrArray)
 plotParamHeatmap(propMat, popname = "AllInd", col = grey.colors(12)[12:1], main = "")
 processDatasetAllo(object, samples = Samples(object), loci = Loci(object),
                    n.subgen = 2, SGploidy = 2, n.start = 50, alpha = 0.05,
-                   parameters = data.frame(tolerance     = c(0.05, 0.05, 0.05),
-                                           rare.al.check = c(0.2,  0,    0.2),
-                                           null.weight   = c(0.5,  0.5,  0)),
+                   parameters = data.frame(tolerance     = c(0.05, 0.05, 0.05, 0.05),
+                                           rare.al.check = c(0.2,  0,    0.2,  0),
+                                           null.weight   = c(0.5,  0.5,  0,    0)),
                    plotsfile = "alleleAssignmentPlots.pdf", usePops = FALSE)
 }
 
@@ -38,7 +38,8 @@ This can be the \code{$propHomoplasious} output of \code{processDatasetAllo}, in
 three-dimensional array is provided, it will be indexed in the second dimension by \code{popname}.  The 
 \code{$propHomoplMerged} or \code{$missRate} output of \code{processDatasetAllo} may also be passed to this argument.}
 \item{popname}{The name of the population corresponding to the data in \code{propMat}.}
-\item{col}{The color scale for representing the proportion of loci that are homoplasious.}
+\item{col}{The color scale for representing the proportion of loci that are homoplasious or the proportion of 
+genotypes that are missing.}
 \item{main}{A title for the plot.}
 \item{object}{A \code{"genambig"} object.}
 \item{samples}{An optional character vector indicating which samples to include in analysis.}
