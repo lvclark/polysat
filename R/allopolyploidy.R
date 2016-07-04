@@ -761,6 +761,7 @@ plotSSAllo <- function(AlCorrArray){
   # get array of sums of squares ratios, to evaluate clustering qualities
   SSarray <- array(sapply(AlCorrArray, FUN = function(x) x$betweenss/x$totss), dim = dim(AlCorrArray),
                    dimnames = list(loci, pops))
+  SSarray[is.na(SSarray)] <- 0
   # get array of index of evenness of distribution of alleles among isoloci
   Earray <- array(sapply(AlCorrArray, FUN = function(x){
     propAl <- rowMeans(x$Kmeans.groups) # proportion of alleles belonging to each isolocus
@@ -1011,7 +1012,12 @@ processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(ob
   # heatmaps
   for(L in loci){
     for(p in allpops){
-      heatmap(CorrResults[[L,p]]$heatmap.dist, main = paste(L, p, sep = ", "))
+      if(!is.null(CorrResults[[L,p]]$heatmap.dist)){
+        heatmap(CorrResults[[L,p]]$heatmap.dist, main = paste(L, p, sep = ", "))
+      } else {
+        plot(NA, xlim = c(0,10), ylim = c(0,10), main = paste(L, p, sep = ", "))
+        text(5,5, "Fisher's exact tests not performed.\nOne or more alleles are present in all individuals.")
+      }
     }
   }
   for(p in allpops){

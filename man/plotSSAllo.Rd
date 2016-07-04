@@ -72,7 +72,8 @@ The word \dQuote{best} indicates, for each
 locus, the parameter set that found the least homoplasy or smallest number of non-recodeable genotypes.
 
 By default, \code{processDatasetAllo} generates a PDF file containing output from \code{plotSSAllo} and \code{plotParamHeatmap},
-as well as heatmaps of the \code{$heatmap.dist} output of \code{alleleCorrelations} for each locus and population.  It also
+as well as heatmaps of the \code{$heatmap.dist} output of \code{alleleCorrelations} for each locus and population.
+Heatmaps are not plotted for loci where an allele is present in all individuals.  \code{processDatasetAllo} also
 generates a list of R objects containing allele assignments under different parameters, as well as statistics for evaluating 
 clustering quality and choosing the optimal parameter sets, as described below.
 }
@@ -80,7 +81,7 @@ clustering quality and choosing the optimal parameter sets, as described below.
 \code{plotSSAllo} draws a plot and invisibly returns a list:
 \item{ssratio }{A two-dimensional array with loci in the first dimension and populations in the second dimension.
 Each value is the sums-of-squares between isoloci divided by the total sums-of-squares, as output by K-means
-clustering.}
+clustering.  If K-means clustering was not performed, the value is zero.}
 \item{evenness }{An array of the same dimensions as \code{$ssratio}, containing values to indicate how evenly
 alleles are distributed among isoloci as determined by K-means clustering.  This is:
 \deqn{1 - \sum_{1}^{i}{(frac{a_{i}}{A})^2}}{1 - \sum_{1}^{i}{(a_i/A)^2}}
