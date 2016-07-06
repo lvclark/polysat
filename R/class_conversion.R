@@ -5,7 +5,11 @@
   if(missing(samples)) samples <- Samples(object)
   if(missing(locus)) stop("locus argument needed.")
   
-  al <- sort(unique(stack(object@Genotypes[samples,locus])$values))
+  if(length(samples) == 1){
+    al <- sort(unique(Genotype(object, samples, locus)))
+  } else {
+    al <- sort(unique(stack(object@Genotypes[samples,locus])$values))
+  }
   al <- al[al != Missing(object)]
   return(al)
 }
