@@ -13,7 +13,7 @@
 \author{Lindsay V. Clark <lvclark@illinois.edu>\\
   University of Illinois, Urbana-Champaign\\
   Department of Crop Sciences\\
-\url{http://openwetware.org/wiki/Polysat}}
+\url{https://github.com/lvclark/polysat/wiki}}
 \date{\today}
 
 \begin{document}
@@ -1496,7 +1496,7 @@ microsatellite analysis.  \emph{Molecular Ecology Resources}
 
 \item Clark, LV and Drauch Schreier, A. 2015.  Resolving microsatellite genotype
 ambiguity in populations of allopolyploid and diploidized autopolyploid organisms
-using negative correlations between alleles.  \emph{BioRxiv}.  DOI: 10.1101/020610
+using negative correlations between allelic variables.  \emph{BioRxiv}.  DOI: 10.1101/020610
 
 \end{itemize}
 

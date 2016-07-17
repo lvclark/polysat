@@ -118,7 +118,7 @@ for each locus.  The best set of assignments is chosen using \code{$missRate}, t
 \references{
 Clark, L. V. and Drauch Schreier, A. (2015) Resolving microsatellite genotype ambiguity in
 populations of allopolyploid and diploidized autopolyploid organisms
-using negative correlations between alleles. \emph{bioRxiv}, DOI: 10.1101/020610.
+using negative correlations between allelic variables. \emph{bioRxiv}, DOI: 10.1101/020610.
 }
 \author{
 Lindsay V. Clark
