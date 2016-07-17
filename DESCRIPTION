@@ -5,7 +5,7 @@ Title: Tools for Polyploid Microsatellite Analysis
 Authors@R: person("Lindsay V.", "Clark", email = "lvclark@illinois.edu", role = c("aut", "cre"))
 Author: Lindsay V. Clark [aut, cre]
 Maintainer: Lindsay V. Clark <lvclark@illinois.edu>
-Imports: methods, stats, utils
+Imports: methods, stats, utils, grDevices, graphics
 Suggests: combinat, ade4, adegenet, ape
 Description: A collection of tools to handle microsatellite data of
  any ploidy (and samples of mixed ploidy) where allele copy number is not
