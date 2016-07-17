@@ -58,7 +58,7 @@ A file is written but no value is returned.
   allotetraploid microsatellite data. \emph{Molecular Ecology Notes}
   \bold{6}, 586-589.
 
-  \url{http://ecology.bnu.edu.cn/zhangdy/TETRA/TETRA.htm}
+%  \url{http://ecology.bnu.edu.cn/zhangdy/TETRA/TETRA.htm} % zhangdy/index.php still up, but TETRA link broken July 2016
 
   Liao, W. J., Zhu, B. R., Zeng, Y. F. and Zhang, D. Y.  (2008)
   TETRA: an improved program for population genetic analysis of
