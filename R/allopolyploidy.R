@@ -289,235 +289,265 @@ alleleCorrelations <- function(object, samples=Samples(object), locus=1,
 # there are definitely not.
 # tolerance is the proportion of genotypes that can be allowed to be inconsistent
 # with the allele assignments.
-# rare.al.check is a threshold for the proportion of genotypes in which an allele
-# should be present to be considered rare.  Rare alleles are checked to see
-# if they should be switched to a different isolocus.
+# swap indicates whether or not to use the swapping algorithm.
+# R, rho, T0, and maxreps are parameters for simulated annealing.
 testAlGroups <- function(object, fisherResults, SGploidy=2,
-                         samples=Samples(object),
-                         null.weight=0.5, tolerance=0.05,
-                         rare.al.check=0.2){
-    # make sure genotype data is right class
-    if(!is(object, "genambig") && !is(object, "genbinary"))
-        stop("genambig or genbinary object needed.")
-    object <- object[samples,]
-    # locus
-    L <- fisherResults$locus
-    # remove missing data
-    mymissing <- isMissing(object, loci=L)
-    # number of individuals
-    nind <- sum(!mymissing)
-    # subset genotypes
-    genobject <- object[!mymissing,L]
-    # change class if necessary
-    if(is(genobject, "genbinary")) genobject <- genbinary.to.genambig(genobject)
-    # alleles
-    alleles <- dimnames(fisherResults$Kmeans.groups)[[2]]
-
-    # number of subgenomes
-    n.subgen <- dim(fisherResults$Kmeans.groups)[1]
-
-    # get the number of alleles in each genotype
-    numAl <- sapply(Genotypes(genobject), length)
-    # check to see that none have too many alleles
-    if(!all(numAl <= n.subgen*SGploidy))
-        stop(paste("One or more genotypes have more than",
-                   n.subgen*SGploidy, "alleles."))
-    # check to see that alleles match in genobject and fisherResults
-    if(!all(as.character(.unal1loc(genobject, samples=Samples(genobject),
-                        locus=L)) %in% alleles))
-        stop("Alleles found in genobject that aren't in fisherResults.")
-
-    # Compare K-means and UPGMA results
-    # Sort them so groups are the same
-    Kmat <- fisherResults$Kmeans.groups
-    Umat <- fisherResults$UPGMA.groups
-    KsortV <- UsortV <- integer(length(alleles))
-    Uswap <- Kswap <- integer(n.subgen) # index = new number, number=row in matrix
-    for(i in 1:n.subgen){
-        KfirstLeft <- match(0, KsortV) # first unassigned allele
-        UfirstLeft <- match(0, UsortV)
-        # match rows to new subgenomes
-        Kswap[i] <- match(1, Kmat[,KfirstLeft])
-        Uswap[i] <- match(1, Umat[,UfirstLeft])
-        # assign alleles to new subgenomes
-        KsortV[Kmat[Kswap[i],] == 1] <- i
-        UsortV[Umat[Uswap[i],] == 1] <- i
+                          samples=Samples(object),
+                          null.weight=0.5, tolerance=0.05,
+                          swap = TRUE, R = 100, rho = 0.95, T0 = 1, maxreps = 100){
+  # make sure genotype data is right class
+  if(!is(object, "genambig") && !is(object, "genbinary"))
+    stop("genambig or genbinary object needed.")
+  object <- object[samples,]
+  # locus
+  L <- fisherResults$locus
+  # remove missing data
+  mymissing <- isMissing(object, loci=L)
+  # number of individuals
+  nind <- sum(!mymissing)
+  # subset genotypes
+  genobject <- object[!mymissing,L]
+  # change class if necessary
+  if(is(genobject, "genbinary")) genobject <- genbinary.to.genambig(genobject)
+  # alleles
+  alleles <- dimnames(fisherResults$Kmeans.groups)[[2]]
+  # number of alleles
+  numAlTotal <- length(alleles)
+  
+  # number of subgenomes
+  n.subgen <- dim(fisherResults$Kmeans.groups)[1]
+  
+  # get the number of alleles in each genotype
+  numAl <- sapply(Genotypes(genobject), length)
+  # check to see that none have too many alleles
+  if(!all(numAl <= n.subgen*SGploidy))
+    stop(paste("One or more genotypes have more than",
+               n.subgen*SGploidy, "alleles."))
+  # check to see that alleles match in genobject and fisherResults
+  if(!all(as.character(.unal1loc(genobject, samples=Samples(genobject),
+                                 locus=L)) %in% alleles))
+    stop("Alleles found in genobject that aren't in fisherResults.")
+  
+  # function to tally which genotypes are inconsistent with an assignment matrix
+  tallyInconsistentGen <- function(G, samples=1:nind, currentInconsistent = rep(FALSE, nind)){
+    tot <- 0
+    for(s in samples){
+      gen <- as.character(Genotype(genobject, s, L))
+      subg <- G[, gen, drop = FALSE]
+      if(any(rowSums(subg) == 0) || 
+           any(rowSums(subg[,colSums(subg) == 1, drop = FALSE]) > SGploidy)){
+        currentInconsistent[s] = TRUE
+      } else {
+        currentInconsistent[s] = FALSE
+      }
     }
-    # were the results identical?
-    if(identical(KsortV, UsortV)){
-        G <- Kmat # use K-means assignments (same as UPGMA assignments)
+    return(currentInconsistent)
+  }
+  
+  ## Compare K-means and UPGMA results ##
+  # Sort them so groups are the same
+  Kmat <- fisherResults$Kmeans.groups
+  Umat <- fisherResults$UPGMA.groups
+  KsortV <- UsortV <- integer(length(alleles))
+  Uswap <- Kswap <- integer(n.subgen) # index = new number, number=row in matrix
+  for(i in 1:n.subgen){
+    KfirstLeft <- match(0, KsortV) # first unassigned allele
+    UfirstLeft <- match(0, UsortV)
+    # match rows to new subgenomes
+    Kswap[i] <- match(1, Kmat[,KfirstLeft])
+    Uswap[i] <- match(1, Umat[,UfirstLeft])
+    # assign alleles to new subgenomes
+    KsortV[Kmat[Kswap[i],] == 1] <- i
+    UsortV[Umat[Uswap[i],] == 1] <- i
+  }
+  # were the results identical?
+  if(identical(KsortV, UsortV)){
+    G <- Kmat # use K-means assignments (same as UPGMA assignments)
+  } else {
+    # if K-means and UPGMA gave different results, see which is more consistent
+    # with genotypes.
+    Kok <- nind - sum(tallyInconsistentGen(Kmat)) # count consistent with K-means assignments
+    Uok <- nind - sum(tallyInconsistentGen(Umat)) # count consistent with UPGMA assignments
+    
+    if(Uok > Kok){
+      G <- Umat # UPGMA was better, use this matrix
     } else {
-        # if K-means and UPGMA gave different results, see which is more consistent
-        # with genotypes.
-        Kok <- 0 # count consistent with K-means assignments
-        Uok <- 0 # count consistent with UPGMA assignments
-        for(s in Samples(genobject)){
-            # get genotype and assignment matrices for this individual
-            gen <- as.character(Genotype(genobject, s, L))
-            Ksubg <- Kmat[,gen, drop=FALSE]
-            Usubg <- Umat[,gen, drop=FALSE]
-            # check whether assignments are okay
-            if(all(rowSums(Ksubg)>0) &
-               all(rowSums(Ksubg[,colSums(Ksubg)==1, drop=FALSE]) <= SGploidy)){
-                Kok <- Kok + 1
-            }
-            if(all(rowSums(Usubg)>0) &
-               all(rowSums(Usubg[,colSums(Usubg)==1, drop=FALSE]) <= SGploidy)){
-                Uok <- Uok + 1
-            }
-        }
-        if(Uok > Kok){
-            G <- Umat # UPGMA was better, use this matrix
-        } else {
-            G <- Kmat # Use K-means if it was better or if there was a tie.
-        }
+      G <- Kmat # Use K-means if it was better or if there was a tie.
     }
-
-    # First, check if rare alleles should be swapped to a different isolocus.
-    # determine which alleles are rare
-    AlOcc <- colSums(fisherResults$gentable)/dim(fisherResults$gentable)[1]
-    AlToCheck <- alleles[AlOcc <= rare.al.check]
-    continueChecking <- TRUE
-    while(continueChecking){
-        continueChecking <- FALSE
-    for(a in AlToCheck){
-        # set up alternative assignment matrices
-        G.alts <- list()
-        length(G.alts) <- n.subgen
-        for(i in 1:n.subgen){
-            G.temp <- G
-            G.temp[i,a] <- 1
-            G.temp[-i,a] <- 0
-            G.alts[[i]] <- G.temp
+  }
+  
+  ## Check if alleles should be swapped to a different isolocus. ##
+  
+  # function to make a new G matrix at random, with one allele swapped
+  randomNewG <- function(G){
+    alToSwap <- alleles[sample(numAlTotal, 1)]
+    thisSubgen <- which(G[,alToSwap] == 1)
+    if(n.subgen == 2){
+      newSubgen <- (1:2)[-thisSubgen]
+    } else {
+      newSubgen <- sample((1:n.subgen)[-thisSubgen], 1)
+    }
+    Gnew <- G
+    Gnew[thisSubgen,alToSwap] <- 0
+    Gnew[newSubgen, alToSwap] <- 1
+    return(list(alToSwap, Gnew))
+  }
+  
+  inconsInd <- tallyInconsistentGen(G) # which individuals are inconsistent with current assignments
+  J <- mean(inconsInd) # current "cost" of this solution
+  # only do swapping if desired by user, and only if assignments aren't already perfect
+  if(swap &&  J > 0){ 
+    # set up an index of which genotypes have which alleles, so we know which genotypes to check
+    alleleIndex <- list()
+    length(alleleIndex) <- numAlTotal
+    names(alleleIndex) <- alleles
+    for(a in alleles){
+      alleleIndex[[a]] <- which(fisherResults$gentable[,paste(L, a, sep = ".")] == 1)
+    }
+    # simulated annealing algorithm
+    Ti <- T0 # temperature set up
+    for(rep in 1:maxreps){
+      done <- TRUE # to test convergence OR finding an answer that matches all genotypes
+      for(r in 1:R){
+        # pick the allele to swap
+        temp <- randomNewG(G)
+        Gnew <- temp[[2]]
+        a <- temp[[1]]
+        # find out which genotypes are inconsitent with this new set of assignments
+        inconsIndNew <- tallyInconsistentGen(Gnew, alleleIndex[[a]], inconsInd)
+        Jnew <- mean(inconsIndNew)
+        if(Jnew <= J){ # keep if if we have found a better solution 
+          G <- Gnew
+          J <- Jnew
+          inconsInd <- inconsIndNew
+          done <- FALSE # swap happened; convergence did not occur in this rep
+          if(J == 0){ # perfect solution found, stop now
+            done <- TRUE
+            break
+          }
+        } else { # if we have found a worse solution, randomly decide whether to keep it
+          D <- Jnew - J
+          if(sample(10000,1) <= 10000 * exp(-D/Ti)){ 
+            G <- Gnew
+            J <- Jnew
+            inconsInd <- inconsIndNew
+            done <- FALSE
+          }
         }
-        # vector to count genotypes consistent with alternative matrices
-        ok.count <- rep(0, n.subgen)
-        # check genotypes against alternative matrices
-        for(s in Samples(genobject)){
-            gen <- as.character(Genotype(genobject, s, L)) # the genotype
-            if(!a %in% gen) next # skip if it doesn't have this allele
-            for(i in 1:n.subgen){
-                subg <- G.alts[[i]][,gen, drop=FALSE]
-                if(all(rowSums(subg)>0) &
-                   all(rowSums(subg[,colSums(subg)==1, drop=FALSE]) <= SGploidy)){
-                    ok.count[i] <- ok.count[i] + 1
-                }
-            }
-        }
-        # only change G if there is not a tie
-        if(sum(ok.count==max(ok.count))==1 &&
-           !identical(G, G.alts[[which(ok.count==max(ok.count))]])){
-            G <- G.alts[[which(ok.count==max(ok.count))]]
-            continueChecking <- TRUE # go through all remaining alleles again
-            AlToCheck <- AlToCheck[AlToCheck!=a]
-        }
-    }}
-
-    # set up internal function to check consistency for adding homoplasy
-    makeA <- function(){
-        A <- matrix(0, nrow=n.subgen, ncol=length(alleles),
+      }
+      Ti <- Ti * rho # lower the temperature
+      if(done) break
+    }
+  }
+  
+  AlOcc <- colSums(fisherResults$gentable)/dim(fisherResults$gentable)[1]
+  
+  ## Check for homoplasy ##
+  # set up internal function to check consistency for adding homoplasy
+  makeA <- function(){
+    A <- matrix(0, nrow=n.subgen, ncol=length(alleles),
                 dimnames=list(NULL,alleles))
-        num.error <- 0 # number of genotypes with scoring or meiotic error
-        for(s in Samples(genobject)){
-            gen <- as.character(Genotype(genobject, s, L)) # the genotype
-
-            # get 1/0 matrix for presence of these alleles in subgenomes
-            subG <- G[,gen, drop=FALSE]
-            # Start checking the genotype.
-            # It is okay if no genome has more alleles than is possible AND
-            # no genome has zero alleles.
-            # Otherwise, figure out which alleles might need to be copied:
-            if(!all(rowSums(subG[,colSums(subG) == 1, drop=FALSE])
-                    <= SGploidy)){
-                # If one subgenome has more alleles than are possible
-                donor <-
-                (1:n.subgen)[rowSums(subG[,colSums(subG) == 1, drop=FALSE]) >
-                             SGploidy]
-                # they might be copied to a subgenome(s) that has fewer than the
-                # maximum.
-                recipient <- (1:n.subgen)[rowSums(subG) < SGploidy]
-                if(length(recipient)==0){
-                    recipient <- (1:n.subgen)[rowSums(subG[,colSums(subG) == 1,
-                                                   drop=FALSE]) < SGploidy]
-                }
-                gendonor <- gen[colSums(subG[recipient,,drop=FALSE]==0)>0 &
-                                colSums(subG[donor,,drop=FALSE]==1)>0]
-                A[recipient,gendonor] <- A[recipient,gendonor] + 1
-
-                num.error <- num.error + 1
-            } else {
-                # If one subgenome has no alleles
-                if(!all(rowSums(subG) > 0) && null.weight > 0){
-                    recipient <- (1:n.subgen)[rowSums(subG)==0]
-                    A[recipient,gen] <- A[recipient,gen] + null.weight
-                    num.error <- num.error + 1
-                }
-            }
-        } # end of Samples loop
-
-        # calculate the proportion inconsistent with allele assignments
-        prop.error <- num.error/nind
-
-        # Make sure not to copy alleles to where they have already been
-        # assigned (problem in hexaploids).
-        A[G==1] <- 0
-
-        # weight the A matrix by allele occurance
-        # omitted; is only helpful for rare homoplasious alleles.
- #       A <- sweep(A, 2, AlOcc, "/")
-
-        return(list(A, prop.error))
-    } # end of makeA function
-
-    # check consistency once before starting assingnment and re-checking loop
+    num.error <- 0 # number of genotypes with scoring or meiotic error
+    for(s in Samples(genobject)){
+      gen <- as.character(Genotype(genobject, s, L)) # the genotype
+      
+      # get 1/0 matrix for presence of these alleles in subgenomes
+      subG <- G[,gen, drop=FALSE]
+      # Start checking the genotype.
+      # It is okay if no genome has more alleles than is possible AND
+      # no genome has zero alleles.
+      # Otherwise, figure out which alleles might need to be copied:
+      if(!all(rowSums(subG[,colSums(subG) == 1, drop=FALSE])
+              <= SGploidy)){
+        # If one subgenome has more alleles than are possible
+        donor <-
+          (1:n.subgen)[rowSums(subG[,colSums(subG) == 1, drop=FALSE]) >
+                         SGploidy]
+        # they might be copied to a subgenome(s) that has fewer than the
+        # maximum.
+        recipient <- (1:n.subgen)[rowSums(subG) < SGploidy]
+        if(length(recipient)==0){
+          recipient <- (1:n.subgen)[rowSums(subG[,colSums(subG) == 1,
+                                                 drop=FALSE]) < SGploidy]
+        }
+        gendonor <- gen[colSums(subG[recipient,,drop=FALSE]==0)>0 &
+                          colSums(subG[donor,,drop=FALSE]==1)>0]
+        A[recipient,gendonor] <- A[recipient,gendonor] + 1
+        
+        num.error <- num.error + 1
+      } else {
+        # If one subgenome has no alleles
+        if(!all(rowSums(subG) > 0) && null.weight > 0){
+          recipient <- (1:n.subgen)[rowSums(subG)==0]
+          A[recipient,gen] <- A[recipient,gen] + null.weight
+          num.error <- num.error + 1
+        }
+      }
+    } # end of Samples loop
+    
+    # calculate the proportion inconsistent with allele assignments
+    prop.error <- num.error/nind
+    
+    # Make sure not to copy alleles to where they have already been
+    # assigned (problem in hexaploids).
+    A[G==1] <- 0
+    
+    # weight the A matrix by allele occurance
+    # omitted; is only helpful for rare homoplasious alleles.
+    #       A <- sweep(A, 2, AlOcc, "/")
+    
+    return(list(A, prop.error))
+  } # end of makeA function
+  
+  # check consistency once before starting assingnment and re-checking loop
+  temp <- makeA()
+  A <- temp[[1]]
+  prop.error <- temp[[2]]
+  
+  # loop to copy alleles to other genomes, then re-check
+  numloops <- 0
+  while(prop.error > tolerance && numloops < 1000){
+    numloops <- numloops + 1 # precaution to keep it from getting stuck
+    
+    A <- A[,AlOcc != 1] # don't copy fixed alleles
+    
+    # choose best allele to make homoplasious for this round
+    tocopy <- which(A == max(A), arr.ind=TRUE)
+    if(dim(tocopy)[1]==1){ # if one is clearly the best
+      thisallele <- dimnames(A)[[2]][tocopy[,"col"]]
+      thissubgen <- tocopy[,"row"]
+    } else { # choose among several with the highest scores
+      if(!is.null(fisherResults$p.values.neg)){ # use p values
+        meanp <- numeric(dim(tocopy)[1])
+        for(i in 1:dim(tocopy)[1]){
+          # alleles already in this genome
+          thisgenal <- alleles[G[tocopy[i,"row"],] == 1]
+          # remove any fixed alleles
+          thisgenal <- thisgenal[!thisgenal %in% alleles[AlOcc == 1]]
+          # get mean p values between this allele and alleles already in genome
+          thisal <- dimnames(A)[[2]][tocopy[i,"col"]]
+          meanp <- mean(fisherResults$p.values.neg[thisgenal,thisal])
+        }
+        bestp <- which(meanp == min(meanp))
+        if(length(bestp) > 1){ # if there's a tie, choose at random
+          bestp <- sample(bestp, size=1)
+        }
+        thisallele <- dimnames(A)[[2]][tocopy[bestp,"col"]]
+        thissubgen <- tocopy[bestp,"row"]
+      } else { # pick at random if there are no p-values to check
+        myrand <- sample(dim(tocopy)[1], size=1)
+        thisallele <- dimnames(A)[[2]][tocopy[myrand,"col"]]
+        thissubgen <- tocopy[myrand,"row"]
+      }
+    }
+    G[thissubgen, thisallele] <- 1
+    
+    # check genotypes against new G matrix
     temp <- makeA()
     A <- temp[[1]]
     prop.error <- temp[[2]]
-
-    # loop to copy alleles to other genomes, then re-check
-    numloops <- 0
-    while(prop.error > tolerance && numloops < 1000){
-        numloops <- numloops + 1 # precaution to keep it from getting stuck
-
-        A <- A[,AlOcc != 1] # don't copy fixed alleles
-
-        # choose best allele to make homoplasious for this round
-        tocopy <- which(A == max(A), arr.ind=TRUE)
-        if(dim(tocopy)[1]==1){ # if one is clearly the best
-            thisallele <- dimnames(A)[[2]][tocopy[,"col"]]
-            thissubgen <- tocopy[,"row"]
-        } else { # choose among several with the highest scores
-            if(!is.null(fisherResults$p.values.neg)){ # use p values
-                meanp <- numeric(dim(tocopy)[1])
-                for(i in 1:dim(tocopy)[1]){
-                    # alleles already in this genome
-                    thisgenal <- alleles[G[tocopy[i,"row"],] == 1]
-                    # remove any fixed alleles
-                    thisgenal <- thisgenal[!thisgenal %in% alleles[AlOcc == 1]]
-                    # get mean p values between this allele and alleles already in genome
-                    thisal <- dimnames(A)[[2]][tocopy[i,"col"]]
-                    meanp <- mean(fisherResults$p.values.neg[thisgenal,thisal])
-                }
-                bestp <- which(meanp == min(meanp))
-                if(length(bestp) > 1){ # if there's a tie, choose at random
-                    bestp <- sample(bestp, size=1)
-                }
-                thisallele <- dimnames(A)[[2]][tocopy[bestp,"col"]]
-                thissubgen <- tocopy[bestp,"row"]
-            } else { # pick at random if there are no p-values to check
-                myrand <- sample(dim(tocopy)[1], size=1)
-                thisallele <- dimnames(A)[[2]][tocopy[myrand,"col"]]
-                thissubgen <- tocopy[myrand,"row"]
-            }
-        }
-        G[thissubgen, thisallele] <- 1
-
-        # check genotypes against new G matrix
-        temp <- makeA()
-        A <- temp[[1]]
-        prop.error <- temp[[2]]
-    } # end of while loop
-    return(list(locus=L, SGploidy=SGploidy, assignments=G))
+  } # end of while loop
+  return(list(locus=L, SGploidy=SGploidy, assignments=G))
 }
 
 # function to assign alleles to subgenomes based on the procedure of
@@ -866,17 +896,17 @@ plotParamHeatmap <- function(propMat, popname = "AllInd", col = grey.colors(12)[
 processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(object),
                                n.subgen = 2, SGploidy = 2, n.start = 50, alpha = 0.05,
                                parameters = data.frame(tolerance     = c(0.05, 0.05, 0.05, 0.05),
-                                                       rare.al.check = c(0.2,  0,    0.2,  0),
+                                                       swap = c(TRUE, FALSE, TRUE, FALSE),
                                                        null.weight   = c(0.5,  0.5,  0,    0)),
-                               plotsfile = "alleleAssignmentPlots.pdf", usePops = FALSE){
+                               plotsfile = "alleleAssignmentPlots.pdf", usePops = FALSE, ...){
   if(!all(samples %in% Samples(object))){
     stop("Sample names in samples and object do not match.")
   }
   if(!all(loci %in% Loci(object))){
     stop("Locus names in loci and object do not match.")
   }
-  if(!all(c("tolerance", "rare.al.check", "null.weight") %in% names(parameters))){
-    stop("Parameters data frame needs column headers tolerance, rare.al.check, and null.weight.")
+  if(!all(c("tolerance", "swap", "null.weight") %in% names(parameters))){
+    stop("Parameters data frame needs column headers tolerance, swap, and null.weight.")
   }
   
   object <- object[samples,]
@@ -915,7 +945,7 @@ processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(ob
       for(pm in 1:nparam){
         TAGresults [[L, p, pm]] <- testAlGroups(object, CorrResults[[L, p]], SGploidy = SGploidy,
                                                 samples = thesesamples, null.weight = parameters$null.weight[pm],
-                                                tolerance = parameters$tolerance[pm], rare.al.check = parameters$rare.al.check[pm])
+                                                tolerance = parameters$tolerance[pm], swap = parameters$swap[pm], ...)
       } # end of parameter set loop
     } # end of locus loop
   } # end of populations loop

@@ -18,7 +18,8 @@ alleleCorrelations(object, samples = Samples(object), locus = 1,
                    alpha = 0.05, n.subgen = 2, n.start = 50)
 
 testAlGroups(object, fisherResults, SGploidy=2, samples=Samples(object),
-             null.weight=0.5, tolerance=0.05, rare.al.check=0.2)
+             null.weight=0.5, tolerance=0.05, swap = TRUE,
+             R = 100, rho = 0.95, T0 = 1, maxreps = 100)
 }
 \arguments{
   \item{object}{
@@ -70,27 +71,34 @@ most cases.
     with the allele assignments.  This is the proportion of genotypes
     that are expected to have meiotic error or scoring error.
   }
-  \item{rare.al.check}{
-    Numeric ranging from \code{0} to \code{1}.
-    The maximum proportion of genotypes in which an allele can occur
-    for that allele to be considered \dQuote{rare}.  All such alleles
-    will be temporarily swapped to the other isolocus/isoloci to see if the
-    agreement between allele assignments and genotypes is improved, in
-    which case the swap becomes permanent.  The default of \code{0.2} worked
-    well on simulated tetraploid populations of 100 individuals with no
-    population structure or meiotic error.  When the population size was
-    reduced to 30, it was beneficial to increase \code{rare.al.check} up
-    to \code{0.6}.  In general, when \code{alleleCorrelations} is expected to
-    perform poorly, it is beneficial to raise the value of
-    \code{rare.al.check} (although raising the value does not guarantee that the
-    correct answer will be found, and in very unusual cases can introduce errors
-    into the allele assignments).  The main advantage to having a low
-    value for \code{rare.al.check} is reduced computation time.
-    }
+  \item{swap}{
+    Boolean indicating whether or not to use the allele swapping algorithm
+    before checking for homoplasy.  TRUE will yield more accurate results
+    in most cases, but FALSE may be preferable for loci with null or 
+    homoplasious alleles at high frequency.
+  }
+  \item{R}{
+    Simulated annealing parameter for the allele swapping algorithm.
+    Indicates how many swaps to attempt in each rep (\emph{i.e.} how many
+    swaps to attempt before changing the temperature).
+  }
+  \item{rho}{
+    Simulated annealing parameter for the allele swapping algorithm.
+    Factor by which to reduce the temperature at the end of each rep.
+  }
+  \item{T0}{
+    Simulated annealing parameter for the allele swapping algorithm.
+    Starting temperature.
+  }
+  \item{maxreps}{
+    Simulated annealing parameter for the allele swapping algorithm.
+    Maximum number of reps if convergence is not achieved.
+  }
 }
 \details{
 These functions implement a novel methodology, introduced in
-\pkg{polysat} version 1.4, for cases where one pair of microsatellite
+\pkg{polysat} version 1.4 and updated in version 1.6, for cases where 
+one pair of microsatellite
 primers amplifies alleles at two or more independently-segregating loci
 (referred to here as isoloci).  This is not typically the case with new
 autopolyploids, in which all copies of a locus have equal chances of
@@ -120,7 +128,7 @@ Within the two functions there are four major steps:
   tested by \code{alleleCorrelations}.  The dataset is converted
   to \code{"genbinary"} if not
   already in that format, and a Fisher's exact test, with negative
-  correlation (odds ratio being less than one) as the alternative
+  association (odds ratio being less than one) as the alternative
   hypothesis, is performed between
   each pair of columns (alleles) in the genotype matrix.  The p-value of
   this test between each pair of alleles is stored in a square matrix,
@@ -138,22 +146,26 @@ Within the two functions there are four major steps:
   isolocus.  The set of assignments that is consistent with the greatest
   number of genotypes is chosen, or in the case of a tie, the set of
   assignments produced by K-means clustering.
-  \item Since rare alleles are the most likely alleles to have been
-  incorrectly assigned in step 1 or 2, every rare allele (occurring in a
-  proportion of genotypes at or below the threshold set by
-  \code{rare.al.check}) is tested to see if it is more likely to belong
-  to a different isolocus.  This is done by individually checking
-  genotypes that contain that allele, and seeing whether they can be
-  split into multiple isoloci according the the current allele
-  assignments (not allowing for aneuploidy), and/or a different set(s) of
-  allele assignments with that
-  allele swapped into a different isolocus (or isoloci for hexaploids
-  and higher).  The set of assignments that agrees with the greatest
-  number of genotypes is retained, or the original set of assignments is
-  kept in the case of a tie, then the algorithm moves on to the next
-  rare allele.  Whenever an allele swap is retained, all rare alleles
-  that have not yet been swapped are checked again, until no more swaps
-  are made.
+  \item If \code{swap = TRUE} and the assignments chosen in the previous 
+  step are inconsistent with some genotypes, \code{testAlGroups} attempts
+  to swap the isoloci of single alleles, using a simulated annealing 
+  (Bertsimas and Tsitsiklis 1993) algorithm to search for a new set of 
+  assignments that is consistent with as many genotypes as possible.
+  At each step, an allele is chosen at random to be moved to a different
+  isolocus (which is also chosen at random if there are more than two
+  isoloci).  If the new set of allele assignments is consistent with an equal or 
+  greater number of genotypes than the previous set of assignments, the new
+  set is retained.  If the new set is consistent with fewer genotypes than
+  the old set, there is a small probability of retaining the new set, 
+  dependent on how much worse the new set of assignments is and what the
+  current \dQuote{temperature} of the algorithm is.  After \code{R} allele
+  swapping attempts, the temperature is lowered, reducing the probability 
+  of retaining a set of allele assignments that is worse than the previous set.
+  A new rep of \code{R} swapping attempts then begins.
+  If a set of allele assignments is found that is consistent with all genotypes,
+  the algorithm stops immediately.  Otherwise it stops if no changes are made
+  during an entire rep of \code{R} swap attempts, or if \code{maxreps} reps
+  are performed.
   \item \code{testAlGroups} then checks through all genotypes to look
   for signs of homoplasy, meaning single alleles that should be assigned
   to more than one isolocus.  For each genotype, there should be no more
@@ -226,6 +238,10 @@ For \code{testAlGroups}:
 Clark, L. V. and Drauch Schreier, A. (2015) Resolving microsatellite genotype ambiguity in
 populations of allopolyploid and diploidized autopolyploid organisms
 using negative correlations between allelic variables. \emph{bioRxiv}, DOI: 10.1101/020610.
+
+Bertsimas, D. and Tsitsiklis, J.(1993) Simulated annealing. \emph{Statistical Science}
+\bold{8}, 10--15.
+
 }
 \author{
 Lindsay V. Clark
@@ -265,9 +281,12 @@ myCorr$Kmeans.groups
 myCorr$clustering.method
 if(!is.null(myCorr$heatmap.dist)) heatmap(myCorr$heatmap.dist)
 
-# check individual genotypes
-myRes <- testAlGroups(mydata, myCorr, SGploidy=2)
+# check individual genotypes 
+# (low maxreps used in order to speed processing time for this example)
+myRes <- testAlGroups(mydata, myCorr, SGploidy=2, maxreps = 5)
 myRes$assignments
+myRes2 <- testAlGroups(mydata, myCorr, SGploidy=2, swap = FALSE)
+myRes2$assignments
 }
 \keyword{ cluster }
 \keyword{ logic }

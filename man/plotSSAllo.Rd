@@ -19,10 +19,10 @@ plotSSAllo(AlCorrArray)
 plotParamHeatmap(propMat, popname = "AllInd", col = grey.colors(12)[12:1], main = "")
 processDatasetAllo(object, samples = Samples(object), loci = Loci(object),
                    n.subgen = 2, SGploidy = 2, n.start = 50, alpha = 0.05,
-                   parameters = data.frame(tolerance     = c(0.05, 0.05, 0.05, 0.05),
-                                           rare.al.check = c(0.2,  0,    0.2,  0),
-                                           null.weight   = c(0.5,  0.5,  0,    0)),
-                   plotsfile = "alleleAssignmentPlots.pdf", usePops = FALSE)
+                   parameters = data.frame(tolerance     = c(0.05, 0.05,  0.05, 0.05),
+                                           swap          = c(TRUE, FALSE, TRUE, FALSE),
+                                           null.weight   = c(0.5,  0.5,   0,    0)),
+                   plotsfile = "alleleAssignmentPlots.pdf", usePops = FALSE, ...)
 }
 
 \arguments{
@@ -56,6 +56,7 @@ plots are desired.}
 \item{usePops}{If \code{TRUE}, population assignments are taken from the \code{PopInfo} slot of \code{object}, and 
 populations are analyzed separately with \code{alleleCorrelations} and \code{testAlGroups}, before merging the 
 results with \code{mergeAlleleAssignments}.}
+\item{...}{Additional parameters to pass to \code{testAlGroups} for adjusting the simulated annealing algorithm.}
 }
 \details{
 \code{plotSSAllo} produces a plot of loci by population, with the sums-of-squares ratio on the x-axis and the evenness of allele distribution
