@@ -1081,7 +1081,7 @@ recodeAllopoly <- function(object, x, allowAneuploidy=TRUE,
        !all(!is.na(SGp)))
         stop("Locus and SGploidy value required for each list element in x.")
     if(!all(lociA %in% loci)){
-        warning(paste("Loci", paste(lociA[!lociA %in% loci], collapse=TRUE),
+        warning(paste("Loci", paste(lociA[!lociA %in% loci], collapse=" "),
                       "found in 'x' but not 'loci'."))
         x <- x[lociA %in% loci]
         if(length(x)==0)
