@@ -20,7 +20,7 @@
 
 \section{Introduction}
 
-This tutorial accompanies the R package \textsc{polysat} versions 1.5 and later,
+This tutorial accompanies the R package \textsc{polysat} versions 1.6 and later,
 and demonstrates how to use functions in \textsc{polysat} for recoding data from 
 allopolyploid or diploidized autopolyploid organisms such that each 
 microsatellite marker is split into multiple isoloci.  The data can then be 
@@ -48,7 +48,7 @@ them before starting.
 
 It is assumed that the reader is already familiar with R and with \textsc{polysat}.
 If you aren't, please spend some time with ``An Introduction to R'' and with the
-``polysat version 1.5 Tutorial Manual''.  Additionally, there is a manuscript on 
+``polysat version 1.6 Tutorial Manual''.  Additionally, there is a manuscript on 
 BioRxiv at \url{http://dx.doi.org/10.1101/020610} that describes in detail the 
 rationale and limitations of the allele assignment tools described in this manual.
 You may also find the documentation for individual functions to be helpful
@@ -206,9 +206,10 @@ hist(mypca[,1], breaks=30)
 @
 
 We can see a slightly bimodal distribution of individuals, indicating moderate
-population structure.  Since population structure can interfere with allele
-assignment, we will assign individuals to two populations that we can analyze
-separately.
+population structure.  Since population structure can interfere with preliminary 
+allele assignment in the \texttt{alleleCorrelations} step, we will assign 
+individuals to two populations that we can analyze separately.  This will also help
+us to evaluate reproducibility of allele assignments.
 
 <<>>=
 pop1ind <- Samples(mydata)[mypca[,1] <= 0]
@@ -244,12 +245,11 @@ depending on particular issues in the dataset.
 
 \begin{tabular}{| l | l |}
 \hline
-Ploidy greater than tetraploid   & Increase \texttt{rare.al.check} \\
-Small sample size                & Increase \texttt{rare.al.check} \\
+Many alleles ($>10$)             & Increase \texttt{R} (the number of allele swaps attempted) \\
 Meiotic error                    & Increase \texttt{tolerance} \\
 Null alleles                     & \texttt{null.weight = 0} \\
-Null alleles at high frequency   & \texttt{rare.al.check = 0} \\
-Homoplasy                        & \texttt{rare.al.check = 0} \\
+Null alleles at high frequency   & \texttt{swap = FALSE} \\
+Homoplasy                        & \texttt{swap = FALSE} \\
 \hline
 \end{tabular}
 
@@ -268,8 +268,10 @@ Because we divided our dataset into two subpopulations that appear to have
 different allele frequencies, we will set \texttt{usePops = TRUE} to 
 analyze the two populations separately according to \texttt{PopInfo(mydata)}.
 We will leave the \texttt{parameters} argument at the default, which includes
-one parameter set optimized for no alleles and no homoplasy, one optimized
-for homoplasy, and two optimized for null alleles.
+one parameter set optimized for no null alleles and no homoplasy, one optimized
+for homoplasy, and two optimized for null alleles.  This command will take a 
+few minutes to process (especially since the data set includes deliberately
+problematic loci, which take longer).
 
 <<eval=FALSE>>=
 myassign <- processDatasetAllo(mydata, n.subgen = 2, SGploidy = 2, 
@@ -277,8 +279,7 @@ myassign <- processDatasetAllo(mydata, n.subgen = 2, SGploidy = 2,
 @
 
 <<echo=FALSE>>=
-myassign <- processDatasetAllo(mydata, n.subgen = 2, SGploidy = 2, usePops = TRUE,
-                               plotsfile = NULL)
+load("vignettebuild/AllopolyTutorialAssign.RData")
 @
 
 \subsection{Inspecting the results}
@@ -415,9 +416,10 @@ plotParamHeatmap(myassign$propHomoplasious, popname = "Pop1",
 
 Lighter colors indicate fewer homoplasious alleles, which in turn indicates
 better quality allele assignment.
-Loc7 had a lot of homoplasious alleles, but that is not a surprise given
-that it is one tetrasomic locus rather than two disomic loci.  In Pop1,
-Loc4 worked best with the third and fourth parameter sets (allowing null alleles),
+We will ignore Loc6 and Loc7 since we already decided to exclude them.  In Pop1,
+Loc4 worked best with the third and fourth parameter sets (allowing null alleles)
+and Loc1 worked best with the second, third, or fourth parameter sets (allowing 
+homoplasy or null alleles),
 but the other loci worked equally well regardless of parameter set.
 
 <<fig=TRUE>>=
@@ -425,8 +427,8 @@ plotParamHeatmap(myassign$propHomoplasious, popname = "Pop2",
                  main = "Proportion homoplasious loci:")
 @
 
-For all loci in Pop2, we see the same proportion of homoplasious loci
-regardless of parameter set.
+For all loci in Pop2 except for Loc 1, we see the same proportion of homoplasious 
+loci regardless of parameter set.
 
 \texttt{processDatasetAllo} also runs the \texttt{mergeAlleleAssignments}
 function to combine allele assignments across populations, within loci
@@ -444,7 +446,8 @@ assignments were different between populations.  For Loc1, the
 second parameter set (optimized for homoplasy) was clearly the best
 in terms of minimizing homoplasious alleles.  For Loc2, either the first
 or third parameter set (the two parameter sets that include the allele
-swapping algorithm) works best.  For the other loci,
+swapping algorithm) works best.  Loc4 worked best with the first, second,
+or fourth parameter set.  For Loc 3 and Loc5,
 we have the same number of homoplasious alleles regardless of
 parameter set.
 
@@ -463,7 +466,7 @@ plotParamHeatmap(myassign$missRate, popname = "All Individuals",
                  main = "Missing data after recoding:")
 @
 
-We can see that for Loc3, Loc4, and Loc5, the parameter set does not affect the 
+We can see that for Loc1, Loc3, Loc4, and Loc5, the parameter set does not affect the 
 amount of missing data.
 
 \texttt{processDatasetAllo} suggests a best set of allele assignments based
@@ -486,7 +489,7 @@ myBestAssign
 myBestAssign <- myBestAssign[1:5]
 @
 
-We can see a large amount of homoplasy for Loc6 and Loc7, since the allele
+We can see a large amount of homoplasy for Loc7 and some for Loc6, since the allele
 assignment algorithm was not appropriate for those two loci.  We can also
 see that Loc1 and Loc4 each have one homoplasious allele.  This accounts
 for the much higher proportion of missing data when recoding Loc1 and Loc4 as 
@@ -524,13 +527,11 @@ myassign$TAGarray[["Loc1", "Pop2", 4]]$assignments
 myassign$mergedAssignments[["Loc1", 4]]$assignments
 @
 
-We can see that with parameter set 1, the swapping of allele 233 to a different
-isolocus in Pop2 caused the increased homoplasy when assignments were merged
-across populations.  With parameter set 2, however, assignments were consistent
+We can see that with parameter set 1, allele 233 was made homoplasious in Pop1 and
+allele 227 was made homoplasious in Pop2, resulting in much homoplasy in the
+merged set.  With parameter set 2, however, assignments were consistent
 between the two populations.  Parameter set 3 produced allele assignments that
-were very different from those produced by parameter sets 1 and 2.  Moreover,
-the assignments produced by parameter set 3 were so different between the two
-populations that it was not possible to merge them.  The parameter set 4 
+were very different from those produced by parameter sets 1 and 2.  The parameter set 4 
 assignments matched the ``best'' assignment set for Pop2, but not Pop1.
 
 \subsection{Re-analyzing individual loci}
@@ -559,10 +560,10 @@ if Loc1 does not in fact segregate in a completely disomic manner.
 <<>>=
 TaLoc1.param2 <- testAlGroups(mydata, corrLoc1AllInd, SGploidy = 2,
                               null.weight = 0.5, tolerance = 0.05, 
-                              rare.al.check = 0)
+                              swap = FALSE)
 TaLoc1.param5 <- testAlGroups(mydata, corrLoc1AllInd, SGploidy = 2,
                               null.weight = 0.5, tolerance = 0.1, 
-                              rare.al.check = 0)
+                              swap = FALSE)
 TaLoc1.param2$assignments
 TaLoc1.param5$assignments
 @
