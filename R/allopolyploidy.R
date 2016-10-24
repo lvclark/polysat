@@ -393,8 +393,27 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
     return(list(alToSwap, Gnew))
   }
   
+  # number of possible G matrices (without homoplasy)
+  nGpossible <- n.subgen ^ numAlTotal
+  # function to get an index number for each possible G matrix (without homoplasy)
+  indexG <- function(G){
+    # set up multipliers for an integer where the base is n.subgen
+    baseSetup <- n.subgen ^ (1:numAlTotal - 1)
+    # get the digit for each allele
+    digits <- apply(G, 2, function(x) which(x == 1) - 1)
+    # get index
+    return(sum(baseSetup * digits) + 1)
+  }
+  # list of inconsistent individuals for every possible G matrix (without homoplasy)
+  iiList <- list()
+  length(iiList) <- nGpossible
+  
+  # for current assignments
   inconsInd <- tallyInconsistentGen(G) # which individuals are inconsistent with current assignments
   J <- mean(inconsInd) # current "cost" of this solution
+  iG <- indexG(G) # index of this set of assignments
+  iiList[[iG]] <- inconsInd # record these inconsistent individuals to the master list
+  
   # only do swapping if desired by user, and only if assignments aren't already perfect
   if(swap &&  J > 0){ 
     # set up an index of which genotypes have which alleles, so we know which genotypes to check
@@ -414,12 +433,19 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
         Gnew <- temp[[2]]
         a <- temp[[1]]
         # find out which genotypes are inconsitent with this new set of assignments
-        inconsIndNew <- tallyInconsistentGen(Gnew, alleleIndex[[a]], inconsInd)
+        iGnew <- indexG(Gnew)
+        if(is.null(iiList[[iGnew]])){ # if we have never looked at this set of assignments before
+          inconsIndNew <- tallyInconsistentGen(Gnew, alleleIndex[[a]], inconsInd)
+          iiList[[iGnew]] <- inconsIndNew
+        } else { # if we already have looked at this set of assignments
+          inconsIndNew <- iiList[[iGnew]]
+        }
         Jnew <- mean(inconsIndNew)
         if(Jnew <= J){ # keep if if we have found a better solution 
           G <- Gnew
           J <- Jnew
           inconsInd <- inconsIndNew
+          #          cat(paste(iGnew, "better"), sep = "\n")
           done <- FALSE # swap happened; convergence did not occur in this rep
           if(J == 0){ # perfect solution found, stop now
             done <- TRUE
@@ -431,6 +457,7 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
             G <- Gnew
             J <- Jnew
             inconsInd <- inconsIndNew
+            #            cat(paste(iGnew, "worse"), sep = "\n")
             done <- FALSE
           }
         }
