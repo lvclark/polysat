@@ -402,7 +402,12 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
     # get the digit for each allele
     digits <- apply(G, 2, function(x) which(x == 1) - 1)
     # get index
-    return(sum(baseSetup * digits) + 1)
+    if(is.list(digits)){ # if there was homoplasy
+      index <- NA
+    } else {
+      index <- sum(baseSetup * digits) + 1
+    }
+    return(index)
   }
   # list of inconsistent individuals for every possible G matrix (without homoplasy)
   iiList <- list()
@@ -412,7 +417,9 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
   inconsInd <- tallyInconsistentGen(G) # which individuals are inconsistent with current assignments
   J <- mean(inconsInd) # current "cost" of this solution
   iG <- indexG(G) # index of this set of assignments
-  iiList[[iG]] <- inconsInd # record these inconsistent individuals to the master list
+  if(!is.na(iG)){
+    iiList[[iG]] <- inconsInd # record these inconsistent individuals to the master list
+  }
   
   # only do swapping if desired by user, and only if assignments aren't already perfect
   if(swap &&  J > 0){ 
@@ -434,9 +441,11 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
         a <- temp[[1]]
         # find out which genotypes are inconsitent with this new set of assignments
         iGnew <- indexG(Gnew)
-        if(is.null(iiList[[iGnew]])){ # if we have never looked at this set of assignments before
+        if(is.na(iGnew) || is.null(iiList[[iGnew]])){ # if we have never looked at this set of assignments before
           inconsIndNew <- tallyInconsistentGen(Gnew, alleleIndex[[a]], inconsInd)
-          iiList[[iGnew]] <- inconsIndNew
+          if(!is.na(iGnew)){
+            iiList[[iGnew]] <- inconsIndNew
+          }
         } else { # if we already have looked at this set of assignments
           inconsIndNew <- iiList[[iGnew]]
         }
