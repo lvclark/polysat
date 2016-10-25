@@ -46,3 +46,4 @@ NEWS~
 DESCRIPTION~
 *.md~
 *.Rd~
+*.R#
