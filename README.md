@@ -1,5 +1,5 @@
 # polysat
-polysat 1.5-0: tools for polyploid microsatellite analysis
+polysat 1.6-0: tools for polyploid microsatellite analysis
 
 This is an R package for the analysis of microsatellite genotype data in polyploid organisms.  The version here on GitHub
 is the development version.  The stable version of polysat is available on
