@@ -262,6 +262,12 @@ Lindsay V. Clark
   you can't find any evidence of scoring problems, two alleles may have
   been positively correlated simply from random chance, and the warning
   can be ignored.
+  
+  \code{alleleCorrelations} can also produce an actual warning stating
+  \dQuote{Quick-TRANSfer stage steps exceeded maximum}.  This warning
+  is produced internally by \code{\link{kmeans}} and may occur if many
+  genotypes are similar, as in mapping populations.  It can be safely
+  ignored.
 }
 
 
