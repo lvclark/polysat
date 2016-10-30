@@ -235,8 +235,8 @@ from \textsc{polysat}: \texttt{alleleCorrelations}
 looks for negative correlations between alleles and uses those correlations to make
 preliminary assignments, then \texttt{testAlGroups} adjusts those assignments if 
 necessary after checking them against individual genotypes.  \texttt{testAlGroups}
-has some parameters that affect its accuracy depending on the ploidy of the organism,
-the size of the population, the rate of meiotic error (pairing between homeologs or 
+has some parameters that affect its accuracy depending on the rate of meiotic error 
+(pairing between homeologs or 
 paralogs during meiosis), the presence of null alleles,
 and homoplasy (different alleles with identical amplicon size) between isoloci.
 Below are some recommendations for adjusting arguments from the defaults 
@@ -271,11 +271,13 @@ We will leave the \texttt{parameters} argument at the default, which includes
 one parameter set optimized for no null alleles and no homoplasy, one optimized
 for homoplasy, and two optimized for null alleles.  This command will take a 
 few minutes to process (especially since the data set includes deliberately
-problematic loci, which take longer).
+problematic loci, which take longer).  Here I have set \texttt{R} to 500,
+which also increases processing time but makes it more likely that your results
+will look similar or identical to mine.
 
 <<eval=FALSE>>=
 myassign <- processDatasetAllo(mydata, n.subgen = 2, SGploidy = 2, 
-                               usePops = TRUE)
+                               usePops = TRUE, R = 500)
 @
 
 <<echo=FALSE>>=
@@ -444,10 +446,9 @@ plotParamHeatmap(myassign$propHomoplMerged, popname = "Merged across populations
 Now we see that Loc6 and Loc7 look a lot worse, since their allele 
 assignments were different between populations.  For Loc1, the 
 second parameter set (optimized for homoplasy) was clearly the best
-in terms of minimizing homoplasious alleles.  For Loc2, either the first
-or third parameter set (the two parameter sets that include the allele
-swapping algorithm) works best.  Loc4 worked best with the first, second,
-or fourth parameter set.  For Loc 3 and Loc5,
+in terms of minimizing homoplasious alleles.  For Loc2, the
+first or third parameter set (using allele swapping) 
+works best.  For Loc3, Loc4, and Loc5,
 we have the same number of homoplasious alleles regardless of
 parameter set.
 
@@ -466,8 +467,8 @@ plotParamHeatmap(myassign$missRate, popname = "All Individuals",
                  main = "Missing data after recoding:")
 @
 
-We can see that for Loc1, Loc3, Loc4, and Loc5, the parameter set does not affect the 
-amount of missing data.
+This plot mirrors the plot reporting the proportion of loci that are homoplasious,
+since homoplasy tends to lead to genotypes that cannot be unambiguously recoded.
 
 \texttt{processDatasetAllo} suggests a best set of allele assignments based
 on missing data after recoding and the proportion of homoplasious alleles.
@@ -494,6 +495,16 @@ assignment algorithm was not appropriate for those two loci.  We can also
 see that Loc1 and Loc4 each have one homoplasious allele.  This accounts
 for the much higher proportion of missing data when recoding Loc1 and Loc4 as 
 opposed to Loc2, Loc3, and Loc5.
+
+We can also extract from the results the proportion of missing data that is
+introduced by recoding genotypes using the best allele assignments.
+
+<<>>=
+apply(myassign$missRate, 1, min)
+@
+
+Loc1 would have 52\% missing data after being recoded using the best set of 
+allele assignments, Loc2 would have 0.7\% missing data, \emph(etc.)
 
 It is possible to take a deeper look at the allele assignments that were
 produced before the best set was chosen.  Let's look at Loc1, since it has
@@ -527,8 +538,8 @@ myassign$TAGarray[["Loc1", "Pop2", 4]]$assignments
 myassign$mergedAssignments[["Loc1", 4]]$assignments
 @
 
-We can see that with parameter set 1, allele 233 was made homoplasious in Pop1 and
-allele 227 was made homoplasious in Pop2, resulting in much homoplasy in the
+We can see that with parameter set 1, allele 236 was made homoplasious in Pop1 and
+allele 227 was made homoplasious in both populations, resulting in much homoplasy in the
 merged set.  With parameter set 2, however, assignments were consistent
 between the two populations.  Parameter set 3 produced allele assignments that
 were very different from those produced by parameter sets 1 and 2.  The parameter set 4 

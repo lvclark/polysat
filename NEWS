@@ -3,6 +3,13 @@ Changes in version 1.6-0
 The allele swapping algorithm used by testAlGroups has changed.  Allele assignments
 should be more accurate in general, at the expense of processing time.
 
+A bug has been fixed in processDatasetAllo, affecting the contents of the missRate
+item in the function's output.
+
+testAlGroups now outputs an additional item called proportion.inconsistent.genotypes,
+which indicates the proportion of genotypes in the dataset that are inconsistent
+with the allele assignments output by the function.
+
 Changes in version 1.5-0
 
 The functions processDatasetAllo, plotSSAllo, and plotParamHeatmap have been added

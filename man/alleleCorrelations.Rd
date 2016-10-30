@@ -233,6 +233,9 @@ For \code{testAlGroups}:
   columns as there are alleles in the dataset.  \code{1} indicates that
   a given allele belongs to a given isolocus, and \code{0} indicates
   that it does not.}
+\item{proportion.inconsistent.genotypes }{A number ranging from zero to one 
+indicating the proportion of genotypes from the dataset that are inconsistent
+with \code{assignments}.}
 }
 \references{
 Clark, L. V. and Drauch Schreier, A. (2015) Resolving microsatellite genotype ambiguity in

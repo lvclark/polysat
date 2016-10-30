@@ -583,7 +583,8 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
     A <- temp[[1]]
     prop.error <- temp[[2]]
   } # end of while loop
-  return(list(locus=L, SGploidy=SGploidy, assignments=G))
+  return(list(locus=L, SGploidy=SGploidy, assignments=G, 
+              proportion.inconsistent.genotypes = prop.error))
 }
 
 # function to assign alleles to subgenomes based on the procedure of
@@ -995,8 +996,24 @@ processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(ob
     mergedAssignments <- array(list(), dim = c(length(loci), nparam),
                                dimnames = list(loci, NULL))
     for(L in loci){
+      theseSamples <- samples[!isMissing(object, samples, L)]
       for(pm in 1:nparam){
         mergedAssignments[L,pm] <- mergeAlleleAssignments(TAGresults[L,,pm])
+        # figure out proportion of genotypes inconsistent with the merged assignments
+        totInconsistent <- 0
+        if(is.matrix(mergedAssignments[[L,pm]]$assignments)){
+          for(s in theseSamples){
+            gen <- as.character(Genotype(object, s, L))
+            subg <- mergedAssignments[[L,pm]]$assignments[, gen, drop = FALSE]
+            if(any(rowSums(subg) == 0) || 
+               any(rowSums(subg[,colSums(subg) == 1, drop = FALSE]) > SGploidy)){
+                 totInconsistent <- totInconsistent + 1
+            }
+          }
+        } else {
+          totInconsistent <- length(theseSamples)
+        }
+        mergedAssignments[[L,pm]]$proportion.inconsistent.genotypes <- totInconsistent/length(theseSamples)
       }
     }
     
