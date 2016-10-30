@@ -1037,7 +1037,7 @@ processDatasetAllo <- function(object, samples = Samples(object), loci = Loci(ob
       matchUn <- sapply(theseAssign, function(x) identical(x, thisAssign))
       if(length(theseAssign) == 0 || all(!matchUn)){
         theseAssign[[length(theseAssign) + 1]] <- thisAssign
-        theseAssignIndex[pm] <- 1
+        theseAssignIndex[pm] <- length(theseAssign)
       } else {
         theseAssignIndex[pm] <- which(matchUn)
       }
