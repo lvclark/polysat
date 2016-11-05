@@ -85,7 +85,7 @@ Each value is the sums-of-squares between isoloci divided by the total sums-of-s
 clustering.  If K-means clustering was not performed, the value is zero.}
 \item{evenness }{An array of the same dimensions as \code{$ssratio}, containing values to indicate how evenly
 alleles are distributed among isoloci as determined by K-means clustering.  This is:
-\deqn{1 - \sum_{1}^{i}{(frac{a_{i}}{A})^2}}{1 - \sum_{1}^{i}{(a_i/A)^2}}
+\deqn{1 - \sum_{1}^{i}{(\frac{a_{i}}{A})^2}}{1 - \sum_{1}^{i}{(a_i/A)^2}}
 where \eqn{i} is the number of isoloci, \eqn{a_i} is the number of alleles for a given isolocus, and \eqn{A}
 is the total number of alleles for the locus.}
 \item{max.evenness }{The maximum possible value for \code{$evenness}, given the number of isoloci.}
