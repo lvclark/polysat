@@ -476,9 +476,7 @@ For each locus, it picks the parameter set that results in the lowest missing
 data rate, then in the case of a tie the parameter set with the least 
 amount of homoplasy (after merging across populations), then in the case of a
 tie the lowest numbered parameter set.  So in this case, parameter set 2 would 
-be chosen for Loc1, and parameter set 1 for all other loci.  (Loc1 had an equal
-amount of missing data for parameter sets 1 and 2, but less homoplasy for parameter
-set 2.)
+be chosen for Loc1, and parameter set 1 for all other loci.
 
 Let's extract that list of optimal assignments from the results.  We will also
 eliminate Loc6 and Loc7 from the list since we discarded Loc6 and don't want to
@@ -504,7 +502,7 @@ apply(myassign$missRate, 1, min)
 @
 
 Loc1 would have 52\% missing data after being recoded using the best set of 
-allele assignments, Loc2 would have 0.7\% missing data, \emph(etc.)
+allele assignments, Loc2 would have 0.7\% missing data, \emph{etc}.
 
 It is possible to take a deeper look at the allele assignments that were
 produced before the best set was chosen.  Let's look at Loc1, since it has
@@ -539,7 +537,7 @@ myassign$mergedAssignments[["Loc1", 4]]$assignments
 @
 
 We can see that with parameter set 1, allele 236 was made homoplasious in Pop1 and
-allele 227 was made homoplasious in both populations, resulting in much homoplasy in the
+allele 227 was made homoplasious in both populations, resulting in both being homoplasious in the
 merged set.  With parameter set 2, however, assignments were consistent
 between the two populations.  Parameter set 3 produced allele assignments that
 were very different from those produced by parameter sets 1 and 2.  The parameter set 4 
@@ -648,8 +646,8 @@ An alternative method of allele assignment available in \textsc{polysat}
 is that by Catal\'{a}n \emph{et al.} (2006; 
 \url{http://dx.doi.org/10.1534/genetics.105.042788}).  The Catal\'{a}n 
 method does not allow for homoplasy, null alleles, or meiotic error,
-but may perform better than the \textsc{polysat} method in cases of
-strong population structure.  Let's try it on our example dataset.
+but may perform equally the \textsc{polysat} method in cases of
+strong population structure, with less processing time.  Let's try it on our example dataset.
 
 <<>>=
 catResults <- list()
