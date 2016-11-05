@@ -138,8 +138,12 @@ PopInfo(mydata) <- rep(1:2, each = 150)
 Genotype(mydata, 43, 2) <- Missing(mydata)
 
 # allele assignments
+# R is set to 10 here to speed processing for example.  It should typically be left at the default.
 myassign <- processDatasetAllo(mydata, loci = c("Loc3", "Loc6"),
-                               plotsfile = NULL, usePops = TRUE)
+                               plotsfile = NULL, usePops = TRUE, R = 10,
+                               parameters = data.frame(tolerance = c(0.5, 0.5), 
+                               swap = c(TRUE, FALSE),
+                               null.weight = c(0.5, 0.5)))
 
 # view best assignments for each locus
 myassign$bestAssign
