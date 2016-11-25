@@ -1,3 +1,7 @@
+Changes in version 1.6-1
+
+Updated citation information with DOI for Molecular Ecology Resources.
+
 Changes in version 1.6-0
 
 The allele swapping algorithm used by testAlGroups has changed.  Allele assignments

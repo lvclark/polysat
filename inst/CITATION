@@ -10,11 +10,11 @@ bibentry(bibtype="Article",
         header = "Version 1.1 is published in Molecular Ecology Resources:"
          )
 
-bibentry(bibtype="Unpublished",
+bibentry(bibtype="Article",
 	title = "Resolving microsatellite genotype ambiguity in populations of allopolyploid and diploidized autopolyploid organisms using negative correlations between allelic variables",
         author = c(person("Lindsay V.", "Clark"), person("Andrea", "Drauch Schreier")),
-  	year = "2015",
-        note = "Available on BioRxiv",
-        doi = "10.1101/020610",
-        header = "Functions for splitting loci into isoloci available in versions 1.4 and higher are described in:"
+  	year = "2016",
+        journal = "Molecular Ecology Resources",
+        doi = "10.1111/1755-0998.12639",
+        header = "New functions available in versions 1.4 through 1.6, for splitting loci into isoloci, are described in:"
          )

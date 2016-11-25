@@ -48,8 +48,8 @@ them before starting.
 
 It is assumed that the reader is already familiar with R and with \textsc{polysat}.
 If you aren't, please spend some time with ``An Introduction to R'' and with the
-``polysat version 1.6 Tutorial Manual''.  Additionally, there is a manuscript on 
-BioRxiv at \url{http://dx.doi.org/10.1101/020610} that describes in detail the 
+``polysat version 1.6 Tutorial Manual''.  Additionally, there is a manuscript published
+in \emph{Molecular Ecology Resources} at \url{http://dx.doi.org/10.1111/1755-0998.12639} that describes in detail the 
 rationale and limitations of the allele assignment tools described in this manual.
 You may also find the documentation for individual functions to be helpful
 (\emph{e.g.} see \texttt{?alleleCorrelations}, \texttt{?processDatasetAllo},

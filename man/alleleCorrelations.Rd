@@ -238,9 +238,10 @@ indicating the proportion of genotypes from the dataset that are inconsistent
 with \code{assignments}.}
 }
 \references{
-Clark, L. V. and Drauch Schreier, A. (2015) Resolving microsatellite genotype ambiguity in
+Clark, L. V. and Drauch Schreier, A. (2016) Resolving microsatellite genotype ambiguity in
 populations of allopolyploid and diploidized autopolyploid organisms
-using negative correlations between allelic variables. \emph{bioRxiv}, DOI: 10.1101/020610.
+using negative correlations between allelic variables. \emph{Molecular Ecology Resources}, 
+DOI: 10.1111/1755-0998.12639.
 
 Bertsimas, D. and Tsitsiklis, J.(1993) Simulated annealing. \emph{Statistical Science}
 \bold{8}, 10--15.
