@@ -47,7 +47,8 @@ A character vector of paths to the files to be read.
   labeled \dQuote{Allele X} where X is a number unique to each column.  Row
   labels and any other columns are ignored.  For any given sample, each
   allele is listed only once and is given as an integer that is the
-  length of the fragment in nucleotides.  Alleles are separated by
+  length of the fragment in nucleotides.  Duplicate alleles in the same
+  row are ignored by \code{read.GeneMapper}.  Alleles are separated by
   tabs.  If you have more allele columns than alleles for any given
   sample, leave the extra cells blank so that \code{read.table} will
   read them as \code{NA}.  Example data files in this format are
