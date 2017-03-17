@@ -576,23 +576,82 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
                   loci=unique(as.matrix(as.data.frame(strsplit(names(freqs),
                   split=".",
                                                       fixed=TRUE),
-                                             stringsAsFactors=FALSE))[1,])){
+                                             stringsAsFactors=FALSE))[1,]), 
+                     global = FALSE){
     # check metric
-    if(!metric %in% c("Fst", "Gst", "Jost's D")){
-      stop("metric must be Fst, Gst, or Jost's D")
+  if(!metric %in% c("Fst", "Gst", "Jost's D")){
+    stop("metric must be Fst, Gst, or Jost's D")
+  }
+  # check pop names
+  if(!all(pops %in% row.names(freqs))){
+    stop("pops must all be in row names of freqs.")
+  }
+  freqs <- freqs[pops,]
+  # Clean up loci
+  loci<-loci[loci!="Genomes"]
+    
+  # Get genome number from the table
+  if("Genomes" %in% names(freqs)){
+    genomes<-freqs$Genomes
+    names(genomes)<-pops
+    GbyL <- FALSE
+  } else {
+    GbyL <- TRUE
+  }
+  if(global){ # estimate single global statistic
+    # set up array for HT and HS values
+    hets<-array(0,dim=c(length(loci),4),
+                dimnames=list(loci,c("HT","HS","HTest","HSest")))
+    for(L in loci){
+      # population sizes for this locus
+      if(!GbyL){
+        thesegenomes <- genomes
+      } else {
+        thesegenomes <- freqs[,paste(L, "Genomes", sep=".")]
+      }
+      # allele frequencies for this locus
+      thesefreqs<-freqs[,grep(paste(L,".",sep=""), names(freqs),fixed=TRUE)]
+      thesefreqs <- thesefreqs[,names(thesefreqs)!=paste(L,"Genomes",sep=".")]
+      # expected heterozygosity by pop
+      hsByPop <- apply(as.matrix(thesefreqs), 1, function(x) 1 - sum(x^2))
+      if(metric == "Fst"){
+        # weighted mean frequencies for each allele
+        avgfreq <- unlist(lapply(thesefreqs, weighted.mean, w = thesegenomes))
+        # weighted mean Hs
+        hets[L, "HS"] <- weighted.mean(hsByPop, thesegenomes)
+      }
+      if(metric %in% c("Jost's D", "Gst")){
+        # unweighted mean frequencies for each allele
+        avgfreq <- colMeans(thesefreqs)
+        # unweighted mean Hs
+        hets[L, "HS"] <- mean(hsByPop)
+      }
+      # estimate expected heterozygosity for panmictic pop
+      hets[L,"HT"]<-1-sum(avgfreq^2)
+      if(metric %in% c("Jost's D","Gst")){
+        # harmonic mean of the sample size
+        meanGenomes <- 1/mean(1/thesegenomes)
+        # Nei and Chesser's (1983) estimates of expected heterozygosity
+        hets[L, "HSest"] <- hets[L, "HS"] * meanGenomes/(meanGenomes - 1)
+        hets[L, "HTest"] <- hets[L, "HT"] + hets[L, "HSest"] / (2*meanGenomes)
+      }
     }
-    # Clean up loci
-    loci<-loci[loci!="Genomes"]
+    if(metric == "Fst"){ # calculate Fst
+      HT<-mean(hets[,"HT"])
+      HS<-mean(hets[,"HS"])
+      result <- (HT-HS)/HT
+    }
+    if(metric == "Gst"){ # calculate Gst and average across loci
+      G <- (hets[,"HTest"] - hets[,"HSest"])/hets[,"HTest"]
+      result <- mean(G)
+    }
+    if(metric == "Jost's D"){ # calculate Jost's D and average across loci
+       D <- 2 * (hets[,"HTest"] - hets[,"HSest"]) / (1 - hets[,"HSest"])
+       result <- mean(D)
+    }
+  } else { # estimate pairwise statistics
     # Set up matrix for Fst or Jost's D values
     result<-matrix(0,nrow=length(pops),ncol=length(pops),dimnames=list(pops,pops))
-    # Get genome number from the table
-    if("Genomes" %in% names(freqs)){
-      genomes<-freqs$Genomes
-      names(genomes)<-pops
-      GbyL <- FALSE
-    } else {
-      GbyL <- TRUE
-    }
     for(m in 1:length(pops)){
         for(n in m:length(pops)){
             # set up array for HT and HS values
@@ -654,8 +713,9 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
             }
         }
     }
-    # return matrix of Fst values
-    return(result)
+  }
+  # return matrix of Fst values (or single global value)
+  return(result)
 }
 
 # wrapper function for backwards compatibility
@@ -663,8 +723,8 @@ calcFst<-function(freqs, pops=row.names(freqs),
                   loci=unique(as.matrix(as.data.frame(strsplit(names(freqs),
                                                                split=".",
                                                                fixed=TRUE),
-                                                      stringsAsFactors=FALSE))[1,])){
-  return(calcPopDiff(freqs = freqs, metric = "Fst", pops = pops, loci = loci))
+                                                      stringsAsFactors=FALSE))[1,]), ...){
+  return(calcPopDiff(freqs = freqs, metric = "Fst", pops = pops, loci = loci, ...))
 }
 
 # put allele frequencies into a format for SPAGeDi for it to use in estimates
