@@ -589,16 +589,17 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
   freqs <- freqs[pops,]
   # Clean up loci
   loci<-loci[loci!="Genomes"]
-    
-  # Get genome number from the table
-  if("Genomes" %in% names(freqs)){
-    genomes<-freqs$Genomes
-    names(genomes)<-pops
-    GbyL <- FALSE
-  } else {
-    GbyL <- TRUE
-  }
-  if(global){ # estimate single global statistic
+  
+  # internal function to get differentiation statistic from any set of two or more pops
+  cpd <- function(freqs, metric, loci){
+    # Get genome number from the table
+    if("Genomes" %in% names(freqs)){
+      genomes<-freqs$Genomes
+      names(genomes)<-row.names(freqs)
+      GbyL <- FALSE
+    } else {
+      GbyL <- TRUE
+    }
     # set up array for HT and HS values
     hets<-array(0,dim=c(length(loci),4),
                 dimnames=list(loci,c("HT","HS","HTest","HSest")))
@@ -646,75 +647,25 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
       result <- mean(G)
     }
     if(metric == "Jost's D"){ # calculate Jost's D and average across loci
-       D <- 2 * (hets[,"HTest"] - hets[,"HSest"]) / (1 - hets[,"HSest"])
-       result <- mean(D)
+      D <- 2 * (hets[,"HTest"] - hets[,"HSest"]) / (1 - hets[,"HSest"])
+      result <- mean(D)
     }
+    return(result)
+  } # end internal function
+  
+  # wrappers for internal function (global or pairwise)
+  if(global){ # estimate single global statistic
+    result <- cpd(freqs, metric, loci)
   } else { # estimate pairwise statistics
-    # Set up matrix for Fst or Jost's D values
+    # Set up matrix for pairwise diffentiation statistics
     result<-matrix(0,nrow=length(pops),ncol=length(pops),dimnames=list(pops,pops))
     for(m in 1:length(pops)){
-        for(n in m:length(pops)){
-            # set up array for HT and HS values
-            hets<-array(0,dim=c(length(loci),4),
-                        dimnames=list(loci,c("HT","HS","HTest","HSest")))
-            if(!GbyL){
-              genomesM <- genomes[pops[m]]
-              genomesN <- genomes[pops[n]]
-            }
-            for(L in loci){
-              if(GbyL){
-                genomesM <- freqs[pops[m],paste(L, "Genomes", sep=".")]
-                genomesN <- freqs[pops[n],paste(L, "Genomes", sep=".")]
-              }
-              # get just the frequencies for these pops and this locus
-              thesefreqs<-freqs[c(pops[m],pops[n]),
-                                grep(paste(L,".",sep=""),
-                                     names(freqs),fixed=TRUE)]
-              thesefreqs <-
-                thesefreqs[,names(thesefreqs)!=paste(L,"Genomes",sep=".")]
-              if(metric == "Fst"){
-                # get average allele frequencies weighted by genomes/pop
-                avgfreq<-(thesefreqs[1,]*genomesM +
-                          thesefreqs[2,]*genomesN)/
-                    (genomesM + genomesN)
-                # estimate H by 1 - sum of squared allele frequencies
-                # put the heterozygositites in the array
-                hets[L,"HS"]<-((1-sum(thesefreqs[1,]^2))*genomesM +
-                               (1-sum(thesefreqs[2,]^2))*genomesN)/
-                                   (genomesM + genomesN)
-              }
-              if(metric %in% c("Jost's D", "Gst")){
-                # unweighted average allele frequencies
-                avgfreq <- (thesefreqs[1,] + thesefreqs[2,])/2
-                # unweighted average of subpopulation expected heterozygosities
-                hets[L, "HS"] <- (1-sum(thesefreqs[1,]^2) + 1-sum(thesefreqs[2,]^2))/2
-              }
-              hets[L,"HT"]<-1-sum(avgfreq^2)
-              if(metric %in% c("Jost's D","Gst")){
-                # harmonic mean of the sample size
-                meanGenomes <- 2/(1/genomesM + 1/genomesN)
-                # Nei and Chesser's (1983) estimates of expected heterozygosity
-                hets[L, "HSest"] <- hets[L, "HS"] * meanGenomes/(meanGenomes - 1)
-                hets[L, "HTest"] <- hets[L, "HT"] + hets[L, "HSest"] / (2*meanGenomes)
-              }
-            }
-            if(metric == "Fst"){ # calculate Fst
-              HT<-mean(hets[,"HT"])
-              HS<-mean(hets[,"HS"])
-              result[m,n]<- result[n,m] <- (HT-HS)/HT
-            }
-            if(metric == "Gst"){ # calculate Gst and average across loci
-              G <- (hets[,"HTest"] - hets[,"HSest"])/hets[,"HTest"]
-              result[m,n] <- result[n,m] <- mean(G)
-            }
-            if(metric == "Jost's D"){ # calculate Jost's D and average across loci
-              D <- 2 * (hets[,"HTest"] - hets[,"HSest"]) / (1 - hets[,"HSest"])
-              result[m,n] <- result[n,m] <- mean(D)
-            }
-        }
+      for(n in m:length(pops)){
+        result[m, n] <- result[n, m] <- cpd(freqs[unique(c(m,n)),], metric, loci)
+      }
     }
   }
-  # return matrix of Fst values (or single global value)
+  # return matrix of differentiation statistics (or single global value)
   return(result)
 }
 

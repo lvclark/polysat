@@ -1,4 +1,4 @@
-\name{calcFst}
+\name{calcPopDiff}
 \alias{calcFst}
 \alias{calcPopDiff}
 \title{
@@ -7,7 +7,8 @@ Estimate Population Differentiation Statistics
 \description{
 Given a data frame of allele frequencies and population sizes,
 \code{calcPopDiff} calculates a matrix of pairwise \eqn{F_{ST}}{FST}, 
-\eqn{G_{ST}}{GST}, or Jost's \eqn{D}{D} values.
+\eqn{G_{ST}}{GST}, or Jost's \eqn{D}{D} values, or a single global
+value for any of these three statistics.
 \code{calcFst} is a wrapper for \code{calcPopDiff} to allow backwards
 compatibility with previous versions of \pkg{polysat}.
 }
@@ -15,11 +16,11 @@ compatibility with previous versions of \pkg{polysat}.
 calcPopDiff(freqs, metric, pops = row.names(freqs), 
             loci = unique(as.matrix(
             as.data.frame(strsplit(names(freqs), split = ".", fixed = TRUE),
-             stringsAsFactors = FALSE))[1, ]))
+             stringsAsFactors = FALSE))[1, ]), global = FALSE)
 
 calcFst(freqs, pops = row.names(freqs), loci = unique(as.matrix(
         as.data.frame(strsplit(names(freqs), split = ".", fixed = TRUE),
-        stringsAsFactors = FALSE))[1, ]))
+        stringsAsFactors = FALSE))[1, ]), ...)
 }
 \arguments{
   \item{freqs}{
@@ -43,6 +44,14 @@ a subset of \code{row.names(freqs)}.
   \item{loci}{
 A character vector indicating which loci to analyze.  These should be a
 subset of the locus names as used in the column names of \code{freqs}.
+}
+\item{global}{
+Boolean.  If \code{TRUE}, a single global statistic will be estimated across all
+populations.  If \code{FALSE}, pairwise statistics will be estimated between 
+populations.
+}
+\item{...}{
+Additional arguments to be passed to \code{calcPopDiff} (\emph{i.e.} \code{global}).
 }
 }
 \details{
@@ -85,8 +94,10 @@ Valued of \eqn{D}{D} are then averaged across loci.
 
 }
 \value{
-A square matrix containing \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} values.  
+If \code{global = FALSE}, a square matrix containing \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} values.  
 The rows and columns of the matrix are both named by population.
+
+If \code{global = TRUE}, a single value indicating the \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} value.
 }
 \references{
 Nei, M. (1973) Analysis of gene diversity in subdivided populations.
@@ -132,6 +143,11 @@ myD <- calcPopDiff(myfreq, metric = "Jost's D")
 myfst
 mygst
 myD
+
+# get global statistics
+calcPopDiff(myfreq, metric = "Fst", global = TRUE)
+calcPopDiff(myfreq, metric = "Gst", global = TRUE)
+calcPopDiff(myfreq, metric = "Jost's D", global = TRUE)
 }
 \keyword{ arith }
 \keyword{ array }
