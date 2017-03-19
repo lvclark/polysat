@@ -66,7 +66,7 @@ A \code{"genambig"} object, with loci that are in \code{x} split into
 the appropriate number of isoloci.
 }
 \references{
-Clark, L. V. and Drauch Schreier, A. (2016) Resolving microsatellite genotype ambiguity in
+Clark, L. V. and Drauch Schreier, A. (2017) Resolving microsatellite genotype ambiguity in
 populations of allopolyploid and diploidized autopolyploid organisms
 using negative correlations between alleles. \emph{Molecular Ecology Resources}, 
 DOI: 10.1111/1755-0998.12639.

@@ -1494,7 +1494,7 @@ used for character strings.
 microsatellite analysis.  \emph{Molecular Ecology Resources}
 11(3):562--566.
 
-\item Clark, LV and Drauch Schreier, A. 2016.  Resolving microsatellite genotype
+\item Clark, LV and Drauch Schreier, A. 2017.  Resolving microsatellite genotype
 ambiguity in populations of allopolyploid and diploidized autopolyploid organisms
 using negative correlations between allelic variables.  \emph{Molecular Ecology Resources}.  
 DOI: 10.1111/1755-0998.12639
