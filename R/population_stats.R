@@ -577,7 +577,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
                   split=".",
                                                       fixed=TRUE),
                                              stringsAsFactors=FALSE))[1,]), 
-                     global = FALSE){
+                     global = FALSE, bootstrap = FALSE, n.bootstraps = 1000){
     # check metric
   if(!metric %in% c("Fst", "Gst", "Jost's D")){
     stop("metric must be Fst, Gst, or Jost's D")
@@ -591,7 +591,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
   loci<-loci[loci!="Genomes"]
   
   # internal function to get differentiation statistic from any set of two or more pops
-  cpd <- function(freqs, metric, loci){
+  cpd <- function(freqs, metric, loci, bootstrap, n.boostraps){
     # Get genome number from the table
     if("Genomes" %in% names(freqs)){
       genomes<-freqs$Genomes
@@ -637,31 +637,53 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
         hets[L, "HTest"] <- hets[L, "HT"] + hets[L, "HSest"] / (2*meanGenomes)
       }
     }
-    if(metric == "Fst"){ # calculate Fst
-      HT<-mean(hets[,"HT"])
-      HS<-mean(hets[,"HS"])
-      result <- (HT-HS)/HT
+    # set up vector to contain results, and bootstrapping
+    if(!bootstrap){
+      n.bootstraps <- 1
     }
-    if(metric == "Gst"){ # calculate Gst and average across loci
-      G <- (hets[,"HTest"] - hets[,"HSest"])/hets[,"HTest"]
-      result <- mean(G)
+    result <- numeric(n.bootstraps)
+    for(b in 1:n.bootstraps){ # loop through bootstraps (just one if not bootstrapping)
+      if(bootstrap){
+        thishets <- hets[sample(loci, replace = TRUE),] # H matrix with bootstrapped set of loci
+      } else {
+        thishets <- hets
+      }
+      if(metric == "Fst"){ # calculate Fst
+        HT<-mean(thishets[,"HT"])
+        HS<-mean(thishets[,"HS"])
+        result[b] <- (HT-HS)/HT
+      }
+      if(metric == "Gst"){ # calculate Gst and average across loci
+        G <- (thishets[,"HTest"] - thishets[,"HSest"])/thishets[,"HTest"]
+        result[b] <- mean(G)
+      }
+      if(metric == "Jost's D"){ # calculate Jost's D and average across loci
+        D <- 2 * (thishets[,"HTest"] - thishets[,"HSest"]) / (1 - thishets[,"HSest"])
+        result[b] <- mean(D)
+      }
     }
-    if(metric == "Jost's D"){ # calculate Jost's D and average across loci
-      D <- 2 * (hets[,"HTest"] - hets[,"HSest"]) / (1 - hets[,"HSest"])
-      result <- mean(D)
-    }
+    
     return(result)
   } # end internal function
   
   # wrappers for internal function (global or pairwise)
   if(global){ # estimate single global statistic
-    result <- cpd(freqs, metric, loci)
+    result <- cpd(freqs, metric, loci, bootstrap, n.bootstraps)
   } else { # estimate pairwise statistics
     # Set up matrix for pairwise diffentiation statistics
-    result<-matrix(0,nrow=length(pops),ncol=length(pops),dimnames=list(pops,pops))
+    if(bootstrap){
+      result <- array(list(), dim = c(length(pops), length(pops)), dimnames = list(pops,pops)) # needs to be array-list if each item will be vector of bootstraps
+    } else {
+      result<-matrix(0,nrow=length(pops),ncol=length(pops),dimnames=list(pops,pops)) # matrix for single non-bootstrapped values
+    }
     for(m in 1:length(pops)){
       for(n in m:length(pops)){
-        result[m, n] <- result[n, m] <- cpd(freqs[unique(c(m,n)),], metric, loci)
+        thisres <- cpd(freqs[unique(c(m,n)),], metric, loci, bootstrap, n.bootstraps)
+        if(bootstrap){
+          result[[m, n]] <- result[[n, m]] <- thisres
+        } else {
+          result[m, n] <- result[n, m] <- thisres
+        }
       }
     }
   }

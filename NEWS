@@ -1,7 +1,8 @@
 Changes in version 1.6-1
 
 The function calcPopDiff has a new argument called "global" that can be used if 
-global rather than pairwise statistics are desired.
+global rather than pairwise statistics are desired.  It also has an argument
+called "bootstrap" if replicates bootstrapped across loci are desired.
 
 Updated citation information with DOI for Molecular Ecology Resources.
 

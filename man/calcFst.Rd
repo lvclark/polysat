@@ -16,7 +16,8 @@ compatibility with previous versions of \pkg{polysat}.
 calcPopDiff(freqs, metric, pops = row.names(freqs), 
             loci = unique(as.matrix(
             as.data.frame(strsplit(names(freqs), split = ".", fixed = TRUE),
-             stringsAsFactors = FALSE))[1, ]), global = FALSE)
+             stringsAsFactors = FALSE))[1, ]), global = FALSE,
+             bootstrap = FALSE, n.bootstraps = 1000)
 
 calcFst(freqs, pops = row.names(freqs), loci = unique(as.matrix(
         as.data.frame(strsplit(names(freqs), split = ".", fixed = TRUE),
@@ -50,8 +51,18 @@ Boolean.  If \code{TRUE}, a single global statistic will be estimated across all
 populations.  If \code{FALSE}, pairwise statistics will be estimated between 
 populations.
 }
+\item{bootstrap}{
+Boolean.  If \code{TRUE}, a set of replicates bootstrapped across loci will be returned.  If
+\code{FALSE}, a single value will be returned for each pair of populations (if 
+\code{global = FALSE}) or for the whole set (if \code{global = TRUE}).
+}
+\item{n.bootstraps}{
+Integer.  The number of bootstrap replicates to perform.  Ignored if 
+\code{bootstrap = FALSE}.
+}
 \item{...}{
-Additional arguments to be passed to \code{calcPopDiff} (\emph{i.e.} \code{global}).
+Additional arguments to be passed to \code{calcPopDiff} (\emph{i.e.} \code{global},
+\code{bootstrap}, and/or \code{n.bootstraps}).
 }
 }
 \details{
@@ -94,10 +105,15 @@ Valued of \eqn{D}{D} are then averaged across loci.
 
 }
 \value{
-If \code{global = FALSE}, a square matrix containing \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} values.  
+If \code{global = FALSE} and \code{bootstrap = FALSE}, a square matrix containing \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} values.  
 The rows and columns of the matrix are both named by population.
 
-If \code{global = TRUE}, a single value indicating the \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} value.
+If \code{global = TRUE} and \code{bootstrap = FALSE}, a single value indicating the \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} value.
+
+If \code{global = TRUE} and \code{bootstrap = TRUE}, a vector of bootstrapped replicates of \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D}.
+
+If \code{global = FALSE} and \code{bootstrap = TRUE}, a square two-dimensional list, with rows and columns named by population.  Each item is
+a vector of bootstrapped values for \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} for that pair of populations.
 }
 \references{
 Nei, M. (1973) Analysis of gene diversity in subdivided populations.
