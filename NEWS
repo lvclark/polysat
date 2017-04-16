@@ -4,6 +4,9 @@ The function calcPopDiff has a new argument called "global" that can be used if
 global rather than pairwise statistics are desired.  It also has an argument
 called "bootstrap" if replicates bootstrapped across loci are desired.
 
+A new function has been introduced, called "PIC", that estimates the 
+Polymorphic Information Content of loci.
+
 Updated citation information with DOI for Molecular Ecology Resources.
 
 Changes in version 1.6-0

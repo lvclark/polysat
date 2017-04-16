@@ -933,3 +933,74 @@ alleleDiversity <- function(genobject, samples=Samples(genobject),
   if(!alleles && counts)
     return(rcounts)
 }
+
+PIC <- function(freqs, pops=row.names(freqs),
+                loci=unique(as.matrix(as.data.frame(strsplit(names(freqs),
+                                                             split=".",
+                                                             fixed=TRUE),
+                                                    stringsAsFactors=FALSE))[1,]),
+                bypop = TRUE, overall = TRUE){
+  if(!bypop && !overall){
+    stop("At least one of bypop and overall must be TRUE.")
+  }
+  # check pop names
+  if(!all(pops %in% row.names(freqs))){
+    stop("pops must all be in row names of freqs.")
+  }
+  freqs <- freqs[pops,]
+  # Clean up loci
+  loci<-loci[loci!="Genomes"]
+  # is number of genomes (pop size) specified by locus?
+  GbL <- !"Genomes" %in% names(freqs)
+  
+  # set up results matrix
+  if(bypop){
+    results <- matrix(NA, nrow = length(pops), ncol = length(loci), dimnames = list(pops, loci))
+  } else {
+    results <- matrix(NA, nrow = 0, ncol = length(loci), dimnames = list(character(0), loci))
+  }
+  if(overall){
+    results <- rbind(results, matrix(NA, nrow = 1, ncol = length(loci), dimnames = list("Overall", loci)))
+  }
+  
+  # function to get PIC for one locus and pop
+  pic <- function(fr){
+    if(abs(sum(fr) - 1) > 1e-14) stop("Allele frequencies don't sum to 1.")
+    sq <- fr^2 # square each frequncy to get p_i^2 and p_j^2
+    nAl <- length(fr) # number of alleles
+    # matrix of the squares multiplied by each other
+    mt <- matrix(sq, nrow = nAl, ncol = 1) %*% matrix(sq, nrow = 1, ncol = nAl)
+    # sum of the squared allele freqs
+    sum1 <- sum(sq)
+    # twice the sum of the product of allele freqs (only between different alleles)
+    sum2 <- sum(mt) - sum(diag(mt))
+    return(1 - sum1 - sum2)
+  }
+  
+  # loop through loci 
+  for(L in loci){
+    lcol <- grep(paste(L, ".", sep = ""), names(freqs)) # columns for this locus
+    if(length(lcol) == 0) stop(paste("Locus", L, "not found in freqs."))
+    if(GbL){
+      lgencol <- grep(paste(L, "Genomes", sep = "."), names(freqs))
+      lcol <- lcol[lcol != lgencol]
+    }
+    if(bypop){ # get PIC for each population for this locus
+      for(p in pops){
+        results[p,L] <- pic(freqs[p,lcol])
+      }
+    }
+    if(overall){ # get PIC for mean allele frequency
+      if(GbL){
+        genomes <- freqs[,lgencol]
+      } else {
+        genomes <- freqs[,"Genomes"]
+      }
+      meanfreq <- apply(freqs[,lcol], 2, function(x) weighted.mean(x, w = genomes))
+      results["Overall",L] <- pic(meanfreq)
+    }
+  }
+  
+  return(results)
+} # end of PIc function
+
