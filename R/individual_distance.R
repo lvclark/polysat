@@ -97,22 +97,23 @@ meandistance.matrix <- function(object, samples=Samples(object),
     # subset the object so that samples can be numbered
     object <- object[samples, loci]
 
-# create an array containing all distances by locus and sample
+    # create an array containing all distances by locus and sample
     loci.matrices<-array(dim=c(length(loci),length(samples),length(samples)),
                          dimnames=list(loci,samples,samples))
+    ms <- Missing(object)
     for(L in loci){
-       for(m in 1:length(samples)){
-           for(n in m:length(samples)){
-               thisdistance <- distmetric(Genotype(object, m, L),
-                                          Genotype(object, n, L),
-                                          usatnt = Usatnts(object)[L],
-                                          missing = Missing(object),
-                                          ...)
-               loci.matrices[L,m,n] <- thisdistance
-               loci.matrices[L,n,m] <- thisdistance
-               if(progress) print(c(L, samples[m], samples[n]))
-           }
-       }
+      thisind <- genIndex(object, locus = L) # get all unique genotypes
+      un <- Usatnts(object)[L]
+      Nunique <- length(thisind$uniquegen)
+      for(m in 1:Nunique){ # loop through pairs of unique genotypes
+        for(n in m:Nunique){
+          thisdistance <- distmetric(thisind$uniquegen[[m]], thisind$uniquegen[[n]],
+                                     usatnt = un, missing = ms, ...)
+          loci.matrices[L, thisind$genindex == m, thisind$genindex == n] <- thisdistance
+          loci.matrices[L, thisind$genindex == n, thisind$genindex == m] <- thisdistance
+          if(progress) cat(paste(L, m, n), sep = "\n")
+        }
+      }
     }
 
     # calculate the mean matrix across all loci
@@ -409,29 +410,37 @@ meandistance.matrix2 <- function(object, samples=Samples(object),
 
     # cycle through calculations
     for(L in loci){
-        u <- Usatnts(object)[L]
-        for(m in samples){
-            for(n in samples[match(m,samples):length(samples)]){
-                totdist <- 0 # total distance so far
-                # cycle through all unambiguous genotypes for these two samples
-                for(i in 1:length(gprobs[[m,L]][["probs"]])){
-                    for(j in 1:length(gprobs[[n,L]][["probs"]])){
-                        # raw distance
-                        d <- distmetric(
-                                 as.vector(gprobs[[m,L]][["genotypes"]][i,]),
-                                 as.vector(gprobs[[n,L]][["genotypes"]][j,]),
-                                        usatnt=u, missing=Missing(object), ...)
-                        # probability of this combination
-                        p <- gprobs[[m,L]][["probs"]][i] *
-                             gprobs[[n,L]][["probs"]][j]
-                        totdist <- totdist + (d*p)
-                    }
-                }
-                loci.matrices[L,m,n] <- totdist
-                loci.matrices[L,n,m] <- totdist
-                if(progress) print(c(L, m, n))
-            }
+      u <- Usatnts(object)[L]
+      thisind <- genIndex(gprobs, L) # index of unique genotypes in gprobs for this locus
+      nUnique <- length(thisind$uniquegen) # number of unique genotypes
+      udist <- matrix(NA, nrow = nUnique, ncol = nUnique) # to hold distances between unique genotypes
+      for(j in 1:nUnique){ # estimate pairwise distances between all unique genotypes
+        for(k in j:nUnique){
+          d <- distmetric(thisind$uniquegen[[j]], thisind$uniquegen[[k]],
+                          usatnt=u, missing=Missing(object), ...)
+          udist[j,k] <- d
+          udist[k,j] <- d
+          if(progress) cat(paste(L, j, k), sep = "\n")
         }
+      }
+      for(m in samples){ # get weighted pairwise distances between samples
+        for(n in samples[match(m,samples):length(samples)]){
+          totdist <- 0 # total distance so far
+          # cycle through all unambiguous genotypes for these two samples
+          for(i in 1:length(gprobs[[m,L]][["probs"]])){
+            for(j in 1:length(gprobs[[n,L]][["probs"]])){
+              # lookup raw distance
+              d <- udist[thisind$genindex[[m]][i], thisind$genindex[[n]][j]]
+              # probability of this combination
+              p <- gprobs[[m,L]][["probs"]][i] *
+                gprobs[[n,L]][["probs"]][j]
+              totdist <- totdist + (d*p)
+            }
+          }
+          loci.matrices[L,m,n] <- totdist
+          loci.matrices[L,n,m] <- totdist
+        }
+      }
     }
 
     # calculate the mean matrix across all loci

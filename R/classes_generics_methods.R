@@ -453,6 +453,8 @@ setGeneric("Present", function(object) standardGeneric("Present"))
 setGeneric("Present<-", function(object, value) standardGeneric("Present<-"))
 setGeneric("Absent", function(object) standardGeneric("Absent"))
 setGeneric("Absent<-", function(object, value) standardGeneric("Absent<-"))
+# Generic function and methods for finding all unique genotypes and indexing which samples have them
+setGeneric("genIndex", function(object, locus) standardGeneric("genIndex"))
 
 # function for making locus names compatible as column headers
 fixloci <- function(loci, warn = TRUE){
@@ -1694,4 +1696,61 @@ setMethod("merge", signature(x = "genbinary", y="genbinary"),
     callNextMethod(x, y, objectm, overwrite=overwrite)
 })
 
-#}
+# method for finding all unique genotypes for a locus, and indexing the genotype for each individual
+setMethod("genIndex", signature(object = "genambig", locus = "ANY"), 
+          function(object, locus){
+            # list of genotypes for this locus, put alleles in ascending order for each genotype
+            thesegen <- lapply(Genotypes(object, loci = locus), sort)
+            uniquegen <- list() # to hold each unique genotype
+            nGeno <- 0 # number of unique genotypes found
+            nind <- length(thesegen) # number of individuals
+            genindex <- integer(nind) # to hold index identifying genotype for each individual
+            names(genindex) <- Samples(object)
+            
+            for(i in 1:nind){ # loop through individuals
+              thisgen <- thesegen[[i]] # genotype of this sample
+              genfind <- sapply(uniquegen, function(x) identical(thisgen, x)) # this this genotype in the list already, and where
+              if(!any(genfind)){ # new genotype
+                nGeno <- nGeno + 1
+                uniquegen[[nGeno]] <- thisgen
+                genindex[i] <- nGeno
+              } else {           # existing genotype
+                stopifnot(sum(genfind) == 1) # should only match once
+                genindex[i] <- which(genfind)
+              }
+            }
+            
+            return(list(uniquegen = uniquegen, genindex = genindex))
+          })
+
+# method for the array-list of genotypeProbs results produced by meandistance.matrix2
+setMethod("genIndex", signature(object = "array", locus = "ANY"),
+          function(object, locus){
+            stopifnot(!missing(locus))
+            thesegen <- lapply(object[,locus], function(x) x$genotypes)
+            uniquegen <- list()
+            nGeno <- as.integer(0)
+            nind <- length(thesegen)
+            genindex <- list() # each item in genindex will be a vector of genotype indices for all possible genotypes
+            length(genindex) <- nind
+            names(genindex) <- dimnames(object)[[1]]
+            
+            for(i in 1:nind){
+              ng <- dim(thesegen[[i]])[1] # number of genotypes
+              genindex[[i]] <- integer(ng)
+              for(j in 1:ng){
+                thisgen <- sort(thesegen[[i]][j,])
+                genfind <- sapply(uniquegen, function(x) identical(thisgen, x))
+                if(!any(genfind)){ # new genotype
+                  nGeno <- nGeno + 1
+                  uniquegen[[nGeno]] <- thisgen
+                  genindex[[i]][j] <- nGeno
+                } else {           # existing genotype
+                  stopifnot(sum(genfind) == 1) # should only match once
+                  genindex[[i]][j] <- which(genfind)
+                }
+              }
+            }
+            
+            return(list(uniquegen = uniquegen, genindex = genindex))
+          })
