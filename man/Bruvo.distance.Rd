@@ -6,7 +6,7 @@
   microsatellite locus using a method based on that of Bruvo
   \emph{et al.} (2004).
 }
-\usage{Bruvo.distance(genotype1, genotype2, maxl=9, usatnt=2, missing=-9)}
+\usage{Bruvo.distance(genotype1, genotype2, maxl=10, usatnt=2, missing=-9)}
 \arguments{
   \item{genotype1}{A vector of alleles for one individual at one
      locus.  Allele length is in nucleotides or repeat count.  Each

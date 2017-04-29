@@ -11,6 +11,8 @@ The function "genIndex" has been added for rapidly identifying all unique
 genotypes for a given locus.  meandistance.matrix and meandistance.matrix2
 now call this function, reducing their processing time several-fold.
 
+Bruvo.distances has been edited to speed processing several-fold.
+
 Updated citation information with DOI for Molecular Ecology Resources.
 
 Changes in version 1.6-0

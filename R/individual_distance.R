@@ -1,69 +1,60 @@
-Bruvo.distance <- function(genotype1, genotype2, maxl=9, usatnt=2, missing=-9) {
+Bruvo.distance <- function(genotype1, genotype2, maxl=10, usatnt=2, missing=-9) {
     
-if(is.na(usatnt)) stop("Bruvo.distance needs info from Usatnts slot.")
+  if(is.na(usatnt)) stop("Bruvo.distance needs info from Usatnts slot.")
 
-if(identical(genotype1, genotype2)&&genotype1[1]!=missing) {dist <- 0} else {
-    if((length(genotype1)>maxl & length(genotype2)>maxl)|
-       genotype1[1]==missing|genotype2[1]==missing){
-        dist <- NA} else {
-        if(length(genotype1) >= length(genotype2)) {
-            genotypeL <- genotype1/usatnt; genotypeS <- genotype2/usatnt} else {
-                genotypeL <- genotype2/usatnt; genotypeS <- genotype1/usatnt}
+  if(identical(genotype1, genotype2) && genotype1[1]!=missing){
+    dist <- 0 # If genotypes are identical, just return a distance of zero without doing the rest of the calculation.
+  } else {
+    if((length(genotype1) > maxl && length(genotype2) > maxl) | # If genotypes are both longer than 10, skip this calculation because it will take over a minute.
+       genotype1[1] == missing | genotype2[1] == missing){
+      dist <- NA
+    } else {
+      # Whichever genotype has more alleles, make this genotypeL (long) and the other genotypeS (short).
+      # convert alleles into repeat counts by dividing by usatnt
+      if(length(genotype1) >= length(genotype2)){
+        genotypeL <- genotype1/usatnt
+        genotypeS <- genotype2/usatnt
+      } else {
+        genotypeL <- genotype2/usatnt
+        genotypeS <- genotype1/usatnt
+      }
 
-# if genotypes are identical, just return a distance of zero without doing the rest
-        # of the calculation
-# if genotypes are both longer than 9, skip this calculation because it will take hours
-# whichever genotype has more alleles, make this genotypeL (long) and the other
-        # genotypeS (short)
-# convert alleles into repeat counts by dividing by usatnt
+      kl <- length(genotypeL) # sets the ploidy level for this genotype comparison
+      ks <- length(genotypeS) # number of alleles in the shorter genotype
 
-kl <- length(genotypeL) # sets the ploidy level for this genotype comparison
-ks <- length(genotypeS) # number of alleles in the shorter genotype
+      allele.distances <- array(0 , c(kl,ks))
+      # Create an empty matrix to contain the raw distances between alleles
 
-allele.distances <- array(0 , c(kl,ks))
-# Create an empty matrix to contain the raw distances between alleles
+      for(n in 1:kl){
+         for(m in 1:ks){
+           allele.distances[n,m] <- genotypeL[n] - genotypeS[m]
+        }
+      }
+      # fills the array with the differences in allele repeat count
+      
+#      allele.distances <- sweep(matrix(genotypeL, nrow = kl, ncol = ks), 2, genotypeS) 
+      # alternative calculation differences in repeat count; seems to be slower in many cases
+      
+      geometric.distances <- 1 - 2^-abs(allele.distances)
+      # geometric transformation based on mutation probabilities
 
-for(n in 1:kl) { for(m in 1:ks) {allele.distances[n,m] <- genotypeL[n] - genotypeS[m]}}
-# fills the array with the differences in allele repeat count
-
-geometric.distances <- array(1 - 2^-abs(allele.distances) , c(kl,ks))
-# geometric transformation based on mutation probabilities
-
-#Next, find the minimum distance sum among all permutations
-
-column <- 1:ks # an index of all columns (genotypeS alleles)
-row <- 1:kl # an index of all rows (genotypeL alleles)
-
-combinations <- combn(row, ks, FUN = NULL, simplify=FALSE)
-# all combinations of alleles in genotypeL that can be matched to non-virtual
-        # alleles in genotypeS
-
-permutations <- combinat::permn(ks)
-# all possible orders that alleles within these combinations can go in
-
-mindist <- Inf # this variable will store the minimum sum encountered so far.
-
-for(i in 1:length(combinations)) {
-# the loop to go through every possible sum of compatible allele comparisons
-
-rowcomb <- combinations[[i]] # choose one combination of rows for this round
-
-for(l in 1:length(permutations)){ # go through all orders of this combinations of rows
-
-sum <- 0 # this is si, the sum of allele comparisons
-
-for(j in 1:ks){
-    sum <- sum + geometric.distances[rowcomb[permutations[[l]][j]],column[j]]}
-# the loop to calculate the sum for this permutation
-
-if(sum < mindist) {mindist <- sum} # is this the minimum sum found so far?
-
-}}
-
-dist <- (mindist+kl-ks)/kl
-# add 1 for each infinite virtual allele, then divide by the ploidy
-
-}}
+      #Next, find the minimum distance sum among all permutations
+      getalldist <- function(dmat, nrow){ # recursive function for going through all permutations
+        thesedist <- dmat[,1]
+        if(dim(dmat)[2] > 1){
+          newdist <- numeric(0)
+          for(i in 1:nrow){
+            newdist <- c(newdist, thesedist[i] + getalldist(dmat[-i,-1,drop=FALSE], nrow - 1))
+          }
+          thesedist <- newdist
+        }
+        return(thesedist) # returns all possible distances
+      }
+      mindist <- min(getalldist(geometric.distances, kl))
+      dist <- (mindist+kl-ks)/kl
+      # add 1 for each infinite virtual allele, then divide by the ploidy
+    }
+  }
 return(dist)
 }
 
