@@ -96,15 +96,16 @@ meandistance.matrix <- function(object, samples=Samples(object),
       thisind <- genIndex(object, locus = L) # get all unique genotypes
       un <- Usatnts(object)[L]
       Nunique <- length(thisind$uniquegen)
+      if(progress) cat(paste("Beginning locus", L, "..."), sep = "\n")
       for(m in 1:Nunique){ # loop through pairs of unique genotypes
         for(n in m:Nunique){
           thisdistance <- distmetric(thisind$uniquegen[[m]], thisind$uniquegen[[n]],
                                      usatnt = un, missing = ms, ...)
           loci.matrices[L, thisind$genindex == m, thisind$genindex == n] <- thisdistance
           loci.matrices[L, thisind$genindex == n, thisind$genindex == m] <- thisdistance
-          if(progress) cat(paste(L, m, n), sep = "\n")
         }
       }
+      if(progress) cat(paste("Locus", L, "complete"), sep = "\n")
     }
 
     # calculate the mean matrix across all loci
@@ -401,6 +402,7 @@ meandistance.matrix2 <- function(object, samples=Samples(object),
 
     # cycle through calculations
     for(L in loci){
+      if(progress) cat(paste("Beginning locus", L, "..."), sep = "\n")
       u <- Usatnts(object)[L]
       thisind <- genIndex(gprobs, L) # index of unique genotypes in gprobs for this locus
       nUnique <- length(thisind$uniquegen) # number of unique genotypes
@@ -411,7 +413,6 @@ meandistance.matrix2 <- function(object, samples=Samples(object),
                           usatnt=u, missing=Missing(object), ...)
           udist[j,k] <- d
           udist[k,j] <- d
-          if(progress) cat(paste(L, j, k), sep = "\n")
         }
       }
       for(m in samples){ # get weighted pairwise distances between samples
@@ -432,6 +433,7 @@ meandistance.matrix2 <- function(object, samples=Samples(object),
           loci.matrices[L,n,m] <- totdist
         }
       }
+      if(progress) cat(paste("Locus", L, "complete"), sep = "\n")
     }
 
     # calculate the mean matrix across all loci
