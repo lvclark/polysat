@@ -521,13 +521,16 @@ Bruvo2.distance <- function(genotype1, genotype2, maxl=7, usatnt=2, missing=-9,
             }
             # get the difference in length
             diff <- length(genotypeL) - length(genotypeS)
+
             # get allele combinations to try
             alcomb <- function(genotype){
                 lg <- length(genotype)
-                mat <- matrix(nrow=0, ncol=lg^diff)
+                mat <- matrix(nrow=diff, ncol=lg^diff)
                 for(i in 1:diff){
-                    mat <- rbind(mat, rep(genotype, times=lg^(i-1),
-                                          each=lg^(diff-i)))
+                    mat[i,] <- rep(genotype, times=lg^(i-1), each=lg^(diff-i))
+                }
+                if(diff > 1){
+                  mat <- apply(mat, 2, sort)
                 }
                 return(mat)
             }
@@ -547,14 +550,14 @@ Bruvo2.distance <- function(genotype1, genotype2, maxl=7, usatnt=2, missing=-9,
                 if(length(unique(alleleadd[,i])) > 1){
                     # check to see if this calculation has already been done
                     for(j in 1:(i-1)){
-                        if(identical(sort(alleleadd[,i]),sort(alleleadd[,j]))){
+                        if(identical(alleleadd[,i], alleleadd[,j])){
                             distadd[i] <- distadd[j]
                             break
                         }
                     }
                 }
                 if(is.na(distadd[i])){
-                    # do the calculation is this allele combo is new
+                  # do the calculation is this allele combo is new
                 distadd[i] <- Bruvo.distance(genotypeL,
                                              c(genotypeS, alleleadd[,i]),
                                              maxl=maxl, usatnt=usatnt,
@@ -564,8 +567,7 @@ Bruvo2.distance <- function(genotype1, genotype2, maxl=7, usatnt=2, missing=-9,
             for(i in 1:length(distloss)){
                 if(length(unique(alleleloss[,i])) > 1){
                     for(j in 1:(i-1)){
-                        if(identical(sort(alleleloss[,i]),
-                                     sort(alleleloss[,j]))){
+                        if(identical(alleleloss[,i], alleleloss[,j])){
                             distloss[i] <- distloss[j]
                             break
                         }
