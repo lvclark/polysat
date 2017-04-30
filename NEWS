@@ -12,6 +12,8 @@ genotypes for a given locus.  meandistance.matrix and meandistance.matrix2
 now call this function, reducing their processing time several-fold.
 
 Bruvo.distance and Bruvo2.distance have been edited to speed processing several-fold.
+Package dependency on the combinat package has been removed since Bruvo.distance no
+longer requires combinat.
 
 Updated citation information with DOI for Molecular Ecology Resources.
 
