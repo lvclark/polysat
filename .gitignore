@@ -47,3 +47,4 @@ DESCRIPTION~
 *.md~
 *.Rd~
 *.R#
+*.Rhistory
