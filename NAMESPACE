@@ -24,7 +24,7 @@ exportMethods(estimatePloidy, Samples, "Samples<-", Loci, "Loci<-", PopInfo,
 exportClasses(gendata, genambig, genbinary, ploidysuper, ploidymatrix, 
               ploidylocus, ploidysample, ploidyone)
 import(methods)
-importFrom("stats", "as.dist", "cutree", "fisher.test", "hclust", "kmeans", "heatmap")
+importFrom("stats", "as.dist", "cutree", "fisher.test", "hclust", "kmeans", "heatmap", "weighted.mean")
 importFrom("utils", "combn", "edit", "read.table", "stack", "write.table")
 importFrom("grDevices", "dev.off", "grey.colors", "pdf", "rainbow")
 importFrom("graphics", "axis", "image", "legend", "par", "plot", "text")
