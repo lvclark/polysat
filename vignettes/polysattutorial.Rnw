@@ -1,4 +1,4 @@
-% \VignetteIndexEntry{polysat version 1.5 Tutorial Manual}
+% \VignetteIndexEntry{polysat version 1.7 Tutorial Manual}
 % \VignetteDepends{combinat, methods, polysat}
 
 \documentclass[12pt]{article}
@@ -9,7 +9,7 @@
 \usepackage{array}
 \usepackage{hyperref}
 
-\title{\textsc{polysat} version 1.5 Tutorial Manual}
+\title{\textsc{polysat} version 1.7 Tutorial Manual}
 \author{Lindsay V. Clark <lvclark@illinois.edu>\\
   University of Illinois, Urbana-Champaign\\
   Department of Crop Sciences\\
@@ -38,7 +38,8 @@ presence/absence data, ATetra, Tetra/Tetrasat, GenoDive, SPAGeDi,
 Structure, POPDIST, and STRand.  It can also calculate pairwise genetic 
 distances between
 samples, assist the user in estimating ploidy based on allele number,
-and estimate allele frequencies and $F_{ST}$.  Due to the
+and estimate allele frequencies, population differentiation statistics
+such as $F_{ST}$, and polymorphic information content.  Due to the
 versatility of the R programming environment and the simplicity of how
 genotypes are stored by polysat, the user may find many ways to
 interface other R functions with this package, such as Principal
@@ -64,12 +65,10 @@ R input found in this manual.
 The R console and base system can be obtained at
 \url{http://www.r-project.org/}.  Once R is installed, \textsc{polysat} can be
 installed and loaded by typing the following commands into the R
-console (note that combinat is only needed if the \texttt{Bruvo.distance} 
-function is being used):
+console:
 
 \begin{Schunk}
   \begin{Sinput}
-> install.packages("combinat")
 > install.packages("polysat")
 > library("polysat")
 \end{Sinput}
@@ -165,7 +164,7 @@ Flowchart 1.  Functions for allopolyploid or autopolyploid data.
   GenoDive, or POPDIST software.};
 \node at (10, -4) [decision] (self) {Does each population have one,
   even numbered ploidy, and is the self fertilization rate known?};
-\node at (4, -7) [block] (simplefreq) {Use \texttt{simpleFreq} to
+\node at (5, -7) [block] (simplefreq) {Use \texttt{simpleFreq} to
   estimate allele frequencies.};
 \node at (10, -10) [block] (desilva) {Use \texttt{deSilvaFreq} to
   estimate allele frequencies.};
@@ -181,6 +180,7 @@ Flowchart 1.  Functions for allopolyploid or autopolyploid data.
 \node at (10, -16) [block] (gendiv) {Analysis with \texttt{assignClones}
 or \texttt{genotypeDiversity}};
 \node at (5, -17) [block] (analysis) {Downstream analysis.};
+\node at (0,-7) [block] (pic) {Calculate Polymorphic Information Content (PIC)};
 
 \path [line] (isauto) -- (autoexport);
 \path [line] (isauto) -- (self);
@@ -192,6 +192,7 @@ or \texttt{genotypeDiversity}};
 \path [line] (freq) -- (adegenet);
 \path [line] (freq) -- (calcfst);
 \path [line] (freq) -- (matrix2);
+\path [line] (freq) -- (pic);
 \path [line] (matrix2) -- (analysis);
 \path [line] (matrix2) -- (gendiv);
 \path [line] (calcfst) |- (analysis);
@@ -386,8 +387,11 @@ was not part of the
 simulation that generated this dataset, the latter measure works
 better here for distinguishing populations.
 
-If your data are autopolyploid, also see \texttt{?meandistance.matrix2}
-for another method of calculating inter-individual distances.  If you
+If your data are autopolyploid and you want to use the Bruvo distance, 
+I recommend using \texttt{meandistance.matrix2} rather than \texttt{meandistance.matrix}.
+\texttt{meandistance.matrix2} will take longer to process, but will be more accurate
+because it models allele copy number.
+Additionally, if you
 have a mixed ploidy system in which the mechanism(s) for changes in
 ploidy are known, also see \texttt{?Bruvo2.distance}.
 
@@ -501,6 +505,41 @@ simD <- calcPopDiff(simfreq, metric = "Jost's D")
 simD
 simD12 <- calcPopDiff(simfreq, metric = "Jost's D", loci=c("loc1", "loc2"))
 simD12
+@
+
+We can also calculate polymorphic information content (PIC) of each locus
+in order to gauge which loci will be most informative for future studies
+(higher numbers = more informative).
+
+<<>>=
+PIC(simfreq)
+@
+
+We can get a global estimate, rather than a pairwise estimate, of any
+population differentiation statistic, for example for $G_{ST}$:
+
+<<>>=
+calcPopDiff(simfreq, metric = "Gst", global = TRUE)
+@
+
+For either pairwise or global population differentiation statistics, 
+we can get bootstrapped estimates in order to determine a 95\% confidence
+interval:
+
+<<>>=
+gbootstrap <- calcPopDiff(simfreq, metric = "Gst", global = TRUE, 
+                          bootstrap = TRUE)
+quantile(gbootstrap, c(0.025, 0.975))
+gbootstrap_pairwise <- calcPopDiff(simfreq, metric = "Gst", 
+                                   bootstrap = TRUE)
+pairwise_CIs <- lapply(gbootstrap_pairwise, 
+                       function(x) quantile(x, c(0.025,0.975)))
+names(pairwise_CIs) <- paste(rep(PopNames(simgen), 
+                                 each = length(PopNames(simgen))),
+                             rep(PopNames(simgen), 
+                                 times = length(PopNames(simgen))), 
+                             sep = ".")
+pairwise_CIs
 @
 
 \subsubsection{Genotype data export}
@@ -1239,7 +1278,7 @@ while \texttt{simpleFreq} does not.  In both cases the data frame will
 also have a column indicating the population size in number of genomes
 (\emph{e.g.} four hexaploid individuals = 24 genomes).
 
-The function \texttt{calcFst} takes the data frame produced by either
+The function \texttt{calcPopDiff} takes the data frame produced by either
 allele frequency estimation, and produces a matrix containing pairwise
 $F_{ST}$ values according to the original calculation by Wright
 \cite{nei73}.  Population sizes are weighted by number of genomes,

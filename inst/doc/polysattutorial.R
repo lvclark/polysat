@@ -88,6 +88,24 @@ simD
 simD12 <- calcPopDiff(simfreq, metric = "Jost's D", loci=c("loc1", "loc2"))
 simD12
 
+PIC(simfreq)
+
+calcPopDiff(simfreq, metric = "Gst", global = TRUE)
+
+gbootstrap <- calcPopDiff(simfreq, metric = "Gst", global = TRUE, 
+                          bootstrap = TRUE)
+quantile(gbootstrap, c(0.025, 0.975))
+gbootstrap_pairwise <- calcPopDiff(simfreq, metric = "Gst", 
+                                   bootstrap = TRUE)
+pairwise_CIs <- lapply(gbootstrap_pairwise, 
+                       function(x) quantile(x, c(0.025,0.975)))
+names(pairwise_CIs) <- paste(rep(PopNames(simgen), 
+                                 each = length(PopNames(simgen))),
+                             rep(PopNames(simgen), 
+                                 times = length(PopNames(simgen))), 
+                             sep = ".")
+pairwise_CIs
+
 ### Genotype data export
 write.Structure(simgen, ploidy = 4, file="simgenStruct.txt")
 

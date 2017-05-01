@@ -48,7 +48,7 @@ them before starting.
 
 It is assumed that the reader is already familiar with R and with \textsc{polysat}.
 If you aren't, please spend some time with ``An Introduction to R'' and with the
-``polysat version 1.6 Tutorial Manual''.  Additionally, there is a manuscript published
+``polysat version 1.7 Tutorial Manual''.  Additionally, there is a manuscript published
 in \emph{Molecular Ecology Resources} at \url{http://dx.doi.org/10.1111/1755-0998.12639} that describes in detail the 
 rationale and limitations of the allele assignment tools described in this manual.
 You may also find the documentation for individual functions to be helpful
@@ -646,7 +646,7 @@ An alternative method of allele assignment available in \textsc{polysat}
 is that by Catal\'{a}n \emph{et al.} (2006; 
 \url{http://dx.doi.org/10.1534/genetics.105.042788}).  The Catal\'{a}n 
 method does not allow for homoplasy, null alleles, or meiotic error,
-but may perform equally the \textsc{polysat} method in cases of
+but may perform equally to the \textsc{polysat} method in cases of
 strong population structure, with less processing time.  Let's try it on our example dataset.
 
 <<>>=
