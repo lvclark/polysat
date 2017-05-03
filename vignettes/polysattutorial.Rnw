@@ -1,5 +1,5 @@
 % \VignetteIndexEntry{polysat version 1.7 Tutorial Manual}
-% \VignetteDepends{combinat, methods, polysat}
+% \VignetteDepends{methods, polysat}
 
 \documentclass[12pt]{article}
 
