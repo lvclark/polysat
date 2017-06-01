@@ -1,3 +1,9 @@
+Changes in version 1.7-1
+
+Bug fixes in alleleCorrelations, testAlGroups, and mergeAlleleAssignments have
+been made so that these functions can accomodate loci with a very small number
+of alleles (one or two).
+
 Changes in version 1.7-0
 
 The function calcPopDiff has a new argument called "global" that can be used if 

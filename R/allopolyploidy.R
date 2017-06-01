@@ -140,7 +140,7 @@ alleleCorrelations <- function(object, samples=Samples(object), locus=1,
     gentable <- Genotypes(object)  # get the 1/0 table of genotypes
     # remove alleles that aren't in dataset
     gentable <- gentable[,apply(gentable, 2,
-                                function(x) !all(x==Absent(object)))]
+                                function(x) !all(x==Absent(object))), drop = FALSE]
     gentable.out <- gentable # to be output
     # find any non-variable alleles (present in all genotypes)
     nonvar <- apply(gentable, 2, function(x) all(x==Present(object)))
@@ -176,13 +176,37 @@ alleleCorrelations <- function(object, samples=Samples(object), locus=1,
             clustmat1[,alleles] <- 1
         }
     }
-    if(sum(rowSums(clustmat1)==0)==1){
-        # if everything else can be assigned to one genome, do that
-        clustmat1[rowSums(clustmat1)==0,colSums(clustmat1)==0] <- 1
-        sigmatNeg <- sigmatPos <- oddsRatio <- NULL
-        pValuesNeg <- pValuesPos <- mydist <- NULL
-        mytotss <- mybss <- NA
-        clustmethod <- "fixed alleles"
+    if(sum(rowSums(clustmat1)==0)==1 ||
+       sum(colSums(clustmat1) == 0) < sum(rowSums(clustmat1) == 0) ){
+      # if everything else can be assigned to one genome, do that.
+      # or, if there aren't enough alleles left for the number of isoloci, make all homoplasious.  
+      clustmat1[rowSums(clustmat1)==0,colSums(clustmat1)==0] <- 1
+      sigmatNeg <- sigmatPos <- oddsRatio <- NULL
+      pValuesNeg <- pValuesPos <- mydist <- NULL
+      mytotss <- mybss <- NA
+      clustmethod <- "fixed alleles"
+    }
+    if(sum(colSums(clustmat1) == 0) == sum(rowSums(clustmat1) == 0)){
+      # if there are just enough alleles left for one allele per isolocus, do that
+      blankAlleles <- which(colSums(clustmat1) == 0)
+      blankIsoloci <- which(rowSums(clustmat1) == 0)
+      for(i in 1:length(blankAlleles)){
+        clustmat1[blankIsoloci[i], blankAlleles[i]] <- 1
+      }
+      sigmatNeg <- sigmatPos <- oddsRatio <- NULL
+      pValuesNeg <- pValuesPos <- mydist <- NULL
+      mytotss <- mybss <- NA
+      clustmethod <- "fixed alleles"
+    }
+    if(all(colSums(clustmat1) > 0) && any(rowSums(clustmat1) == 0)){
+      # all alleles have been assigned, but some isoloci still lack alleles.
+      # expected in rare cases, i.e. if there is just one allele in whole pop.
+      # add homoplasy.
+      clustmat1[rowSums(clustmat1)==0,] <- 1
+      sigmatNeg <- sigmatPos <- oddsRatio <- NULL
+      pValuesNeg <- pValuesPos <- mydist <- NULL
+      mytotss <- mybss <- NA
+      clustmethod <- "fixed alleles"
     }
     # make a second copy of assignment matrix for UPGMA
     clustmat2 <- clustmat1
@@ -545,7 +569,9 @@ testAlGroups <- function(object, fisherResults, SGploidy=2,
   while(prop.error > tolerance && numloops < 1000){
     numloops <- numloops + 1 # precaution to keep it from getting stuck
     
-    A <- A[,AlOcc != 1] # don't copy fixed alleles
+    if(!all(A[,AlOcc != 1] == 0)){
+      A <- A[,AlOcc != 1, drop = FALSE] # don't copy fixed alleles, unless that's the only way to resolve things
+    }
     
     # choose best allele to make homoplasious for this round
     tocopy <- which(A == max(A), arr.ind=TRUE)
@@ -794,18 +820,20 @@ mergeAlleleAssignments <- function(x){
                         stuckcount <- stuckcount+1
                         next
                     }
-                    # try to match up rows
-                    groups <- kmeans(rbind(G[,overlap],a[,overlap]),dim(G)[1])
-                    # check if matching makes sense
-                    if(!all(1:dim(G)[1] %in% groups$cluster[1:dim(G)[1]]) ||
-                       groups$betweenss/groups$totss <= 0.5){
+                    if(!identical(G[,overlap,drop = FALSE],a[,overlap,drop = FALSE])){
+                      # try to match up rows
+                      groups <- kmeans(rbind(G[,overlap,drop = FALSE],a[,overlap,drop = FALSE]),dim(G)[1])
+                      # check if matching makes sense
+                      if(!all(1:dim(G)[1] %in% groups$cluster[1:dim(G)[1]]) ||
+                         groups$betweenss/groups$totss <= 0.5){
                         stuckcount <- stuckcount + 1
                         next
-                    }
-                    # combine matrices
-                    G[groups$cluster[1:dim(G)[1]],dimnames(a)[[2]]] <-
+                      }
+                      # combine matrices
+                      G[groups$cluster[1:dim(G)[1]],dimnames(a)[[2]]] <-
                         onezero(G[groups$cluster[1:dim(G)[1]],dimnames(a)[[2]]],
                                 a[groups$cluster[-(1:dim(G)[1])],])
+                    }
                     toremove <- c(toremove,i) # done with this matrix
                 }
                 # get rid of matrices that have already been used
