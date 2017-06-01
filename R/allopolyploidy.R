@@ -816,24 +816,22 @@ mergeAlleleAssignments <- function(x){
                     assigned <- alleles[colSums(G)>0]
                     # find alleles present in current matrix that are already assigned
                     overlap <- assigned[assigned %in% dimnames(a)[[2]][colSums(a)>0]]
-                    if(length(overlap)==0){
+                    if(length(overlap)==0 || all(G[,overlap] == 1) || all(a[,overlap] == 1)){
                         stuckcount <- stuckcount+1
                         next
                     }
-                    if(!identical(G[,overlap,drop = FALSE],a[,overlap,drop = FALSE])){
-                      # try to match up rows
-                      groups <- kmeans(rbind(G[,overlap,drop = FALSE],a[,overlap,drop = FALSE]),dim(G)[1])
-                      # check if matching makes sense
-                      if(!all(1:dim(G)[1] %in% groups$cluster[1:dim(G)[1]]) ||
-                         groups$betweenss/groups$totss <= 0.5){
-                        stuckcount <- stuckcount + 1
-                        next
-                      }
-                      # combine matrices
-                      G[groups$cluster[1:dim(G)[1]],dimnames(a)[[2]]] <-
-                        onezero(G[groups$cluster[1:dim(G)[1]],dimnames(a)[[2]]],
-                                a[groups$cluster[-(1:dim(G)[1])],])
+                    # try to match up rows
+                    groups <- kmeans(rbind(G[,overlap,drop = FALSE],a[,overlap,drop = FALSE]),dim(G)[1])
+                    # check if matching makes sense
+                    if(!all(1:dim(G)[1] %in% groups$cluster[1:dim(G)[1]]) ||
+                       groups$betweenss/groups$totss <= 0.5){
+                      stuckcount <- stuckcount + 1
+                      next
                     }
+                      # combine matrices
+                    G[groups$cluster[1:dim(G)[1]],dimnames(a)[[2]]] <-
+                      onezero(G[groups$cluster[1:dim(G)[1]],dimnames(a)[[2]]],
+                              a[groups$cluster[-(1:dim(G)[1])],])
                     toremove <- c(toremove,i) # done with this matrix
                 }
                 # get rid of matrices that have already been used
