@@ -12,7 +12,7 @@ selfing rate.
 deSilvaFreq(object, self, samples = Samples(object),
             loci = Loci(object), initNull = 0.15,
             initFreq = simpleFreq(object[samples, loci]),
-            tol = 1e-08)
+            tol = 1e-08, maxiter = 1e4)
 }
 \arguments{
   \item{object}{
@@ -51,6 +51,10 @@ The tolerance level for determining when the results have converged.
 Where \code{p2} and \code{p1} are the current and previous vectors of allele
 frequencies, respectively, the EM algorithm stops if
 \code{sum(abs(p2-p1)/(p2+p1)) <= tol}.
+}
+\item{maxiter}{
+The maximum number of iterations that will be performed for each locus and 
+population.
 }
 }
 \details{

@@ -262,7 +262,7 @@ deSilvaFreq <- function(object, self,
                         samples=Samples(object),
                         loci=Loci(object), initNull = 0.15,
                         initFreq=simpleFreq(object[samples,loci]),
-                        tol = 0.00000001){
+                        tol = 0.00000001, maxiter = 1e4){
     # make sure self argument has been given
     if(missing(self)) stop("Selfing rate required.")
 
@@ -484,9 +484,7 @@ deSilvaFreq <- function(object, self,
             subInitFreq <- subInitFreq * (1-initNull[L])/sum(subInitFreq)
             # get each allele frequency
             for(a in alleles){
-                p1[match(a, alleles)] <- subInitFreq[1,
-                                                     grep(a, names(subInitFreq),
-                                                          fixed=TRUE)]
+                p1[match(a, alleles)] <- subInitFreq[1,paste(L, a, sep = ".")]
             }
 
             ## Begin the EM algorithm
@@ -542,8 +540,8 @@ deSilvaFreq <- function(object, self,
                 # check for convergence
                 pB <- p1 + p2
                 pT <- p1 - p2
-                pT <- pT[pB != 0]
-                pB <- pB[pB != 0]
+                pT <- pT[abs(pB) > 1e-14]
+                pB <- pB[abs(pB) > 1e-14]
 
                 if(length(pB) == 0){
                     converge <- 1
@@ -551,6 +549,9 @@ deSilvaFreq <- function(object, self,
                     if(sum(abs(pT)/pB) <= tol){
                         converge <- 1
                     }
+                }
+                if(niter >= maxiter){
+                  converge <- 1
                 }
 
                 niter <- niter + 1
