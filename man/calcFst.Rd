@@ -7,8 +7,8 @@ Estimate Population Differentiation Statistics
 \description{
 Given a data frame of allele frequencies and population sizes,
 \code{calcPopDiff} calculates a matrix of pairwise \eqn{F_{ST}}{FST}, 
-\eqn{G_{ST}}{GST}, or Jost's \eqn{D}{D} values, or a single global
-value for any of these three statistics.
+\eqn{G_{ST}}{GST}, Jost's \eqn{D}{D}, or \eqn{R_{ST}}{RST} values, or a single global
+value for any of these four statistics.
 \code{calcFst} is a wrapper for \code{calcPopDiff} to allow backwards
 compatibility with previous versions of \pkg{polysat}.
 }
@@ -17,7 +17,7 @@ calcPopDiff(freqs, metric, pops = row.names(freqs),
             loci = unique(as.matrix(
             as.data.frame(strsplit(names(freqs), split = ".", fixed = TRUE),
              stringsAsFactors = FALSE))[1, ]), global = FALSE,
-             bootstrap = FALSE, n.bootstraps = 1000)
+             bootstrap = FALSE, n.bootstraps = 1000, object = NULL)
 
 calcFst(freqs, pops = row.names(freqs), loci = unique(as.matrix(
         as.data.frame(strsplit(names(freqs), split = ".", fixed = TRUE),
@@ -36,7 +36,7 @@ these columns are the locus name and allele name, separated by a period.
 }
 \item{metric}{
 The population differentiation statistic to estimate.  Can be \dQuote{Fst},
-\dQuote{Gst}, or \dQuote{Jost's D}.
+\dQuote{Gst}, \dQuote{Jost's D}, or \dQuote{Rst}.
 }
   \item{pops}{
 A character vector.  Populations to analyze, which should be
@@ -59,6 +59,10 @@ Boolean.  If \code{TRUE}, a set of replicates bootstrapped across loci will be r
 \item{n.bootstraps}{
 Integer.  The number of bootstrap replicates to perform.  Ignored if 
 \code{bootstrap = FALSE}.
+}
+\item{object}{
+A \code{"genambig"} or \code{"genbinary"} object with the \code{Usatnts} slot filled in.
+Required for \code{metric = "Rst"} only.
 }
 \item{...}{
 Additional arguments to be passed to \code{calcPopDiff} (\emph{i.e.} \code{global},
@@ -101,19 +105,25 @@ to estimate \eqn{D}{D} at each locus according to Jost (2008; equation 12):
 
 \deqn{2 * \frac{H_T - H_S}{1 - H_S}}{2 * (HT - HS)/(1 - HS)}
 
-Valued of \eqn{D}{D} are then averaged across loci.
+Values of \eqn{D}{D} are then averaged across loci.
+
+For \code{metric = "Rst"}:
+
+\eqn{R_{ST}}{RST} is estimated on a per-locus basis according to Slatkin (1995),
+with populations weighted equally regardless of size. Values are then averaged
+across loci.
 
 }
 \value{
-If \code{global = FALSE} and \code{bootstrap = FALSE}, a square matrix containing \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} values.  
+If \code{global = FALSE} and \code{bootstrap = FALSE}, a square matrix containing \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, \eqn{D}{D}, or \eqn{R_{ST}}{RST} values.  
 The rows and columns of the matrix are both named by population.
 
-If \code{global = TRUE} and \code{bootstrap = FALSE}, a single value indicating the \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} value.
+If \code{global = TRUE} and \code{bootstrap = FALSE}, a single value indicating the \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, \eqn{D}{D}, or \eqn{R_{ST}}{RST} value.
 
-If \code{global = TRUE} and \code{bootstrap = TRUE}, a vector of bootstrapped replicates of \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D}.
+If \code{global = TRUE} and \code{bootstrap = TRUE}, a vector of bootstrapped replicates of \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, \eqn{D}{D}, or \eqn{R_{ST}}{RST}.
 
 If \code{global = FALSE} and \code{bootstrap = TRUE}, a square two-dimensional list, with rows and columns named by population.  Each item is
-a vector of bootstrapped values for \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, or \eqn{D}{D} for that pair of populations.
+a vector of bootstrapped values for \eqn{F_{ST}}{FST}, \eqn{G_{ST}}{GST}, \eqn{D}{D}, or \eqn{R_{ST}}{RST} for that pair of populations.
 }
 \references{
 Nei, M. (1973) Analysis of gene diversity in subdivided populations.
@@ -125,6 +135,9 @@ Nei, M. and Chesser, R. (1983) Estimation of fixation indices and gene diversiti
   
 Jost, L. (2008) \eqn{G_{ST}}{GST} and its relatives to not measure differentiation.
 \emph{Molecular Ecology} \bold{17}, 4015--4026.
+
+Slatkin, M. (1995) A measure of population subdivision based on microsatellite 
+allele frequencies.  \emph{Genetics} \bold{139}, 457--462.
 }
 \author{
 Lindsay V. Clark
@@ -146,6 +159,7 @@ Genotypes(mygenotypes, loci = "loc2") <- list(c(130,134), c(138,140),
 PopInfo(mygenotypes) <- c(1,1,1,2,2,2)
 mygenotypes <- reformatPloidies(mygenotypes, output="sample")
 Ploidies(mygenotypes) <- c(2,2,4,4,2,4)
+Usatnts(mygenotypes) <- c(2,2)
 
 # calculate allele frequencies
 myfreq <- simpleFreq(mygenotypes)
@@ -154,16 +168,19 @@ myfreq <- simpleFreq(mygenotypes)
 myfst <- calcPopDiff(myfreq, metric = "Fst")
 mygst <- calcPopDiff(myfreq, metric = "Gst")
 myD <- calcPopDiff(myfreq, metric = "Jost's D")
+myrst <- calcPopDiff(myfreq, metric = "Rst", object = mygenotypes)
 
 # examine the results
 myfst
 mygst
 myD
+myrst
 
 # get global statistics
 calcPopDiff(myfreq, metric = "Fst", global = TRUE)
 calcPopDiff(myfreq, metric = "Gst", global = TRUE)
 calcPopDiff(myfreq, metric = "Jost's D", global = TRUE)
+calcPopDiff(myfreq, metric = "Rst", global = TRUE, object = mygenotypes)
 }
 \keyword{ arith }
 \keyword{ array }

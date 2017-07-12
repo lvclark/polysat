@@ -7,6 +7,8 @@ of alleles (one or two).
 Bug fixes in deSilvaFreq to help when allele names are very short, and to prevent
 the function from hanging.
 
+An option for estimating Slatkin's Rst has been added to calcPopDiff.
+
 Changes in version 1.7-0
 
 The function calcPopDiff has a new argument called "global" that can be used if 

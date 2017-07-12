@@ -578,11 +578,13 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
                   split=".",
                                                       fixed=TRUE),
                                              stringsAsFactors=FALSE))[1,]), 
-                     global = FALSE, bootstrap = FALSE, n.bootstraps = 1000){
-    # check metric
-  if(!metric %in% c("Fst", "Gst", "Jost's D")){
-    stop("metric must be Fst, Gst, or Jost's D")
+                     global = FALSE, bootstrap = FALSE, n.bootstraps = 1000,
+                  object = NULL){
+  # check metric
+  if(!metric %in% c("Fst", "Gst", "Jost's D", "Rst")){
+    stop("metric must be Fst, Gst, Rst, or Jost's D")
   }
+  
   # check pop names
   if(!all(pops %in% row.names(freqs))){
     stop("pops must all be in row names of freqs.")
@@ -590,6 +592,10 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
   freqs <- freqs[pops,]
   # Clean up loci
   loci<-loci[loci!="Genomes"]
+  
+  if(metric == "Rst" && (is.null(object) || any(is.na(Usatnts(object)[loci])))){
+    stop("gendata object required with Usatnts for Rst metric")
+  }
   
   # internal function to get differentiation statistic from any set of two or more pops
   cpd <- function(freqs, metric, loci, bootstrap, n.boostraps){
@@ -628,8 +634,32 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
         # unweighted mean Hs
         hets[L, "HS"] <- mean(hsByPop)
       }
+      if(metric == "Rst"){
+        replen <- Usatnts(object)[L] # microsatellite repeat length
+        alleles <- sapply(strsplit(grep(paste(L,".",sep=""), names(freqs),fixed=TRUE,value = TRUE), ".",
+                                   fixed = TRUE),
+                          function(x) x[2])
+        alleles <- alleles[alleles != "Genomes"]
+        alleles <- as.integer(alleles)
+        totgenomes <- sum(thesegenomes)
+        avgfreq <- colMeans(thesefreqs)
+        SSalleledistS <- numeric(dim(freqs)[1]) # for totaling sums of squares of allele differences for each pop
+        SSalleledistT <- 0 # for totaling sums of squares of allele differences across all pops
+        for(i in 1:(length(alleles)-1)){ # loop through all pairs of different alleles
+          for(j in (i+1):length(alleles)){
+            sqdiff <- (abs(alleles[i] - alleles[j])/replen)^2 # squared difference in repeat number
+            nocc <- thesefreqs[,i] * thesefreqs[,j] * thesegenomes^2 # number of times these alleles would be compared
+            SSalleledistS <- SSalleledistS + sqdiff * nocc
+            SSalleledistT <- SSalleledistT + sqdiff * totgenomes^2 * avgfreq[i] * avgfreq[j]
+          }
+        }
+        hets[L, "HS"] <- mean(SSalleledistS / (thesegenomes * (thesegenomes - 1)))
+        hets[L, "HT"] <- SSalleledistT/(totgenomes * (totgenomes - 1))
+      }
       # estimate expected heterozygosity for panmictic pop
-      hets[L,"HT"]<-1-sum(avgfreq^2)
+      if(metric %in% c("Fst", "Gst", "Jost's D")){
+        hets[L,"HT"]<-1-sum(avgfreq^2)
+      }
       if(metric %in% c("Jost's D","Gst")){
         # harmonic mean of the sample size
         meanGenomes <- 1/mean(1/thesegenomes)
@@ -653,6 +683,10 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
         HT<-mean(thishets[,"HT"])
         HS<-mean(thishets[,"HS"])
         result[b] <- (HT-HS)/HT
+      }
+      if(metric == "Rst"){
+        R <- (thishets[,"HT"] - thishets[,"HS"])/thishets[,"HT"]
+        result[b] <- mean(R)
       }
       if(metric == "Gst"){ # calculate Gst and average across loci
         G <- (thishets[,"HTest"] - thishets[,"HSest"])/thishets[,"HTest"]
