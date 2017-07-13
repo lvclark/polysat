@@ -110,8 +110,23 @@ Values of \eqn{D}{D} are then averaged across loci.
 For \code{metric = "Rst"}:
 
 \eqn{R_{ST}}{RST} is estimated on a per-locus basis according to Slatkin (1995),
-with populations weighted equally regardless of size. Values are then averaged
+but with populations weighted equally regardless of size. Values are then averaged
 across loci.
+
+For each locus:
+
+\deqn{S_w = \frac{1}{d} * \sum_j^d{\frac{\sum_i{\sum_{i' < i}{p_{ij} * p_{i'j} * n_j^2 * (a_i - a_{i'})^2}}}{n_j * (n_j - 1)}}}{S_w = 1/d * \sum_j^d (\sum_i \sum_{i' < i} p_ij * p_i'j * n_j^2 * (a_i - a_i')^2)/(n_j * (n_j - 1)))}
+
+\deqn{\bar{S} = \frac{\sum_i{\sum_{i' < i}{\bar{p}_i * \bar{p}_{i'} * n^2 * (a_i - a_{i'})^2}}}{n * (n-1)}}{S = (\sum_i \sum_{i' < i} p_i * p_i' * n^2 * (a_i - a_i')^2)/(n * (n - 1))}
+
+\deqn{R_{ST} = \frac{\bar{S} - S_w}{\bar{S}}}{RST = (S - S_w)/S}
+
+where \eqn{d}{d} is the number of populations, \eqn{j}{j} is an individual population, \eqn{i}{i} and 
+\eqn{i'}{i'} are individual alleles, \eqn{p_{ij}}{p_ij} is the frequency of an allele in a population,
+\eqn{n_j}{n_j} is the number of allele copies in a population, \eqn{a_i}{a_i} is the size of an allele
+expressed in number of repeat units, \eqn{\bar{p}_i}{p_i} is an allele frequency averaged across
+populations (with populations weighted equally), and \eqn{n}{n} is the total number of allele copies
+across all populations.
 
 }
 \value{
