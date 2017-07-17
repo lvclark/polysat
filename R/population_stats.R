@@ -640,6 +640,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
                                    fixed = TRUE),
                           function(x) x[2])
         alleles <- alleles[alleles != "Genomes"]
+        alleles[alleles == "null"] <- 0
         alleles <- as.integer(alleles)
         totgenomes <- sum(thesegenomes)
         avgfreq <- colMeans(thesefreqs)
@@ -647,6 +648,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
         SSalleledistT <- 0 # for totaling sums of squares of allele differences across all pops
         for(i in 1:(length(alleles)-1)){ # loop through all pairs of different alleles
           for(j in (i+1):length(alleles)){
+            if(alleles[i] == 0 || alleles[j] == 0) next
             sqdiff <- (abs(alleles[i] - alleles[j])/replen)^2 # squared difference in repeat number
             nocc <- thesefreqs[,i] * thesefreqs[,j] * thesegenomes^2 # number of times these alleles would be compared
             SSalleledistS <- SSalleledistS + sqdiff * nocc
