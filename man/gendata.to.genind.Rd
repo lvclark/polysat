@@ -64,12 +64,14 @@ Genotypes(mydata, loci="f") <- list(c(200,202,204),Missing(mydata),
                                     c(210,212),c(204,210,214))
 
 # convert to "genind"
+if(require(adegenet)){
 mydata2 <- gendata.to.genind(mydata)
 mydata2@tab
 locNames(mydata2)
 indNames(mydata2)
 popNames(mydata2)
 pop(mydata2)
+}
 }
 \keyword{ manip }
 

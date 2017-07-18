@@ -9,6 +9,10 @@ the function from hanging.
 
 An option for estimating Slatkin's Rst has been added to calcPopDiff.
 
+Documentation for gendata.to.genind has been fixed so that the example can still
+run if adegenet is not installed.  (This change was made in order to prevent
+polysat from failing package checks on Solaris systems.)
+
 Changes in version 1.7-0
 
 The function calcPopDiff has a new argument called "global" that can be used if 
