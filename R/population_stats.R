@@ -618,8 +618,8 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
         thesegenomes <- freqs[,paste(L, "Genomes", sep=".")]
       }
       # allele frequencies for this locus
-      thesefreqs<-freqs[,grep(paste(L,".",sep=""), names(freqs),fixed=TRUE)]
-      thesefreqs <- thesefreqs[,names(thesefreqs)!=paste(L,"Genomes",sep=".")]
+      thesefreqs<-freqs[,grep(paste(L,".",sep=""), names(freqs),fixed=TRUE), drop = FALSE]
+      thesefreqs <- thesefreqs[,names(thesefreqs)!=paste(L,"Genomes",sep="."), drop = FALSE]
       # expected heterozygosity by pop
       hsByPop <- apply(as.matrix(thesefreqs), 1, function(x) 1 - sum(x^2))
       if(metric == "Fst"){
@@ -642,6 +642,13 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
         alleles <- alleles[alleles != "Genomes"]
         alleles[alleles == "null"] <- 0
         alleles <- as.integer(alleles)
+        if(0 %in% alleles){ # remove null alleles if they are there
+          nullfreqs <- thesefreqs[,match(0, alleles)] # frequency of null allele in each pop
+          for(pop in 1:dim(thesefreqs)[1]){
+            thesefreqs[pop,] <- thesefreqs[pop,]/(1-nullfreqs[pop]) # scale so non-null allele frequencies sum to 1
+          }
+          thesegenomes <- round(thesegenomes * (1-nullfreqs)) # remove null allele copies from total genomes
+        }
         totgenomes <- sum(thesegenomes)
         avgfreq <- colMeans(thesefreqs)
         SSalleledistS <- numeric(dim(freqs)[1]) # for totaling sums of squares of allele differences for each pop
