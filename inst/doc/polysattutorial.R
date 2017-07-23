@@ -87,6 +87,10 @@ simD <- calcPopDiff(simfreq, metric = "Jost's D")
 simD
 simD12 <- calcPopDiff(simfreq, metric = "Jost's D", loci=c("loc1", "loc2"))
 simD12
+simRst <- calcPopDiff(simfreq, metric = "Rst", object = simgen)
+simRst
+simRst12 <- calcPopDiff(simfreq, metric = "Rst", object = simgen, loci=c("loc1", "loc2"))
+simRst12
 
 PIC(simfreq)
 

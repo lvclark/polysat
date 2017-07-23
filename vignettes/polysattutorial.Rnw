@@ -452,7 +452,8 @@ the result of \texttt{c("red", "blue")[PopInfo(simgen2)[samToUse]]} is.)
 Allele frequencies are estimated in the example below.  The example
 then uses these allele
 frequencies to calculate pairwise Wright's $F_{ST}$ \cite{nei73},
-Nei's $G_{ST}$ \cite{nei73,nei83}, and Jost's $D$ \cite{jost08}
+Nei's $G_{ST}$ \cite{nei73,nei83}, Jost's $D$ \cite{jost08},
+and $R_{ST}$ \cite{slatkin1995}
 values, first using all loci and then just two of the loci.  See Section
 \ref{sec:allelefreq} for important information about allele
 frequency estimation.
@@ -505,6 +506,10 @@ simD <- calcPopDiff(simfreq, metric = "Jost's D")
 simD
 simD12 <- calcPopDiff(simfreq, metric = "Jost's D", loci=c("loc1", "loc2"))
 simD12
+simRst <- calcPopDiff(simfreq, metric = "Rst", object = simgen)
+simRst
+simRst12 <- calcPopDiff(simfreq, metric = "Rst", object = simgen, loci=c("loc1", "loc2"))
+simRst12
 @
 
 We can also calculate polymorphic information content (PIC) of each locus
@@ -1631,6 +1636,10 @@ structure using multilocus genotype data. \emph{Genetics}, 155, 945-959.
 
 \bibitem{simpson49}
   SIMPSON, E. H. 1949. Measurement of diversity.  \emph{Nature}, 163, 688.
+
+\bibitem{slatkin1995}
+  SLATKIN, M.  1995.  A measure of population subdivision based on microsatellite 
+allele frequencies.  \emph{Genetics}, 139, 457-462.
 
 \bibitem{tomiuk09}
   TOMIUK, J. GULDGRANDTSEN, B. AND LOESCHCKE, B.  2009.  Genetic
