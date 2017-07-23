@@ -54,11 +54,8 @@ rationale and limitations of the allele assignment tools described in this manua
 You may also find the documentation for individual functions to be helpful
 (\emph{e.g.} see \texttt{?alleleCorrelations}, \texttt{?processDatasetAllo},
 and \texttt{?recodeAllopoly}).
-I'm always happy to answer questions over email, but I greatly appreciate it if 
-you have taken the time first to think carefully about your study system and 
-dataset, understand the methodology and assumptions of any software that you want to
-use, check your work thoroughly, and in the case of problems with R, consult
-with someone at your own institution who is experienced with R.
+I'm always happy to answer questions or help debug errors over email, although I appreciate it if you
+first take the time to read the documentation carefully and check your work.
 
 \section{Data hygiene}
 
@@ -91,8 +88,7 @@ consistency of scoring.  If using a capillary sequencer, always use the same
 size standard, and be consistent in terms of which fluorescent dye goes with
 which marker.
 
-``Oh no!  I've already run all of my microsatellite markers, and I'm on
-  the last semester of my research assistantship and I need to graduate, so I
+``Oh no!  I've already run all of my microsatellite markers, and I
   don't have time to re-do them!''  It's okay.  Everything above was just a
 suggestion to improve the probability that the method described in this
 vignette will work on your dataset.  The method may still work, and if it 
