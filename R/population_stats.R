@@ -996,6 +996,8 @@ PIC <- function(freqs, pops=row.names(freqs),
   loci<-loci[loci!="Genomes"]
   # is number of genomes (pop size) specified by locus?
   GbL <- !"Genomes" %in% names(freqs)
+  # convert freqs to matrix for math
+  freqs <- as.matrix(freqs)
   
   # set up results matrix
   if(bypop){
@@ -1023,10 +1025,10 @@ PIC <- function(freqs, pops=row.names(freqs),
   
   # loop through loci 
   for(L in loci){
-    lcol <- grep(paste(L, ".", sep = ""), names(freqs)) # columns for this locus
+    lcol <- grep(paste(L, ".", sep = ""), dimnames(freqs)[[2]]) # columns for this locus
     if(length(lcol) == 0) stop(paste("Locus", L, "not found in freqs."))
     if(GbL){
-      lgencol <- grep(paste(L, "Genomes", sep = "."), names(freqs))
+      lgencol <- grep(paste(L, "Genomes", sep = "."), dimnames(freqs)[[2]])
       lcol <- lcol[lcol != lgencol]
     }
     if(bypop){ # get PIC for each population for this locus

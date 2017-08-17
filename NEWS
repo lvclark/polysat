@@ -1,3 +1,10 @@
+Changes in version 1.7-2
+
+References to manuscripts describing polysat have been added to the 
+DESCRIPTION file.
+
+The PIC function has been updated to be compatible with R 3.5.
+
 Changes in version 1.7-1
 
 Bug fixes in alleleCorrelations, testAlGroups, and mergeAlleleAssignments have
