@@ -94,7 +94,7 @@ A \code{"genambig"} object.
 Clark, L. V. and Drauch Schreier, A. (2017) Resolving microsatellite genotype ambiguity in
 populations of allopolyploid and diploidized autopolyploid organisms
 using negative correlations between alleles. \emph{Molecular Ecology Resources}, 
-DOI: 10.1111/1755-0998.12639.
+\bold{17}, 1090--1103.  DOI: 10.1111/1755-0998.12639.
 }
 \author{
 Lindsay V. Clark
