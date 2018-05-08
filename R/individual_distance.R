@@ -345,7 +345,7 @@ meandistance.matrix2 <- function(object, samples=Samples(object),
                 if(m2 %% 2 != 0) stop("Ploidy must be even.")
                 
                 cat("Setting up genotype probabilities...",sep="\n")
-                subfreq <- freq[p, grep(L, names(freq), fixed=TRUE)]
+                subfreq <- freq[p, grep(paste("^", L, "\\.", sep = ""), names(freq))]
                 templist <- names(subfreq)[subfreq !=0]
                 templist <- strsplit(templist, split=".", fixed=TRUE)
                 alleles <- rep(0, length(templist))
@@ -369,12 +369,7 @@ meandistance.matrix2 <- function(object, samples=Samples(object),
                 smat <- .selfmat(ng, na1, ag, m2)
                 m <- m2/2
                 smatdiv <- (.G(m-1,m+1))^2
-                p1 <- rep(0, na1) # vector to hold frequencies
-                for(a in alleles){
-                    p1[match(a, alleles)] <- subfreq[1,
-                                                     grep(a, names(subfreq),
-                                                          fixed=TRUE)]
-                }
+                p1 <- subfreq[1, paste(L, alleles, sep = ".")]
                 p1 <- p1/sum(p1) # normalize to sum to 1
                 rvec <- rep(0,ng)
                 for(g in 1:ng){

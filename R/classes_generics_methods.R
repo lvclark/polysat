@@ -1378,9 +1378,8 @@ setMethod("Genotypes", "genbinary", function(object, samples, loci){
     # set up vector to index columns for these loci
     loccolumns <- integer(0)
     for(L in loci){
-        loccolumns <- c(loccolumns, grep(paste(L,".",sep=""),
-                                         dimnames(object@Genotypes)[[2]],
-                                         fixed = TRUE))
+        loccolumns <- c(loccolumns, grep(paste("^", L,"\\.",sep=""),
+                                         dimnames(object@Genotypes)[[2]]))
     }
 
     # return subset of the matrix
@@ -1525,9 +1524,8 @@ setMethod("deleteSamples", "genbinary", function(object, samples){
 setMethod("deleteLoci", "genbinary", function(object, loci){
     loccolumns <- integer(0)
     for(L in loci){
-        loccolumns <- c(loccolumns, grep(paste(L,".",sep=""),
-                                         dimnames(object@Genotypes)[[2]],
-                                         fixed = TRUE))
+        loccolumns <- c(loccolumns, grep(paste("^", L,"\\.",sep=""),
+                                         dimnames(object@Genotypes)[[2]]))
     }
     object@Genotypes <- object@Genotypes[,-loccolumns]
     callNextMethod(object, loci)
