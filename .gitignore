@@ -48,3 +48,4 @@ DESCRIPTION~
 *.Rd~
 *.R#
 *.Rhistory
+.Rproj.user
