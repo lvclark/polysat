@@ -1010,7 +1010,7 @@ PIC <- function(freqs, pops=row.names(freqs),
   
   # function to get PIC for one locus and pop
   pic <- function(fr){
-    if(abs(sum(fr) - 1) > 1e-14) stop("Allele frequencies don't sum to 1.")
+    if(!isTRUE(all.equal(sum(fr), 1))) stop("Allele frequencies don't sum to 1.")
     sq <- fr^2 # square each frequncy to get p_i^2 and p_j^2
     nAl <- length(fr) # number of alleles
     # matrix of the squares multiplied by each other
