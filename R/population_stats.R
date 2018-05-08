@@ -434,8 +434,8 @@ deSilvaFreq <- function(object, self,
             psamples <- psamples[psamples %in% samples]
 
             # extract the initial allele frequencies and add a null
-            subInitFreq <- initFreq[pop, grep(paste(L,".",sep=""),
-                                              names(initFreq), fixed=TRUE)]
+            subInitFreq <- initFreq[pop, grep(paste("^", L,"\\.",sep=""),
+                                              names(initFreq))]
 
             # set up matrices if this has not already been done
                 templist <- names(subInitFreq)[subInitFreq !=0]
@@ -618,7 +618,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
         thesegenomes <- freqs[,paste(L, "Genomes", sep=".")]
       }
       # allele frequencies for this locus
-      thesefreqs<-freqs[,grep(paste(L,".",sep=""), names(freqs),fixed=TRUE), drop = FALSE]
+      thesefreqs<-freqs[,grep(paste("^", L,"\\.",sep=""), names(freqs)), drop = FALSE]
       thesefreqs <- thesefreqs[,names(thesefreqs)!=paste(L,"Genomes",sep="."), drop = FALSE]
       # expected heterozygosity by pop
       hsByPop <- apply(as.matrix(thesefreqs), 1, function(x) 1 - sum(x^2))
@@ -636,7 +636,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
       }
       if(metric == "Rst"){
         replen <- Usatnts(object)[L] # microsatellite repeat length
-        alleles <- sapply(strsplit(grep(paste(L,".",sep=""), names(freqs),fixed=TRUE,value = TRUE), ".",
+        alleles <- sapply(strsplit(grep(paste("^", L,"\\.", sep = ""), names(freqs), value = TRUE), ".",
                                    fixed = TRUE),
                           function(x) x[2])
         alleles <- alleles[alleles != "Genomes"]
@@ -763,9 +763,8 @@ write.freq.SPAGeDi <- function(freqs, usatnts, file="", digits=2,
 
     for(L in loci){
         # find the alleles
-        alleles <- as.matrix(as.data.frame(strsplit(names(freqs)[grep(paste(L,".",sep=""),
-                                                            names(freqs),
-                                                            fixed=TRUE)],
+        alleles <- as.matrix(as.data.frame(strsplit(names(freqs)[grep(paste("^", L,"\\.",sep=""),
+                                                            names(freqs))],
                                           split=".", fixed=TRUE))[2,])
         alleles <- as.vector(alleles)
         if(genbyloc){
@@ -788,10 +787,10 @@ write.freq.SPAGeDi <- function(freqs, usatnts, file="", digits=2,
         # make a weighted average of allele frequencies across populations
         if(genbyloc){
           genomes <- freqs[[paste(L, "Genomes", sep=".")]]
-          locindex <- grep(paste(L,".",sep=""), names(freqs),fixed=TRUE)
+          locindex <- grep(paste("^", L, "\\.", sep=""), names(freqs))
           locindex <- locindex[!locindex %in% grep("Genomes", names(freqs))]
         } else {
-          locindex <- grep(paste(L,".",sep=""), names(freqs),fixed=TRUE)
+          locindex <- grep(paste("^", L, "\\.", sep=""), names(freqs))
         }
         avgfreq <- (genomes %*% as.matrix(freqs[,locindex])) / sum(genomes)
         # add frequencies to list
@@ -831,7 +830,7 @@ freq.to.genpop <- function(freqs, pops=row.names(freqs),
     # get an index of columns containing these loci
     loccol <- integer(0)
     for(L in loci){
-        loccol <- c(loccol, grep(paste(L,".",sep=""), names(freqs), fixed=TRUE))
+        loccol <- c(loccol, grep(paste("^", L, "\\.",sep=""), names(freqs)))
     }
     # get a table just for these populations and loci
     subfreq <- freqs[pops, loccol]
@@ -1025,10 +1024,10 @@ PIC <- function(freqs, pops=row.names(freqs),
   
   # loop through loci 
   for(L in loci){
-    lcol <- grep(paste(L, ".", sep = ""), dimnames(freqs)[[2]]) # columns for this locus
+    lcol <- grep(paste("^", L, "\\.", sep = ""), dimnames(freqs)[[2]]) # columns for this locus
     if(length(lcol) == 0) stop(paste("Locus", L, "not found in freqs."))
     if(GbL){
-      lgencol <- grep(paste(L, "Genomes", sep = "."), dimnames(freqs)[[2]])
+      lgencol <- grep(paste("^", L, "\\.Genomes", sep = ""), dimnames(freqs)[[2]])
       lcol <- lcol[lcol != lgencol]
     }
     if(bypop){ # get PIC for each population for this locus
