@@ -345,13 +345,8 @@ meandistance.matrix2 <- function(object, samples=Samples(object),
                 if(m2 %% 2 != 0) stop("Ploidy must be even.")
                 
                 cat("Setting up genotype probabilities...",sep="\n")
-                subfreq <- freq[p, grep(paste("^", L, "\\.", sep = ""), names(freq))]
-                templist <- names(subfreq)[subfreq !=0]
-                templist <- strsplit(templist, split=".", fixed=TRUE)
-                alleles <- rep(0, length(templist))
-                for(i in 1:length(alleles)){
-                    alleles[i] <- templist[[i]][2]
-                }
+                subfreq <- as.matrix(freq[p, grep(paste("^", L, "\\.", sep = ""), names(freq))])
+                alleles <- gsub(paste("^", L, "\\.", sep = ""), "", colnames(subfreq))
                 # let's just not do null allelles for now
                 # (Hey, I'm trying to graduate.)
                 alleles <- sort(as.integer(alleles[alleles != "null"]))
