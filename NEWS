@@ -1,3 +1,11 @@
+Changes in version 1.7-3
+
+Fixed bug that would occur in a lot of functions (particularly functions 
+dealing with allele frequencies, as well as genbinary objects) if loci
+had overlapping names, e.g. "myloc1"" and "loc1".
+
+Updated citation for Clark and Schreier (2017).
+
 Changes in version 1.7-2
 
 References to manuscripts describing polysat have been added to the 
