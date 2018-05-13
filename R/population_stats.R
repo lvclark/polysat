@@ -367,8 +367,7 @@ deSilvaFreq <- function(object, self,
         id <- diag(nrow=ng)
         # calculate gprob using selfing and outcrossing matrices
         s3 <- id - self * smatt
-        s3inv <- solve(s3)
-        gprob <- (1-self) * s3inv %*% rvec
+        gprob <- (1-self) * solve(s3, rvec)
         # end GPROBS
         
         # equation (12) from the paper
