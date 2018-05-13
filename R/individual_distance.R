@@ -356,14 +356,14 @@ meandistance.matrix2 <- function(object, samples=Samples(object),
                 for(j in 2:m2){
                     ng <- ng*(na1+j-1)/j
                 }
-                ag <- .genlist(ng, na1, m2)
-                temp <- .ranmul(ng, na1, ag, m2)
+                ag <- GENLIST(ng, na1, m2)
+                temp <- RANMUL(ng, na1, ag, m2)
                 rmul <- temp[[1]]
                 arep <- temp[[2]]
                 rm(temp)
-                smat <- .selfmat(ng, na1, ag, m2)
+                smat <- SELFMAT(ng, na1, ag, m2)
                 m <- m2/2
-                smatdiv <- (.G(m-1,m+1))^2
+                smatdiv <- (G(m-1,m+1))^2
                 p1 <- subfreq[1, paste(L, alleles, sep = ".")]
                 p1 <- p1/sum(p1) # normalize to sum to 1
                 rvec <- rep(0,ng)

@@ -101,157 +101,6 @@ simpleFreq <- function(object, samples=Samples(object), loci=Loci(object)){
     return(freqtable)
 }
 
-# Internal functions from De Silva et al. 2005, for use in deSilvaFreq
-# and meandistance.matrix2.
-
-    # G function from de Silva et al
-    .G <- function(q, n){
-        return(factorial(n+q)/(factorial(q+1)*factorial(n-1)))
-    }
-
-    # INDEXG function from de Silva et al
-    .indexg <- function(ag1, na1, m2){
-        x <- 1 + ag1[m2] - ag1[m2-1]
-        for(q in 1:(m2-2)){
-            x <- x + .G(q,na1+1-ag1[m2-q-1]) - .G(q,na1+1-ag1[m2-q])
-        }
-        x <- x + .G(m2-1,na1) - .G(m2-1,na1+1-ag1[1])
-        return(x)
-    }
-
-    # GENLIST function from de Silva et al
-    .genlist <- function(ng, na1, m2){
-        # set up temporary genotype vector and genotype array
-        ag1 <- rep(1, m2)
-        ag <- array(0, dim=c(ng, m2))
-
-        # fill genotype array with all possible combinations
-        g <- 1
-        ag[g,] <- ag1
-        a <- m2
-        while(a>0){
-            if(ag1[a]==na1){
-                a <- a-1
-            } else {
-                if(a > 0){
-                    ag1[a] <- ag1[a] + 1
-                    if(a < m2){
-                        for(a1 in (a+1):m2){
-                            ag1[a1] <- ag1[a]
-                        }
-                    }
-                    g <- g+1
-                    ag[g,] <- ag1
-                    a <- m2
-                }
-            }
-        }
-        return(ag)
-    }
-
-    # RANMUL function
-    .ranmul <- function(ng, na1, ag, m2){
-        # RANMUL subroutine
-        # rmul is multiplier to get genotype freq under random mating
-        # arep shows how many copies of each allele each genotype has
-        rmul <- rep(1, ng)
-        arep <- matrix(0, nrow=ng, ncol=na1)
-        for(g in 1:ng){
-            ag1 <- ag[g,]
-            arep[g,ag1[1]] <- 1
-            for(j in 2:m2){
-                rmul[g] <- rmul[g]*j
-                if(ag1[j] == ag1[j-1]){
-                    arep[g,ag1[j]] <- arep[g,ag1[j]] + 1
-                    rmul[g] <- rmul[g]/arep[g,ag1[j]]
-                } else {
-                    arep[g,ag1[j]] <- 1
-                }
-            }
-        }
-        return(list(rmul, arep))
-    }
-
-    # SELFMAT function
-    .selfmat <- function(ng, na1, ag, m2){
-        # SELFMAT subroutine
-        # smat is selfing matrix, and smatdiv is divisor for selfing matrix
-        m <- m2/2
-        smat <- matrix(0, nrow=ng, ncol=ng)
-        al1 <- rep(0, m)
-        al2 <- rep(0, m)
-        ag1 <- rep(0, m2)
-        for(g in 1:ng){
-            al1[1] <- 1
-            if(m > 1){
-                for(j in 2:m) al1[j] <- al1[j-1] + 1
-            }
-            al1[m] <- al1[m] - 1
-            a1 <- m
-            while(a1 > 0){
-                if(al1[a1] == (m+a1)){
-                    a1 <- a1 - 1
-                } else {
-                    if(a1 > 0){
-                        al1[a1] <- al1[a1] + 1
-                        if(a1 < m){
-                            for(a3 in (a1+1):m) al1[a3] <- al1[a3-1]+1
-                        }
-                        al2[1] <- 1
-                        if(m > 1){
-                            for(j in 2:m) al2[j] <- al2[j-1] + 1
-                        }
-                        al2[m] <- al2[m]-1
-                        a2 <- m
-                        while(a2 > 0){
-                            if(al2[a2] == (m+a2)){
-                                a2 <- a2 - 1
-                            } else {
-                                if(a2 > 0){
-                                    al2[a2] <- al2[a2] + 1
-                                    if(a2 < m){
-                                        for(a3 in (a2+1):m) al2[a3]<-al2[a3-1]+1
-                                    }
-                                    #UPDATESMAT subroutine
-                                    j1 <- 1
-                                    j2 <- 1
-                                    k1 <- al1[j1]
-                                    k2 <- al2[j2]
-                                    for(i in 1:m2){
-                                        if(k1 < k2){
-                                            ag1[i] <- ag[g,k1]
-                                            if(j1 == m){
-                                                k1 <- 999
-                                            } else {
-                                                j1 <- j1 + 1
-                                                k1 <- al1[j1]
-                                            }
-                                        } else {
-                                            ag1[i] <- ag[g,k2]
-                                            if(j2 == m){
-                                                k2 <- 999
-                                            } else {
-                                                j2 <- j2 + 1
-                                                k2 <- al2[j2]
-                                            }
-                                        }
-                                    }
-                                    g2 <- .indexg(ag1, na1, m2)
-                                    smat[g,g2] <- smat[g,g2] + 1
-                                    # end UPDATESMAT subroutine
-                                    a2 <- m
-                                }
-                            }
-                        }
-                        a1 <- m
-                    }
-                }
-            }
-        }
-        return(smat)
-    }
-
-
 # Iterative estimation of allele frequencies under polysomic inheritance,
 # with a uniform, even-numbered ploidy and a known selfing rate.
 # Much of this code is translated directly from:
@@ -309,7 +158,7 @@ deSilvaFreq <- function(object, self,
                                    names(initFreq)[2:dim(initFreq)[2]])))))
 
     # get the divisor for the selfing matrices
-    smatdiv <- (.G(m-1,m+1))^2
+    smatdiv <- (G(m-1,m+1))^2
 
     # INDEXF function from de Silva et al
     # af1 = vector of alleles in phenotype
@@ -322,13 +171,13 @@ deSilvaFreq <- function(object, self,
         } else {
             if ( m >1 ){
                 for(q in 1:(m-1)){
-                    x <- x + .G(q-1,na-q+1)
+                    x <- x + G(q-1,na-q+1)
                 }
-                x <- x + .G(m-1,na+1-m) - .G(m-1,na+2-m-af1[1])
+                x <- x + G(m-1,na+1-m) - G(m-1,na+2-m-af1[1])
                 if(m > 2){
                     for(q in 1:(m-2)){
-                        x <- x + .G(q,na-q-af1[m-q-1]) -
-                            .G(q,na+1-q-af1[m-q])
+                        x <- x + G(q,na-q-af1[m-q-1]) -
+                            G(q,na+1-q-af1[m-q])
                     }
                 }
                 x <- x + af1[m] - af1[m-1]
@@ -455,15 +304,15 @@ deSilvaFreq <- function(object, self,
                     ng <- ng*(na1+j-1)/j
                 }
 
-            ag <- .genlist(ng, na1, m2)
+            ag <- GENLIST(ng, na1, m2)
             temp <- fenlist(na)
             af <- temp[[1]]
             naf <- temp[[2]]
             nf <- length(naf)
-            temp <- .ranmul(ng, na1, ag, m2)
+            temp <- RANMUL(ng, na1, ag, m2)
             rmul <- temp[[1]]
             arep <- temp[[2]]
-            smatt <- .selfmat(ng, na1, ag, m2)/smatdiv
+            smatt <- SELFMAT(ng, na1, ag, m2)/smatdiv
             cmat <- convmat(ng, nf, na1, ag)
             rm(temp)
 
