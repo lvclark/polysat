@@ -1,3 +1,5 @@
+useDynLib(polysat)
+
 export(Bruvo.distance,
        meandistance.matrix, read.GeneMapper, write.Structure,
        read.ATetra, read.Tetrasat, genambig.to.genbinary,
@@ -28,3 +30,4 @@ importFrom("stats", "as.dist", "cutree", "fisher.test", "hclust", "kmeans", "hea
 importFrom("utils", "combn", "edit", "read.table", "stack", "write.table")
 importFrom("grDevices", "dev.off", "grey.colors", "pdf", "rainbow")
 importFrom("graphics", "axis", "image", "legend", "par", "plot", "text")
+importFrom("Rcpp", "sourceCpp")

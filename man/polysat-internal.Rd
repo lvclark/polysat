@@ -1,15 +1,15 @@
 \name{Internal Functions}
-\alias{.G}
-\alias{.indexg}
-\alias{.genlist}
-\alias{.ranmul}
-\alias{.selfmat}
+\alias{G}
+\alias{INDEXG}
+\alias{GENLIST}
+\alias{RANMUL}
+\alias{SELFMAT}
 \alias{.unal1loc}
 \alias{fixloci}
 \title{Internal Functions in polysat}
 \description{
-  The internal functions \code{.G}, \code{.indexg}, \code{.genlist},
-  \code{.ranmul}, and \code{.selfmat}
+  The internal functions \code{G}, \code{INDEXG}, \code{GENLIST},
+  \code{RANMUL}, and \code{SELFMAT}
   are used for calculating
   genotype probabilities under partial selfing.  The internal function
   \code{.unal1loc} finds all unique alleles at a single locus.  The internal
@@ -17,11 +17,11 @@
   compatible as column headers for allele frequency tables.
 }
 \usage{
-.G(q, n)
-.indexg(ag1, na1, m2)
-.genlist(ng, na1, m2)
-.ranmul(ng, na1, ag, m2)
-.selfmat(ng, na1, ag, m2)
+G(q, n)
+INDEXG(ag1, na1, m2)
+GENLIST(ng, na1, m2)
+RANMUL(ng, na1, ag, m2)
+SELFMAT(ng, na1, ag, m2)
 .unal1loc(object, samples, locus)
 fixloci(loci, warn = TRUE)
 }
@@ -44,23 +44,23 @@ fixloci(loci, warn = TRUE)
   locus names are changed.}
 }
 \value{
-  \code{.G} returns
+  \code{G} returns
 
   \deqn{\frac{(n+q)!}{(q+1)! * (n-1)!}}{(n+q)!/((q+1)! * (n-1)!)}
 
-  \code{.indexg} returns an integer indicating the row containing a
-  particular genotype in the matrix produced by \code{.genlist}.
+  \code{INDEXG} returns an integer indicating the row containing a
+  particular genotype in the matrix produced by \code{GENLIST}.
 
-  \code{.genlist} returns an array with dimensions \code{ng, m2},
+  \code{GENLIST} returns an array with dimensions \code{ng, m2},
   containing all possible unambiguous genotypes, one in each row.  The null
   allele is the highest-numbered allele.
 
-  \code{.ranmul} returns a list.  The first item is a vector of
+  \code{RANMUL} returns a list.  The first item is a vector of
   polynomial coefficients for calculating genotype frequencies under
   random mating.  The second is an array
   showing how many copies of each allele each genotype has.
 
-  \code{.selfmat} returns the selfing matrix.  Parental genotypes are
+  \code{SELFMAT} returns the selfing matrix.  Parental genotypes are
   represented in rows, and offspring genotypes in columns.  The numbers
   indicate relative amounts of offspring genotypes produced when the
   parental genotypes are self-fertilized.
@@ -93,13 +93,13 @@ ng <- na1
 for(j in 2:m2){
     ng <- ng*(na1+j-1)/j
 }
-ag <- polysat:::.genlist(ng, na1, m2)
-temp <- polysat:::.ranmul(ng, na1, ag, m2)
+ag <- polysat:::GENLIST(ng, na1, m2)
+temp <- polysat:::RANMUL(ng, na1, ag, m2)
 rmul <- temp[[1]]
 arep <- temp[[2]]
 rm(temp)
-smat <- polysat:::.selfmat(ng, na1, ag, m2)
-smatdiv <- (polysat:::.G(m-1,m+1))^2
+smat <- polysat:::SELFMAT(ng, na1, ag, m2)
+smatdiv <- (polysat:::G(m-1,m+1))^2
 p1 <- c(0.1, 0.4, 0.2, 0.2, 0.1) # allele frequencies
 
 # GPROBS subroutine
@@ -114,7 +114,7 @@ id <- diag(nrow=ng)
 smatt <- smat/smatdiv
 s3 <- id - self * smatt
 s3inv <- solve(s3)
-gprob <- (1-self) * s3inv %*% rvec
+gprob <- (1-self) * s3inv \%*\% rvec
 # gprob is a vector of probabilities of the seventy genotypes.
 }
 \author{Lindsay V. Clark}
