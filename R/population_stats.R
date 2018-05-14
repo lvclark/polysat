@@ -141,7 +141,7 @@ deSilvaFreq <- function(object, self,
   
   # calculate the number of alleles from one gamete
   # (from de Silva et al's INIT subroutine)
-  m <- m2/2
+  m <- m2 %/% 2L
   
   # get the populations that will be used
   pops <- PopNames(object)[unique(PopInfo(object)[samples])]
@@ -165,11 +165,11 @@ deSilvaFreq <- function(object, self,
   # m = number of observable alleles in phenotype
   # na = number of alleles, calculated for each locus
   indexf <- function(m, af1, na){
-    x <- 1
+    x <- 1L
     if(m == 1){
       x <- x + af1[1]
     } else {
-      if ( m >1 ){
+      if(m > 1){
         for(q in 1:(m-1)){
           x <- x + G(q-1,na-q+1)
         }
@@ -189,9 +189,9 @@ deSilvaFreq <- function(object, self,
   # FENLIST function
   fenlist <- function(na){
     # set up temporary holding vector for phenotpes (FENLIST)
-    af1 <- rep(0, m2)
+    af1 <- rep(0L, m2)
     # set up array to contain all phenotypes (FENLIST)
-    af <- array(0, dim=c(1, m2))
+    af <- array(0L, dim=c(1, m2))
     # set up vector for number of alleles in each phenotype (FENLIST)
     naf <- integer(0)
     
@@ -199,29 +199,29 @@ deSilvaFreq <- function(object, self,
     # This is done with rbind rather than setting up whole array,
     # because the method for calculating the number of phenotypes
     # doesn't seem to work for certain numbers of alleles.
-    f <- 1
-    naf <- 0
+    f <- 1L
+    naf <- 0L
     for(m in 1:min(m2, na)){
-      af1[1] <- 1
+      af1[1] <- 1L
       if(m > 1){
         for(j in 2:m){
-          af1[j] <- af1[j-1] + 1
+          af1[j] <- af1[j-1] + 1L
         }
       }
-      f <- f + 1
+      f <- f + 1L
       naf[f] <-  m
       af <- rbind(af, af1)
       a <- m
       while(a > 0){
         if(af1[a] == (na+a-m)){
-          a <- a - 1
+          a <- a - 1L
         } else {
           if(a > 0){
-            af1[a] <- af1[a] + 1
+            af1[a] <- af1[a] + 1L
             if(a < m){
-              for(a1 in (a+1):m) af1[a1] <- af1[a1-1] + 1
+              for(a1 in (a+1):m) af1[a1] <- af1[a1-1] + 1L
             }
-            f <- f + 1
+            f <- f + 1L
             naf[f] <- m
             af <- rbind(af, af1)
             a <- m
@@ -235,23 +235,23 @@ deSilvaFreq <- function(object, self,
   
   # CONVMAT function
   convmat <- function(ng, nf, na1, ag){
-    na <- na1-1
-    af1 <- rep(0, m2)
+    na <- na1 - 1L
+    af1 <- rep(0L, m2)
     # CONVMAT subroutine - make a matrix for conversion from
     # genotypes to phenotypes
-    cmat <- matrix(0, nrow=nf, ncol=ng)
+    cmat <- matrix(0L, nrow=nf, ncol=ng)
     for(g in 1:ng){
       ag1 <- ag[g,]
       # find the phenotype (af1) that matches this genotype (ag1)
       if(ag1[1] == na1){
-        naf1 <- 0 # this is the homozygous null genotype
+        naf1 <- 0L # this is the homozygous null genotype
       } else {
-        naf1 <- 1
+        naf1 <- 1L
         af1[naf1] <- ag1[1]
         for(a in 2:m2){
           if(ag1[a] == na1) break # exit loop if null allele
           if(ag1[a] > af1[naf1]){
-            naf1 <- naf1 + 1
+            naf1 <- naf1 + 1L
             af1[naf1] <- ag1[a]
           }
         }
@@ -259,12 +259,12 @@ deSilvaFreq <- function(object, self,
       # fill in the extra alleles with zeros
       if(naf1 < m2){
         for(j in (naf1 + 1):m2){
-          af1[j] <- 0
+          af1[j] <- 0L
         }
       }
       f <- indexf(naf1, af1, na) # This is the one phenotype to match
       # this genotype.
-      cmat[f,g] <- 1
+      cmat[f,g] <- 1L
     }
     return(cmat)
   }
@@ -289,7 +289,7 @@ deSilvaFreq <- function(object, self,
       # set up matrices if this has not already been done
       templist <- names(subInitFreq)[subInitFreq !=0]
       templist <- strsplit(templist, split=".", fixed=TRUE)
-      alleles <- rep(0, length(templist))
+      alleles <- rep(0L, length(templist))
       for(i in 1:length(alleles)){
         alleles[i] <- as.integer(templist[[i]][2])
       }
@@ -297,11 +297,11 @@ deSilvaFreq <- function(object, self,
       na <- length(alleles)
       
       # get the number of alleles with a null
-      na1 <- na + 1
+      na1 <- na + 1L
       # get the number of genotypes (from the GENLIST function)
       ng <- na1
       for(j in 2:m2){
-        ng <- ng*(na1+j-1)/j
+        ng <- ng * (na1 + j - 1L) / j
       }
       
       ag <- GENLIST(ng, na1, m2)
@@ -330,7 +330,7 @@ deSilvaFreq <- function(object, self,
       p1 <- rep(0, na1) # vector to hold frequencies
       p1[na1] <- initNull[L] # add null freq to the last position
       # make sure everything will sum to 1
-      subInitFreq <- subInitFreq * (1-initNull[L])/sum(subInitFreq)
+      subInitFreq <- subInitFreq * (1 - initNull[L])/sum(subInitFreq)
       # get each allele frequency
       for(a in alleles){
         p1[match(a, alleles)] <- subInitFreq[1,paste(L, a, sep = ".")]
@@ -338,7 +338,7 @@ deSilvaFreq <- function(object, self,
       
       ## Begin the EM algorithm
       converge <- 0
-      niter <- 1
+      niter <- 1L
       oneg <- rep(1, ng)
       while(converge == 0){
         # Expectation step
@@ -402,7 +402,7 @@ deSilvaFreq <- function(object, self,
           converge <- 1
         }
         
-        niter <- niter + 1
+        niter <- niter + 1L
         p1 <- p2
       }
       
