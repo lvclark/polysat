@@ -105,7 +105,7 @@ Lindsay V. Clark
 
 \seealso{
   \code{\link{meandistance.matrix2}},
-  \code{\link{.genlist}}
+  \code{\link{GENLIST}}
 }
 \examples{
 # get a data set and define ploidies

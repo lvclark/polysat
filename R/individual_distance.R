@@ -296,7 +296,7 @@ genotypeProbs <- function(object, sample, locus, freq=NULL, gprob=NULL,
             } else {  ## partial selfing method
                 # get unambig genotype in terms of genlist numbers
                 ugen <- match(as.integer(results$genotypes[i,]),alleles)
-                results$probs[i] <- gprob[.indexg(ugen, length(alleles), pl)]
+                results$probs[i] <- gprob[INDEXG(ugen, length(alleles), pl)]
             }
         }
         if(selfing){

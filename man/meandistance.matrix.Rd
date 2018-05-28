@@ -98,7 +98,7 @@ meandistance.matrix2(object, samples = Samples(object),
 \seealso{
   \code{\link{Bruvo.distance}}, \code{\link{Bruvo2.distance}},
   \code{\link{Lynch.distance}}, \code{\link{meandist.from.array}},
-  \code{\link{.genlist}}
+  \code{\link{GENLIST}}
 }
 \examples{
 # create a list of genotype data
