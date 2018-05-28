@@ -1,7 +1,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// Functions tranlated from the SAS code of de Silva et al (2005)
+// Functions translated from the SAS code of de Silva et al (2005)
 // doi: 10.1038/sj.hdy.6800728
 // Used in deSilvaFreq and meandistance.matrix2.
 
