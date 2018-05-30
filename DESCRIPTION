@@ -4,7 +4,7 @@ Date: 2018-05-28
 Title: Tools for Polyploid Microsatellite Analysis
 Authors@R: c(person("Lindsay V.", "Clark", email = "lvclark@illinois.edu", role = c("aut", "cre")),
              person("Handunnethi Nihal", "de Silva", role = "ctb"))
-Author: Lindsay V. Clark [aut, cre]
+Author: Lindsay V. Clark [aut, cre], Handunnethi Nihal de Silva [ctb]
 Maintainer: Lindsay V. Clark <lvclark@illinois.edu>
 Imports: methods, stats, utils, grDevices, graphics, Rcpp
 Suggests: ade4, adegenet, ape
