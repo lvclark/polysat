@@ -135,7 +135,7 @@ However, in my experimentation with this calculation, it sometimes
 
 \seealso{
   \code{\link{simpleFreq}}, \code{\link{write.freq.SPAGeDi}},
-  \code{\link{.genlist}}
+  \code{\link{GENLIST}}
 }
 \examples{
 \dontrun{

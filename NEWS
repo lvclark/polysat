@@ -4,7 +4,15 @@ Fixed bug that would occur in a lot of functions (particularly functions
 dealing with allele frequencies, as well as genbinary objects) if loci
 had overlapping names, e.g. "myloc1"" and "loc1".
 
-Updated citation for Clark and Schreier (2017).
+Minor speed and memory improvements for deSilvaFreq and 
+meandistance.matrix2.
+
+PIC now returns NA if a marker is entirely missing for a population, rather
+than giving an error.
+
+Updated citation for Clark and Schreier (2017).  Acknowledgement of HN
+de Silva as contributor due to direct translation of his code from SAS
+into R for parts of this package.
 
 Changes in version 1.7-2
 
