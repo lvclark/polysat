@@ -1,10 +1,11 @@
 Package: polysat
-Version: 1.7-3
-Date: 2018-05-28
+Version: 1.7-4
+Date: 2018-06-22
 Title: Tools for Polyploid Microsatellite Analysis
 Authors@R: c(person("Lindsay V.", "Clark", email = "lvclark@illinois.edu", role = c("aut", "cre"),
                     comment = c(ORCID = "0000-0002-3881-9252")),
-             person("Handunnethi Nihal", "de Silva", role = "ctb"))
+             person("Handunnethi Nihal", "de Silva", role = "ctb"),
+             person("Tyler William", "Smith", role = "ctb"))
 Author: Lindsay V. Clark [aut, cre], Handunnethi Nihal de Silva [ctb], Tyler William Smith [ctb]
 Maintainer: Lindsay V. Clark <lvclark@illinois.edu>
 Imports: methods, stats, utils, grDevices, graphics, Rcpp
