@@ -1050,7 +1050,7 @@ setReplaceMethod("Genotype", "genambig", function(object, sample, locus, value){
 setMethod("Genotypes", signature(object = "genambig", samples = "ANY",
                                  loci = "ANY"),
           function(object, samples, loci){
-              return(object@Genotypes[samples, loci, drop=FALSE])
+            return(object@Genotypes[samples, loci, drop=FALSE])
           })
 setReplaceMethod("Genotypes", "genambig",
                  function(object, samples,
@@ -1082,6 +1082,49 @@ setMethod("isMissing", "genambig", function(object, samples, loci){
         return(result)
     }
 })
+
+setMethod(
+  f = "show",
+  signature = "genambig",
+  function(object){
+    cat(Description(object), "\n")
+    cat("Missing values: ", (Missing(object)), "\n")
+    cat("\nGenotypes: \n")
+    genSum <- apply(object@Genotypes, 2,
+                    function(x)
+                      unlist(lapply(x, function(y)
+                        paste(sort(y), collapse = "/"))))
+    print(genSum, quote = FALSE)
+
+    cat("\nSSR motif lengths: \n")
+    if(all(is.na(Usatnts(object)))){
+      cat(" none\n")
+    } else {
+      print(Usatnts(object))
+    }
+
+    cat("\nPloidies: \n")
+    if(all(is.na(Ploidies(object)))){
+      cat(" none\n")
+    } else {
+      print(Ploidies(object))
+    }
+
+    cat("\nPopNames: \n")
+    if(length(PopNames(object)) > 0){
+      print(PopNames(object))
+    } else {
+      cat(" none\n")
+    }
+
+    cat("\nPopInfo: \n")
+    if(all(is.na(PopInfo(object)))){
+      cat(" none\n")
+    } else {
+      print(PopInfo(object))
+    }
+  }
+)
 
 # summary method for genambig
 setMethod("summary", "genambig", function(object){

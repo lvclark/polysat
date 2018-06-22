@@ -16,6 +16,7 @@
 \alias{Missing<-,genambig-method}
 \alias{Samples<-,genambig-method}
 \alias{summary,genambig-method}
+\alias{show,genambig-method}
 \alias{viewGenotypes,genambig-method}
 \alias{[,genambig-method}
 
@@ -139,6 +140,12 @@ Boolean value or an array of Boolean values is returned.}
       dataset description (\code{Description} slot) to the console as
       well as the number of missing genotypes, then calls the
       \code{summary} method for \code{gendata}. }
+    \item{show}{\code{signature(object = "genambig")}: Prints the
+      data to the console, formatted to make it more legible. The
+      genotype for each locus is shown as the size of each allele,
+      separated by a '/'. The SSR motif length ('Usatnts'), Ploidies,
+      Population Names, and Population membership ('PopInfo') are
+      displayed if they exist.}
     \item{viewGenotypes}{\code{signature(object = "genambig")}: Prints a
     tab-delimited table of samples, loci, and genotype vectors to the console.}
     \item{"["}{\code{signature(x = "genambig", i = "ANY", j = "ANY")}:

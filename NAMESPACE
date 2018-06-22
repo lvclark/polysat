@@ -22,7 +22,7 @@ exportMethods(estimatePloidy, Samples, "Samples<-", Loci, "Loci<-", PopInfo,
               Description, "Description<-", PopNum, "PopNum<-", Genotype,
               "Genotype<-", Genotypes, "Genotypes<-", isMissing, viewGenotypes,
               editGenotypes, Present, "Present<-", Absent, "Absent<-", summary,
-              merge, pld, "pld<-", plCollapse, genIndex)
+              merge, pld, "pld<-", plCollapse, genIndex, show)
 exportClasses(gendata, genambig, genbinary, ploidysuper, ploidymatrix, 
               ploidylocus, ploidysample, ploidyone)
 import(methods)
