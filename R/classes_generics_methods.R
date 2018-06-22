@@ -1050,9 +1050,7 @@ setReplaceMethod("Genotype", "genambig", function(object, sample, locus, value){
 setMethod("Genotypes", signature(object = "genambig", samples = "ANY",
                                  loci = "ANY"),
           function(object, samples, loci){
-            apply(object@Genotypes[samples, loci, drop = FALSE], 2,
-                  function(x)
-                    unlist(lapply(x, function(y) paste(y, collapse = "/"))))
+            return(object@Genotypes[samples, loci, drop=FALSE])
           })
 setReplaceMethod("Genotypes", "genambig",
                  function(object, samples,
@@ -1092,7 +1090,10 @@ setMethod(
     cat(Description(object), "\n")
     cat("Missing values: ", (Missing(object)), "\n")
     cat("\nGenotypes: \n")
-    print(Genotypes(object))
+    genSum <- apply(object@Genotypes, 2,
+                    function(x)
+                      unlist(lapply(x, function(y) paste(y, collapse = "/"))))
+    print(genSum)
 
     cat("\nSSR motif lengths: \n")
     if(all(is.na(Usatnts(object))))
