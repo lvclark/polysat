@@ -1,3 +1,8 @@
+Changes in version 1.7-4
+
+A "show" method has been added for "genambig" so that datasets print to
+the console in a more sensible manner.
+
 Changes in version 1.7-3
 
 Fixed bug that would occur in a lot of functions (particularly functions 
