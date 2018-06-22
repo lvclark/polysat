@@ -1086,38 +1086,43 @@ setMethod("isMissing", "genambig", function(object, samples, loci){
 setMethod(
   f = "show",
   signature = "genambig",
-  def <- function(object){
+  function(object){
     cat(Description(object), "\n")
     cat("Missing values: ", (Missing(object)), "\n")
     cat("\nGenotypes: \n")
     genSum <- apply(object@Genotypes, 2,
                     function(x)
-                      unlist(lapply(x, function(y) paste(y, collapse = "/"))))
-    print(genSum)
+                      unlist(lapply(x, function(y)
+                        paste(sort(y), collapse = "/"))))
+    print(genSum, quote = FALSE)
 
     cat("\nSSR motif lengths: \n")
-    if(all(is.na(Usatnts(object))))
+    if(all(is.na(Usatnts(object)))){
       cat(" none\n")
-    else
+    } else {
       print(Usatnts(object))
+    }
 
     cat("\nPloidies: \n")
-    if(all(is.na(Ploidies(object))))
+    if(all(is.na(Ploidies(object)))){
       cat(" none\n")
-    else
+    } else {
       print(Ploidies(object))
+    }
 
     cat("\nPopNames: \n")
-    if(length(PopNames(object)) > 0)
+    if(length(PopNames(object)) > 0){
       print(PopNames(object))
-    else
+    } else {
       cat(" none\n")
+    }
 
     cat("\nPopInfo: \n")
-    if(all(is.na(PopInfo(object))))
+    if(all(is.na(PopInfo(object)))){
       cat(" none\n")
-    else
+    } else {
       print(PopInfo(object))
+    }
   }
 )
 
