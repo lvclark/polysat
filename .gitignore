@@ -49,3 +49,4 @@ DESCRIPTION~
 *.R#
 *.Rhistory
 .Rproj.user
+polysat.Rproj

@@ -143,8 +143,8 @@ Boolean value or an array of Boolean values is returned.}
     \item{show}{\code{signature(object = "genambig")}: Prints the
       data to the console, formatted to make it more legible. The
       genotype for each locus is shown as the size of each allele,
-      separated by a '/'. The SSR motif length ('Usatnts'), Ploidies,
-      Population Names, and Population membership ('PopInfo') are
+      separated by a '/'. The SSR motif length ('Usatnts'), ploidies,
+      population names, and population membership ('PopInfo') are
       displayed if they exist.}
     \item{viewGenotypes}{\code{signature(object = "genambig")}: Prints a
     tab-delimited table of samples, loci, and genotype vectors to the console.}
@@ -164,7 +164,7 @@ Boolean value or an array of Boolean values is returned.}
 }
 
 \author{
-Lindsay V. Clark
+Lindsay V. Clark, Tyler W. Smith
 }
 
 
