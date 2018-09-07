@@ -87,8 +87,13 @@ write.Structure <- function(object, ploidy, file="",
         structdata[[thiscol]]<-alleles
         names(structdata)[thiscol]<-L
     }
-   write.table(structdata, file=file, sep="\t", row.names=FALSE,
-               quote=FALSE, col.names=TRUE)
+    write.table(structdata, file=file, sep="\t", row.names=FALSE,
+                quote=FALSE, col.names=TRUE)
+    tmpFile <- readLines(file)
+    tmpFile[1] <- gsub("rowlabel\t", "", tmpFile[1])
+    tmpFile[1] <- gsub("PopInfo\t", "", tmpFile[1])
+    tmpFile[2] <- gsub("missing\t", "", tmpFile[2])
+    writeLines(text = tmpFile, con = file)
 }
 
 write.GenoDive<-function(object,
