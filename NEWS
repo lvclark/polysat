@@ -3,6 +3,10 @@ Changes in version 1.7-4
 A "show" method has been added for "genambig" so that datasets print to
 the console in a more sensible manner.
 
+write.Structure now writes files that can be read directly by Structure without
+modification.  write.SPAGeDi no longer writes a temporary file to the working
+directory (tempdir() is used instead).
+
 Changes in version 1.7-3
 
 Fixed bug that would occur in a lot of functions (particularly functions 

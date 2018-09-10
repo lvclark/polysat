@@ -263,14 +263,15 @@ write.SPAGeDi<-function(object, samples = Samples(object),
     names(gentable)[dim(gentable)[2]] <- L
   }
   # write file
-  write.table(gentable, file = "SpagTemp.txt", sep = "\t", row.names = FALSE,
+  SpagTemp <- tempfile()
+  write.table(gentable, file = SpagTemp, sep = "\t", row.names = FALSE,
               col.names = TRUE, quote = FALSE)
   cat(paste(length(samples), length(unique(PopInfo(object)[samples])),
             dim(spatcoord)[2],
             length(loci), digits, max(Ploidies(object,samples,loci)),
             sep="\t"),
       "0",
-      readLines("SpagTemp.txt"), "END", sep = "\n", file = file)
+      readLines(SpagTemp), "END", sep = "\n", file = file)
 }
 
 write.GeneMapper <- function(object, file = "", samples = Samples(object),
