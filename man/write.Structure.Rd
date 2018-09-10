@@ -110,15 +110,6 @@ The sample names from \code{samples} will be used as row
     Alleles}, which contains the missing data symbol once for each locus.
   This indicates to the program that all alleles are codominant with
   copy number ambiguity.
-
-  The output file requires a few small modifications, done in a text
-  editor or spreadsheet software, in order to be read
-  by Structure.  In the upper left corner the words \dQuote{rowlabel} and
-  \dQuote{missing} should be deleted.  Likewise the first and second rows for
-  any non-locus columns should be deleted if the \code{extracols} argument was
-  used and/or if \code{writepopinfo == TRUE}.  These should include
-  \dQuote{PopInfo} and the second dimension names used in
-  \code{extracols}, and zeros, respectively.
 }
 \references{
   \url{http://pritch.bsd.uchicago.edu/structure_software/release_versions/v2.3.3/structure_doc.pdf}

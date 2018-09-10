@@ -87,8 +87,25 @@ write.Structure <- function(object, ploidy, file="",
         structdata[[thiscol]]<-alleles
         names(structdata)[thiscol]<-L
     }
-   write.table(structdata, file=file, sep="\t", row.names=FALSE,
-               quote=FALSE, col.names=TRUE)
+    
+    # write the two header lines
+    if(writepopinfo){
+      colstoskip <- 2
+    } else {
+      colstoskip <- 1
+    }
+    if(!is.null(extracols)){
+      colstoskip <- colstoskip + dim(extracols)[2]
+    }
+    cat(c(paste(c(rep("", colstoskip), names(structdata)[-(1:colstoskip)]),
+                collapse = "\t"),
+          paste(c(rep("", colstoskip),
+                  rep(as.character(missingout), ncol(structdata) - colstoskip)),
+                collapse = "\t")),
+        sep = "\n", file = file)
+    # write the bulk of the data
+    write.table(structdata[-1,], file=file, sep="\t", row.names=FALSE,
+                quote=FALSE, col.names=FALSE, append = TRUE)
 }
 
 write.GenoDive<-function(object,
