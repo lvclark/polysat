@@ -1,11 +1,19 @@
 Changes in version 1.7-4
 
 A "show" method has been added for "genambig" so that datasets print to
-the console in a more sensible manner.
+the console in a more sensible manner.  Tyler Smith authored this method and
+has been added as a contributor.
 
 write.Structure now writes files that can be read directly by Structure without
 modification.  write.SPAGeDi no longer writes a temporary file to the working
 directory (tempdir() is used instead).
+
+A bug has been fixed in meandistance.matrix2 (via genotypeProbs) that caused
+errors when ploidy was equal to zero, which is a possible outcome of
+recodeAllopoly.
+
+Alistair Hall has been added as a contributor for coauthoring the SAS code
+used by deSilvaFreq.
 
 Changes in version 1.7-3
 
