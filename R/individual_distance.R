@@ -226,7 +226,7 @@ genotypeProbs <- function(object, sample, locus, freq=NULL, gprob=NULL,
 
     # Errors
     if(is.na(pl)) stop("Ploidies required.")
-    if(length(gen) >  pl)
+    if(!isMissing(object, sample, locus) && length(gen) >  pl)
         stop(paste("There are too many alleles for ploidy:",sample,locus))
 
     # What to do with unambiguous genotypes
