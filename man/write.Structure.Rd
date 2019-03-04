@@ -121,7 +121,7 @@ The sample names from \code{samples} will be used as row
   \code{extracols}, and zeros, respectively.
 }
 \references{
-  \url{http://pritch.bsd.uchicago.edu/structure_software/release_versions/v2.3.3/structure_doc.pdf}
+  \url{https://web.stanford.edu/group/pritchardlab/structure_software/release_versions/v2.3.4/structure_doc.pdf}
 
   Hubisz, M. J., Falush, D., Stephens, M. and Pritchard, J. K. (2009)
   Inferring weak population structure with the assistance of sample
