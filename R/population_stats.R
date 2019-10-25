@@ -465,6 +465,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
       } else {
         thesegenomes <- freqs[,paste(L, "Genomes", sep=".")]
       }
+      nsubpop <- length(thesegenomes)
       # allele frequencies for this locus
       thesefreqs<-freqs[,grep(paste("^", L,"\\.",sep=""), names(freqs)), drop = FALSE]
       thesefreqs <- thesefreqs[,names(thesefreqs)!=paste(L,"Genomes",sep="."), drop = FALSE]
@@ -522,7 +523,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
         meanGenomes <- 1/mean(1/thesegenomes)
         # Nei and Chesser's (1983) estimates of expected heterozygosity
         hets[L, "HSest"] <- hets[L, "HS"] * meanGenomes/(meanGenomes - 1)
-        hets[L, "HTest"] <- hets[L, "HT"] + hets[L, "HSest"] / (2*meanGenomes)
+        hets[L, "HTest"] <- hets[L, "HT"] + hets[L, "HSest"] / (nsubpop * meanGenomes)
       }
     }
     # set up vector to contain results, and bootstrapping
@@ -550,8 +551,9 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
         result[b] <- mean(G)
       }
       if(metric == "Jost's D"){ # calculate Jost's D and average across loci
-        D <- 2 * (thishets[,"HTest"] - thishets[,"HSest"]) / (1 - thishets[,"HSest"])
+        D <- nsubpop / (nsubpop - 1) * (thishets[,"HTest"] - thishets[,"HSest"]) / (1 - thishets[,"HSest"])
         result[b] <- mean(D)
+        if(nsubpop == 1) result[b] <- 0 # prevent NaN
       }
     }
     
