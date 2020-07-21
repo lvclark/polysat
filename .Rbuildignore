@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^README\.md$
+^code_of_conduct\.md$
 ^\.gitattributes$
 ^\.gitignore$
 ^\.git$
