@@ -528,7 +528,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
       n.bootstraps <- 1
     }
     result <- numeric(n.bootstraps)
-    for(b in 1:n.bootstraps){ # loop through bootstraps (just one if not bootstrapping)
+    for(b in seq_len(n.bootstraps)){ # loop through bootstraps (just one if not bootstrapping)
       if(bootstrap){
         thishets <- hets[sample(loci, replace = TRUE),] # H matrix with bootstrapped set of loci
       } else {
