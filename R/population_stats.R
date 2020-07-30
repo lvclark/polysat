@@ -422,12 +422,9 @@ deSilvaFreq <- function(object, self,
 }
 
 calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
-                  loci=unique(as.matrix(as.data.frame(strsplit(names(freqs),
-                  split=".",
-                                                      fixed=TRUE),
-                                             stringsAsFactors=FALSE))[1,]), 
-                     global = FALSE, bootstrap = FALSE, n.bootstraps = 1000,
-                  object = NULL){
+                      loci=unique(gsub("\\..*$", "", names(freqs))), 
+                      global = FALSE, bootstrap = FALSE, n.bootstraps = 1000,
+                      object = NULL){
   # check metric
   if(!metric %in% c("Fst", "Gst", "Jost's D", "Rst")){
     stop("metric must be Fst, Gst, Rst, or Jost's D")
@@ -587,10 +584,7 @@ calcPopDiff<-function(freqs, metric, pops=row.names(freqs),
 
 # wrapper function for backwards compatibility
 calcFst<-function(freqs, pops=row.names(freqs),
-                  loci=unique(as.matrix(as.data.frame(strsplit(names(freqs),
-                                                               split=".",
-                                                               fixed=TRUE),
-                                                      stringsAsFactors=FALSE))[1,]), ...){
+                  loci=unique(gsub("\\..*$", "", names(freqs))), ...){
   return(calcPopDiff(freqs = freqs, metric = "Fst", pops = pops, loci = loci, ...))
 }
 

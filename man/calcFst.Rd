@@ -14,14 +14,11 @@ compatibility with previous versions of \pkg{polysat}.
 }
 \usage{
 calcPopDiff(freqs, metric, pops = row.names(freqs), 
-            loci = unique(as.matrix(
-            as.data.frame(strsplit(names(freqs), split = ".", fixed = TRUE),
-             stringsAsFactors = FALSE))[1, ]), global = FALSE,
-             bootstrap = FALSE, n.bootstraps = 1000, object = NULL)
+            loci = unique(gsub("\\\\..*$", "", names(freqs))), global = FALSE,
+            bootstrap = FALSE, n.bootstraps = 1000, object = NULL)
 
-calcFst(freqs, pops = row.names(freqs), loci = unique(as.matrix(
-        as.data.frame(strsplit(names(freqs), split = ".", fixed = TRUE),
-        stringsAsFactors = FALSE))[1, ]), ...)
+calcFst(freqs, pops = row.names(freqs),
+        loci = unique(gsub("\\\\..*$", "", names(freqs))), ...)
 }
 \arguments{
   \item{freqs}{
