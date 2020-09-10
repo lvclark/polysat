@@ -47,9 +47,9 @@ genambig.to.genbinary <- function(object, samples=Samples(object), loci=Loci(obj
       # skip if there are no genotypes
       if(all(isMissing(object, samples, L))) next
       # find the alleles
-        thesealleles <- .unal1loc(object, samples, L)
-        locvector <- c(locvector, rep(L, length(thesealleles)))
-        allelevector <- c(allelevector, thesealleles)
+      thesealleles <- .unal1loc(object, samples, L)
+      locvector <- c(locvector, rep(L, length(thesealleles)))
+      allelevector <- c(allelevector, thesealleles)
     }
 
     # Build data frame of locus and allele information
