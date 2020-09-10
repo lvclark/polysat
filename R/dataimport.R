@@ -8,7 +8,8 @@ read.GeneMapper<-function(infiles, forceInteger=TRUE){
     names(cc) <- c("Sample.Name","Marker")
     for(i in 1:length(infiles)){
         locusdata[[i]]<-read.table(infiles[i],sep="\t",header=TRUE,
-                                   colClasses=cc, stringsAsFactors=FALSE)
+                                   colClasses=cc, stringsAsFactors=FALSE,
+                                   na.strings = c("", "NA"))
         samples<-c(samples,locusdata[[i]][["Sample.Name"]])
         loci<-c(loci,locusdata[[i]][["Marker"]])
     }

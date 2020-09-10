@@ -9,6 +9,9 @@ monomorphic markers in the dataset.
 The default value for loci in calcPopDiff is calculated in a (slightly) less
 confusing fashion.
 
+A bug in read.GeneMapper has been fixed to prevent empty strings from being
+counted as alleles when alleles are non-numeric.
+
 Changes in version 1.7-4
 
 A "show" method has been added for "genambig" so that datasets print to
