@@ -61,7 +61,8 @@ Genotypes(mydata, loci="e") <- list(c(100),c(100,102),
 Genotypes(mydata, loci="f") <- list(c(200,202,204),Missing(mydata),
                                     c(210,212),c(204,210,214))
 
-# convert to "genind"
+# convert to "genind"; not tested as it takes several seconds to load adegenet
+\donttest{
 if(require("adegenet")){
   mydata2 <- gendata.to.genind(mydata)
   mydata2@tab
@@ -69,6 +70,7 @@ if(require("adegenet")){
   indNames(mydata2)
   popNames(mydata2)
   pop(mydata2)
+}
 }
 }
 \keyword{ manip }

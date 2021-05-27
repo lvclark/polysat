@@ -15,7 +15,7 @@
   hybrids between native and exotic \emph{Rubus} in the Western United
   States produce offspring both by apomixis and by sexual
   recombination. \emph{Heredity} \bold{109}, 320--328.  Data available
-  at: \url{http://dx.doi.org/10.5061/dryad.m466f}}
+  at: \doi{10.5061/dryad.m466f}}
 \seealso{\code{\link{FCRinfo}}, \code{\link{simgen}},
   \code{\linkS4class{genambig}}}
 \keyword{datasets}

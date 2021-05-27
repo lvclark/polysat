@@ -84,7 +84,7 @@ digits.
 A file is written but no value is returned.
 }
 \references{
-  \url{http://ebe.ulb.ac.be/ebe/SPAGeDi.html}
+  \url{https://ebe.ulb.ac.be/ebe/SPAGeDi.html}
 
   Hardy, O. J. and Vekemans, X. (2002) SPAGeDi: a versatile computer
   program to analyse spatial genetic structure at the individual or

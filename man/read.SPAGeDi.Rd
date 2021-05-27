@@ -82,7 +82,7 @@ from the file.  Column names are the same as in the file.}
 \item{Dataset }{A \code{genambig} object as described above.}
 }
 \references{
-  \url{http://ebe.ulb.ac.be/ebe/SPAGeDi.html}
+  \url{https://ebe.ulb.ac.be/ebe/SPAGeDi.html}
 
   Hardy, O. J. and Vekemans, X. (2002) SPAGeDi: a versatile computer
   program to analyse spatial genetic structure at the individual or

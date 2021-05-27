@@ -46,7 +46,7 @@ A \code{"genambig"} object containing genotypes, locus and sample names,
 population names, and population identities from the file.
 }
 \references{
-  \url{http://www.vgl.ucdavis.edu/informatics/strand.php/}
+  \url{https://vgl.ucdavis.edu/STRand}
 
   Toonen, R. J. and Hughes, S. (2001) Increased Throughput for Fragment
   Analysis on ABI Prism 377 Automated Sequencer Using a Membrane Comb
