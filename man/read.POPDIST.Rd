@@ -51,8 +51,6 @@ individual genotype lines, and population identities are recorded based
 on how the individuals are delimited by \dQuote{Pop} lines.
 }
 \references{
-\url{http://gbi.agrsci.dk/~bernt/popgen/}
-
 Tomiuk, J., Guldbrandtsen, B. and Loeschcke, B.  (2009)  Genetic
 similarity of polyploids: a new version of the computer program POPDIST
 (version 1.2.0) considers intraspecific genetic differentiation.

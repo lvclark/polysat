@@ -57,8 +57,6 @@ from all alleles.  A zero is placed in front of any allele with one digit.
 A file is written but no value is returned.
 }
 \references{
-  \url{http://gbi.agrsci.dk/~bernt/popgen/}
-
 Tomiuk, J., Guldbrandtsen, B. and Loeschcke, B.  (2009)  Genetic
 similarity of polyploids: a new version of the computer program POPDIST
 (version 1.2.0) considers intraspecific genetic differentiation.
