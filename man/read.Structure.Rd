@@ -134,6 +134,7 @@ Lindsay V. Clark
 \examples{
 # create a file to read (normally done in a text editor or spreadsheet
 # software)
+myfile <- tempfile()
 cat("\t\tRhCBA15\tRhCBA23\tRhCBA28\tRhCBA14\tRUB126\tRUB262\tRhCBA6\tRUB26",
     "\t\t-9\t-9\t-9\t-9\t-9\t-9\t-9\t-9",
     "WIN1B\t1\t197\t98\t152\t170\t136\t208\t151\t99",
@@ -168,13 +169,13 @@ cat("\t\tRhCBA15\tRhCBA23\tRhCBA28\tRhCBA14\tRUB126\tRUB262\tRhCBA6\tRUB26",
     "MCD3\t2\t-9\t-9\t-9\t-9\t-9\t-9\t-9\t-9",
     "MCD3\t2\t-9\t-9\t-9\t-9\t-9\t-9\t-9\t-9",
     "MCD3\t2\t-9\t-9\t-9\t-9\t-9\t-9\t-9\t-9",
-    sep="\n",file="structtest.txt")
+    sep="\n",file=myfile)
 
 # view the file
-cat(readLines("structtest.txt"), sep="\n")
+cat(readLines(myfile), sep="\n")
 
 # read the structure file into genotypes and populations
-testdata <- read.Structure("structtest.txt", ploidy=8)
+testdata <- read.Structure(myfile, ploidy=8)
 
 # examine the results
 testdata

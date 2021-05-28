@@ -113,11 +113,12 @@ gentable <- data.frame(Sample.Name=rep(c("ind1","ind2","ind3"),2),
                        )
 # create a file (inspect this file in a text editor or spreadsheet
 # software to see the required format)
-write.table(gentable, file="readGMtest.txt", quote=FALSE, sep="\t",
+myfile <- tempfile()
+write.table(gentable, file=myfile, quote=FALSE, sep="\t",
             na="", row.names=FALSE, col.names=TRUE)
 
 # read the file
-mygenotypes <- read.GeneMapper("readGMtest.txt")
+mygenotypes <- read.GeneMapper(myfile)
 
 # inspect the results
 viewGenotypes(mygenotypes)

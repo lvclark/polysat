@@ -72,6 +72,7 @@ Lindsay V. Clark
 }
 \examples{
 # Create a file to read (this is typically done in a text editor)
+myfile <- tempfile()
 cat("An example for the read.POPDIST documentation.",
 "abcR",
 "abcQ",
@@ -86,13 +87,13 @@ cat("An example for the read.POPDIST documentation.",
 "Great Works\t, 050807 030800",
 "Great Works\t, 0000 0408",
 "Great Works\t, 0707 0305",
-file="testPOPDIST.txt", sep="\n")
+file=myfile, sep="\n")
 
 # View the file in the R console (or open it in a text editor)
-cat(readLines("testPOPDIST.txt"), sep="\n")
+cat(readLines(myfile), sep="\n")
 
 # Read the file into a "genambig" object
-fishes <- read.POPDIST("testPOPDIST.txt")
+fishes <- read.POPDIST(myfile)
 
 # View the data in the object
 summary(fishes)

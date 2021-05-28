@@ -148,7 +148,7 @@ myfreq2 <- data.frame(row.names=c("G","R"), Genomes=c(120,200),
              abc.134=c(0.53, 0.3))
 myusatnts <- as.integer(2)
 names(myusatnts) <- "abc"
-write.freq.SPAGeDi(myfreq2, usatnts=myusatnts, file="SPAGfreqExample2.txt")
+write.freq.SPAGeDi(myfreq2, usatnts=myusatnts, file=tempfile())
 }
 
 }

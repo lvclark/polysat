@@ -48,6 +48,8 @@ Lindsay V. Clark
 \examples{
 # create a file to be read
 # (this would normally be done in a text editor or with ATetra's Excel template)
+myfile <- tempfile()
+
 cat("TIT,Sample Rubus Data for ATetra", "LOC,1,CBA15",
 "POP,1,1,Commonwealth", "IND,1,1,1,CMW1,197,208,211,213",
 "IND,1,1,2,CMW2,197,207,211,212", "IND,1,1,3,CMW3,197,208,212,219",
@@ -62,10 +64,10 @@ cat("TIT,Sample Rubus Data for ATetra", "LOC,1,CBA15",
 "IND,2,2,6,FCR4,98,125,,","IND,2,2,7,FCR7,98,106,126,",
 "IND,2,2,8,FCR14,98,127,,","IND,2,2,9,FCR15,98,108,117,",
 "IND,2,2,10,FCR16,98,125,,","IND,2,2,11,FCR17,98,126,,","END",
-file = "atetraexample.txt", sep = "\n")
+file = myfile, sep = "\n")
 
 # Read the file and examine the data
-exampledata <- read.ATetra("atetraexample.txt")
+exampledata <- read.ATetra(myfile)
 summary(exampledata)
 PopNames(exampledata)
 viewGenotypes(exampledata)

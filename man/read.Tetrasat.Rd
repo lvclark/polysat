@@ -64,14 +64,8 @@ Lindsay V. Clark
 \code{\link{read.STRand}}
 }
 \examples{
-\dontrun{
-# example from the Tetrasat website
-mydata <- read.Tetrasat("http://markwith.freehomepage.com/sample.txt")
-summary(mydata)
-viewGenotypes(mydata, loci="A1_Gtype")
-}
-
 # example with defined data:
+myfile <- tempfile()
 cat("Sample Data", "A1_Gtype", "A10_Gtype", "B1_Gtype", "D7_Gtype",
 "D9_Gtype", "D12_Gtype", "Pop",
 "BCRHE 1             0406     04040404 0208     02020202 03030303 0710",
@@ -95,8 +89,8 @@ cat("Sample Data", "A1_Gtype", "A10_Gtype", "B1_Gtype", "D7_Gtype",
 "BR 7                0304     04040404 0809     02020202 03030303 070910",
 "BR 8                030406   04040404 07070707 02020202 03030303 070910",
 "BR 9                0406     04040404 07070707 02020202 03030303 07070707",
-sep="\n", file="TetrasatExample.txt")
-mydata2 <- read.Tetrasat("TetrasatExample.txt")
+sep="\n", file=myfile)
+mydata2 <- read.Tetrasat(myfile)
 
 summary(mydata2)
 viewGenotypes(mydata2, loci="B1_Gtype")

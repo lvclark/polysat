@@ -91,11 +91,16 @@ Genotypes(mygen, loci="loc1") <- list(c(128, 134), c(130),
 Genotypes(mygen, loci="loc27") <- list(c(209,211), c(207,217),
                                        c(207,209,215,221), c(211,223))
 
+\dontrun{
 # write the file
 write.POPDIST(mygen, file="forPOPDIST.txt")
 
 # view the file
 cat(readLines("forPOPDIST.txt"), sep="\n")
+}
+\dontshow{
+write.POPDIST(mygen, file=tempfile())
+}
 
 }
 \keyword{ file }

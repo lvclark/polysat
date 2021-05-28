@@ -117,9 +117,15 @@ PopInfo(mygendata) <- c(1,1,2,2)
 myspatcoord <- data.frame(X=c(27,29,24,30), Y=c(44,41,45,46),
                           row.names=c("ind1","ind2","ind3","ind4"))
 
+\dontrun{
 # write a file
 write.SPAGeDi(mygendata, spatcoord = myspatcoord,
               file="SpagOutExample.txt")
+}
+\dontshow{
+write.SPAGeDi(mygendata, spatcoord = myspatcoord,
+              file=tempfile())
+}
 }
 \keyword{ file }
 

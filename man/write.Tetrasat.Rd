@@ -91,10 +91,15 @@ PopInfo(mygendata) <- c(1,2,1,2)
 Description(mygendata) <- "An example for write.Tetrasat."
 Ploidies(mygendata) <- 4
 
+\dontrun{
 # write a Tetrasat file
 write.Tetrasat(mygendata, file="tetrasattest.txt")
 
 # view the file
 cat(readLines("tetrasattest.txt"),sep="\n")
+}
+\dontshow{
+write.Tetrasat(mygendata, file=tempfile())
+}
 }
 \keyword{file}

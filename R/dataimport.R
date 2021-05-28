@@ -235,8 +235,9 @@ read.SPAGeDi<-function(infile, allelesep="/", returnspatcoord=FALSE){
     }
 
     # read the rest of the file as a table
-    cat(Lines[3:(3+numind)], sep="\n", file="SpagTemp.txt")
-    gentable <- read.table("SpagTemp.txt", sep="\t", header=TRUE,
+    tmp <- tempfile()
+    cat(Lines[3:(3+numind)], sep="\n", file=tmp)
+    gentable <- read.table(tmp, sep="\t", header=TRUE,
                            row.names=1,
                            colClasses=c("character",rep(NA,catpres+numsc),
                            rep("character",numloc)))

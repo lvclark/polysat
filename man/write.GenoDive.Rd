@@ -95,8 +95,14 @@ PopInfo(mygendata) <- c(2,1,2,1,1,2,2,2,1)
 Ploidies(mygendata) <- c(2,2,2,2,2,2,2,3,2)
 Description(mygendata) <- "Serenity crew"
 
+\dontrun{
 # write files (use file="" to write to the console instead)
 write.GenoDive(mygendata, digits=2, file="testGenoDive2.txt")
 write.GenoDive(mygendata, digits=3, file="testGenoDive3.txt")
+}
+\dontshow{
+write.GenoDive(mygendata, digits=2, file=tempfile())
+write.GenoDive(mygendata, digits=3, file=tempfile())
+}
 }
 \keyword{file}

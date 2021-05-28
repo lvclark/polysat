@@ -93,10 +93,15 @@ Genotypes(mygendata, loci="loc2") <- list(c(78,81,84),
                                           c(87), c(-9))
 Ploidies(mygendata) <- 6
 
+\dontrun{
 # write a GeneMapper file
 write.GeneMapper(mygendata, "exampleGMoutput.txt")
 
 # view the file with read.table
 read.table("exampleGMoutput.txt", sep="\t", header=TRUE)
+}
+\dontshow{
+write.GeneMapper(mygendata, tempfile())
+}
 }
 \keyword{ file }

@@ -102,6 +102,7 @@ Lindsay V. Clark
 \examples{
 # create a file to read (usually done with spreadsheet software or a
 # text editor):
+myfile <- tempfile()
 cat("// here's a comment line at the beginning of the file",
 "5\t0\t-2\t2\t2\t4",
 "4\t5\t10\t50\t100",
@@ -112,13 +113,13 @@ cat("// here's a comment line at the beginning of the file",
 "ind4\t38.2\t-120.3\t00000000\t41430000",
 "ind5\t38.2\t-120.3\t00053137\t00414200",
 "END",
-sep="\n", file="SpagInputExample.txt")
+sep="\n", file=myfile)
 
 # display the file
-cat(readLines("SpagInputExample.txt"), sep="\n")
+cat(readLines(myfile), sep="\n")
 
 # read the file
-mydata <- read.SPAGeDi("SpagInputExample.txt", allelesep = "",
+mydata <- read.SPAGeDi(myfile, allelesep = "",
 returnspatcoord = TRUE)
 
 # view the data

@@ -73,11 +73,16 @@ PopNames(mygendata) <- c("this pop", "that pop")
 Ploidies(mygendata) <- 4
 Description(mygendata) <- "Example for write.ATetra."
 
+\dontrun{
 # write an ATetra file
 write.ATetra(mygendata, file="atetratest.txt")
 
 # view the file
 cat(readLines("atetratest.txt"),sep="\n")
+}
+\dontshow{
+write.ATetra(mygendata, file=tempfile())
+}
 
 }
 \keyword{ file }
