@@ -244,7 +244,7 @@ genotypeProbs <- function(object, sample, locus, freq=NULL, gprob=NULL,
     if(!length(gen) %in% c(1,pl)){
         if(!selfing){
           pop <- PopNames(object)[PopInfo(object)[sample]]
-          f <- freq[pop, paste(locus, gen, sep=".")] # get allele frequencies
+          f <- as.matrix(freq[pop, paste(locus, gen, sep=".")]) # get allele frequencies
           f <- as.vector(f/sum(f)) # normalize frequencies
           names(f) <- gen
         }

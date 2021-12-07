@@ -1,6 +1,6 @@
 Package: polysat
-Version: 1.7-5
-Date: 2021-05-27
+Version: 1.7-6
+Date: 2021-12-06
 Title: Tools for Polyploid Microsatellite Analysis
 Authors@R: c(person("Lindsay V.", "Clark", email = "lvclark@illinois.edu", role = c("aut", "cre"),
                     comment = c(ORCID = "0000-0002-3881-9252")),
