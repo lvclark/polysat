@@ -1,382 +1,381 @@
 Changes in version 1.7-7
 
-Maintainer email address updated.
+* Maintainer email address updated.
+
+* NEWS file reformatted according to CRAN specifications.
 
 Changes in version 1.7-6
 
-A bug has been changed in genotypeProbs for compatibility with R 4.2.
+* A bug has been changed in genotypeProbs for compatibility with R 4.2.
 
 Changes in version 1.7-5
 
-A bug has been fixed in calcPopDiff for estimating global Gst and Jost's D
-statistics.
+* A bug has been fixed in calcPopDiff for estimating global Gst and Jost's D
+  statistics.
 
-calcPopDiff now gives meaningful results for Gst and Rst if there are
-monomorphic markers in the dataset.
+* calcPopDiff now gives meaningful results for Gst and Rst if there are
+  monomorphic markers in the dataset.
 
-The default value for loci in calcPopDiff is calculated in a (slightly) less
-confusing fashion.
+* The default value for loci in calcPopDiff is calculated in a (slightly) less
+  confusing fashion.
 
-A bug in read.GeneMapper has been fixed to prevent empty strings from being
-counted as alleles when alleles are non-numeric.
+* A bug in read.GeneMapper has been fixed to prevent empty strings from being
+  counted as alleles when alleles are non-numeric.
 
 Changes in version 1.7-4
 
-A "show" method has been added for "genambig" so that datasets print to
-the console in a more sensible manner.  Tyler Smith authored this method and
-has been added as a contributor.
+* A "show" method has been added for "genambig" so that datasets print to
+  the console in a more sensible manner.  Tyler Smith authored this method and
+  has been added as a contributor.
 
-write.Structure now writes files that can be read directly by Structure without
-modification.  write.SPAGeDi no longer writes a temporary file to the working
-directory (tempdir() is used instead).
+* write.Structure now writes files that can be read directly by Structure without
+  modification.  write.SPAGeDi no longer writes a temporary file to the working
+  directory (tempdir() is used instead).
 
-A bug has been fixed in meandistance.matrix2 (via genotypeProbs) that caused
-errors when ploidy was equal to zero, which is a possible outcome of
-recodeAllopoly.
+* A bug has been fixed in meandistance.matrix2 (via genotypeProbs) that caused
+  errors when ploidy was equal to zero, which is a possible outcome of
+  recodeAllopoly.
 
-Alistair Hall has been added as a contributor for coauthoring the SAS code
-used by deSilvaFreq.
+* Alistair Hall has been added as a contributor for coauthoring the SAS code
+  used by deSilvaFreq.
 
 Changes in version 1.7-3
 
-Fixed bug that would occur in a lot of functions (particularly functions 
-dealing with allele frequencies, as well as genbinary objects) if loci
-had overlapping names, e.g. "myloc1"" and "loc1".
+* Fixed bug that would occur in a lot of functions (particularly functions 
+  dealing with allele frequencies, as well as genbinary objects) if loci
+  had overlapping names, e.g. "myloc1"" and "loc1".
 
-Minor speed and memory improvements for deSilvaFreq and 
-meandistance.matrix2.
+* Minor speed and memory improvements for deSilvaFreq and meandistance.matrix2.
 
-PIC now returns NA if a marker is entirely missing for a population, rather
-than giving an error.
+* PIC now returns NA if a marker is entirely missing for a population, rather
+  than giving an error.
 
-Updated citation for Clark and Schreier (2017).  Acknowledgement of HN
-de Silva as contributor due to direct translation of his code from SAS
-into R for parts of this package.
+* Updated citation for Clark and Schreier (2017).  Acknowledgement of HN
+  de Silva as contributor due to direct translation of his code from SAS
+  into R for parts of this package.
 
 Changes in version 1.7-2
 
-References to manuscripts describing polysat have been added to the 
-DESCRIPTION file.
+* References to manuscripts describing polysat have been added to the 
+  DESCRIPTION file.
 
-The PIC function has been updated to be compatible with R 3.5.
+* The PIC function has been updated to be compatible with R 3.5.
 
 Changes in version 1.7-1
 
-Bug fixes in alleleCorrelations, testAlGroups, and mergeAlleleAssignments have
-been made so that these functions can accomodate loci with a very small number
-of alleles (one or two).
+* Bug fixes in alleleCorrelations, testAlGroups, and mergeAlleleAssignments have
+  been made so that these functions can accomodate loci with a very small number
+  of alleles (one or two).
 
-Bug fixes in deSilvaFreq to help when allele names are very short, and to prevent
-the function from hanging.
+* Bug fixes in deSilvaFreq to help when allele names are very short, and to prevent
+  the function from hanging.
 
-An option for estimating Slatkin's Rst has been added to calcPopDiff.
+* An option for estimating Slatkin's Rst has been added to calcPopDiff.
 
-Documentation for gendata.to.genind has been fixed so that the example can still
-run if adegenet is not installed.  (This change was made in order to prevent
-polysat from failing package checks on Solaris systems.)
+* Documentation for gendata.to.genind has been fixed so that the example can still
+  run if adegenet is not installed.  (This change was made in order to prevent
+  polysat from failing package checks on Solaris systems.)
 
 Changes in version 1.7-0
 
-The function calcPopDiff has a new argument called "global" that can be used if 
-global rather than pairwise statistics are desired.  It also has an argument
-called "bootstrap" if replicates bootstrapped across loci are desired.
+* The function calcPopDiff has a new argument called "global" that can be used if 
+  global rather than pairwise statistics are desired.  It also has an argument
+  called "bootstrap" if replicates bootstrapped across loci are desired.
 
-A new function has been introduced, called "PIC", that estimates the 
-Polymorphic Information Content of loci.
+* A new function has been introduced, called "PIC", that estimates the 
+  Polymorphic Information Content of loci.
 
-The function "genIndex" has been added for rapidly identifying all unique
-genotypes for a given locus.  meandistance.matrix and meandistance.matrix2
-now call this function, reducing their processing time several-fold.
+* The function "genIndex" has been added for rapidly identifying all unique
+  genotypes for a given locus.  meandistance.matrix and meandistance.matrix2
+  now call this function, reducing their processing time several-fold.
 
-Bruvo.distance and Bruvo2.distance have been edited to speed processing several-fold.
-Package dependency on the combinat package has been removed since Bruvo.distance no
-longer requires combinat.
+* Bruvo.distance and Bruvo2.distance have been edited to speed processing several-fold.
+  Package dependency on the combinat package has been removed since Bruvo.distance no
+  longer requires combinat.
 
-Updated citation information with DOI for Molecular Ecology Resources.
+* Updated citation information with DOI for Molecular Ecology Resources.
 
 Changes in version 1.6-0
 
-The allele swapping algorithm used by testAlGroups has changed.  Allele assignments
-should be more accurate in general, at the expense of processing time.
+* The allele swapping algorithm used by testAlGroups has changed.  Allele assignments
+  should be more accurate in general, at the expense of processing time.
 
-A bug has been fixed in processDatasetAllo, affecting the contents of the missRate
-item in the function's output.
+* A bug has been fixed in processDatasetAllo, affecting the contents of the missRate
+  item in the function's output.
 
-testAlGroups now outputs an additional item called proportion.inconsistent.genotypes,
-which indicates the proportion of genotypes in the dataset that are inconsistent
-with the allele assignments output by the function.
+* testAlGroups now outputs an additional item called proportion.inconsistent.genotypes,
+  which indicates the proportion of genotypes in the dataset that are inconsistent
+  with the allele assignments output by the function.
 
 Changes in version 1.5-0
 
-The functions processDatasetAllo, plotSSAllo, and plotParamHeatmap have been added
-to simplify the workflow when using alleleCorrelations and testAlGroups.
+* The functions processDatasetAllo, plotSSAllo, and plotParamHeatmap have been added
+  to simplify the workflow when using alleleCorrelations and testAlGroups.
 
-The function calcPopDiff has been added to allow estimation of Gst and Jost's D.
+* The function calcPopDiff has been added to allow estimation of Gst and Jost's D.
 
-gendata validity function edited to prevent locus names
-from containing periods.
+* gendata validity function edited to prevent locus names from containing periods.
 
-fixloci function added to clean up locus names so that they can be column headers.
-This has the consequence that characters such as spaces, hyphens, and parentheses
-will be automatically removed from locus names.  Underscores are allowed.
+* fixloci function added to clean up locus names so that they can be column headers.
+  This has the consequence that characters such as spaces, hyphens, and parentheses
+  will be automatically removed from locus names.  Underscores are allowed.
 
-Genotype and Genotypes assignment methods for the "genambig" class edited to 
-prevent empty vectors or NA values from being assigned to genotypes.
+* Genotype and Genotypes assignment methods for the "genambig" class edited to 
+  prevent empty vectors or NA values from being assigned to genotypes.
 
-deSilvaFreq edited to be compatible with ploidymatrix format.
+* deSilvaFreq edited to be compatible with ploidymatrix format.
 
-gendata.to.genind edited to allow multiple ploidies in the dataset, to be compatible
-with newer versions of adegenet.
+* gendata.to.genind edited to allow multiple ploidies in the dataset, to be compatible
+  with newer versions of adegenet.
 
-Broken URLs in documentation fixed or removed.
+* Broken URLs in documentation fixed or removed.
 
 Changes in version 1.4-1
 
-Documentation for freq.to.genpop and gendata.to.genind updated to be compatible with
-adegenet 2.0.
+* Documentation for freq.to.genpop and gendata.to.genind updated to be compatible with
+  adegenet 2.0.
 
-Edited Description and Namespace to import from stats and utils for compatibility
-with R 3.3.
+* Edited Description and Namespace to import from stats and utils for compatibility
+  with R 3.3.
 
-Validation function for gendata, as well as Samples and Loci replacement functions,
-edited to prevent samples and loci from having non-unique names.
+* Validation function for gendata, as well as Samples and Loci replacement functions,
+  edited to prevent samples and loci from having non-unique names.
 
-Validation functions for genambig and genbinary edited to call the validation function
-from gendata.
+* Validation functions for genambig and genbinary edited to call the validation function
+  from gendata.
 
-All data import functions now call validObject immediately before returning the
-object, in order to confirm that genambig objects are formatted correctly.
+* All data import functions now call validObject immediately before returning the
+  object, in order to confirm that genambig objects are formatted correctly.
 
 Changes in version 1.4
 
-Polysat 1.4 introduces a set of functions for assigning alleles to isoloci in
-allopolyploids and diploidized autopolyploids, and recoding datasets so that
-they can be analyzed under the assumption of random segregation.  New functions
-include simAllopoly, alleleCorrelations, testAlGroups, catalanAlleles,
-mergeAlleleAssignments, and recodeAllopoly.
+* Polysat 1.4 introduces a set of functions for assigning alleles to isoloci in
+  allopolyploids and diploidized autopolyploids, and recoding datasets so that
+  they can be analyzed under the assumption of random segregation.  New functions
+  include simAllopoly, alleleCorrelations, testAlGroups, catalanAlleles,
+  mergeAlleleAssignments, and recodeAllopoly.
 
-meandistance.matrix edited to throw an error if a "genambig" object is not
-provided.
+* meandistance.matrix edited to throw an error if a "genambig" object is not provided.
 
-meandist.from.array edited to reduce computation time.  meandistance.matrix
-and meandistance.matrix2 edited to call meandist.from.array.
+* meandist.from.array edited to reduce computation time.  meandistance.matrix
+  and meandistance.matrix2 edited to call meandist.from.array.
 
-find.na.dist edited to reduce computation time.
+* find.na.dist edited to reduce computation time.
 
-read.GeneMapper edited to throw an error if it encounters any rows with
-blank spaces or NA in the first allele position, or any rows with -9 outside
-of the first allele position.
+* read.GeneMapper edited to throw an error if it encounters any rows with
+  blank spaces or NA in the first allele position, or any rows with -9 outside
+  of the first allele position.
 
-Documentation for FCRinfo and testgenotypes updated to include citation for dataset.
+* Documentation for FCRinfo and testgenotypes updated to include citation for dataset.
 
 Changes in version 1.3-3
 
-Fixed an error that would occor if ploidies were in "ploidymatrix" format but
-there was only one sample or only one locus.  (In the "pld" method for class
-"ploidymatrix".)  Fixing this bug introduced another bug in simpleFreq, which
-has also been fixed.
+* Fixed an error that would occor if ploidies were in "ploidymatrix" format but
+  there was only one sample or only one locus.  (In the "pld" method for class
+  "ploidymatrix".)  Fixing this bug introduced another bug in simpleFreq, which
+  has also been fixed.
 
-Fixed PopInfo replacement method for the "gendata" class so that a warning
-would not be issued if all values are NA after replacement.
+* Fixed PopInfo replacement method for the "gendata" class so that a warning
+  would not be issued if all values are NA after replacement.
 
-Copied all example files for data import into the "extdata" folder so that
-they will once again be part of the installation.
+* Copied all example files for data import into the "extdata" folder so that
+  they will once again be part of the installation.
 
-Edited the documentation of assignClones to suggest excluding samples with
-missing data.
+* Edited the documentation of assignClones to suggest excluding samples with
+  missing data.
 
-Added an error message to the Ploidies<- replacement function if any
-individuals are being assigned a negative number as a ploidy.  Added a
-warning to the same function if any individuals are being assigned a ploidy
-greater than 12.
+* Added an error message to the Ploidies<- replacement function if any
+  individuals are being assigned a negative number as a ploidy.  Added a
+  warning to the same function if any individuals are being assigned a ploidy
+  greater than 12.
 
-genotypeProbs is edited to allow for missing genotypes to have a ploidy of zero.
+* genotypeProbs is edited to allow for missing genotypes to have a ploidy of zero.
 
-read.Structure and read.STRand have been edited to prevent periods from being
-inserted into loci names.
+* read.Structure and read.STRand have been edited to prevent periods from being
+  inserted into loci names.
 
-read.Structure now has several options for assigning ploidy to the output
-dataset.  (1) The ploidy of the file can be used as the ploidy of the entire
-dataset, (2) the maximum number of alleles per sample can be used to assign
-ploidy to each sample, or (3) the ploidies can be output as a matrix of
-allele counts for each sample*locus genotype, as in versions 1.3-0 through
-1.3-2.
+* read.Structure now has several options for assigning ploidy to the output
+  dataset.  (1) The ploidy of the file can be used as the ploidy of the entire
+  dataset, (2) the maximum number of alleles per sample can be used to assign
+  ploidy to each sample, or (3) the ploidies can be output as a matrix of
+  allele counts for each sample*locus genotype, as in versions 1.3-0 through
+  1.3-2.
 
-read.STRand documentation has been edited so that the example files produced
-more closely resemble files produced by STRand.
+* read.STRand documentation has been edited so that the example files produced
+  more closely resemble files produced by STRand.
 
-Package "combinat" changed from "Depends" to "Suggests" since it is only needed
-by the Bruvo.distance function.  Package "methods" changed from "Depends" to
-"Imports".  The functions Bruvo.distance and gendata.to.genind have been
-modified to have the correct syntax for package dependencies.
+* Package "combinat" changed from "Depends" to "Suggests" since it is only needed
+  by the Bruvo.distance function.  Package "methods" changed from "Depends" to
+  "Imports".  The functions Bruvo.distance and gendata.to.genind have been
+  modified to have the correct syntax for package dependencies.
 
 Changes in version 1.3-2
 
-read.GeneMapper has been edited to prevent the import of alleles as factors.
-The forceInteger argument has also been added to this function to prevent users
-from accidentally importing alleles as character strings.
+* read.GeneMapper has been edited to prevent the import of alleles as factors.
+  The forceInteger argument has also been added to this function to prevent users
+  from accidentally importing alleles as character strings.
 
-read.STRand has been edited to fix a bug that caused an error when a given locus
-had a maximum of one allele per individual.
+* read.STRand has been edited to fix a bug that caused an error when a given locus
+  had a maximum of one allele per individual.
 
-Lynch.distance has been edited to be robust to alleles being repeated in a
-genotype (e.g. if a tetraploid homozygote is coded as AAAA instead of A).
+* Lynch.distance has been edited to be robust to alleles being repeated in a
+  genotype (e.g. if a tetraploid homozygote is coded as AAAA instead of A).
 
-The function Simpson.var, which calculates the variance of the Simpson index and
-can be used with the genotypeDiversity function, has been added.
+* The function Simpson.var, which calculates the variance of the Simpson index and
+  can be used with the genotypeDiversity function, has been added.
 
 Changes in version 1.3-1
 
-The internal function .ulal1loc has been added.  This function finds all
-unique alleles at a single locus.  genambig.to.genbinary has been changed to
-use this function, resulting in about a 3% reduction in processing time.
+* The internal function .ulal1loc has been added.  This function finds all
+  unique alleles at a single locus.  genambig.to.genbinary has been changed to
+  use this function, resulting in about a 3% reduction in processing time.
 
-The function alleleDiversity has been added.  alleleDiversity finds and counts
-unique alleles in a dataset.
+* The function alleleDiversity has been added.  alleleDiversity finds and counts
+  unique alleles in a dataset.
 
-The functions read.STRand and gendata.to.genind have been added.
+* The functions read.STRand and gendata.to.genind have been added.
 
 Changes in version 1.3-0
 
-Ploidies can now be indexed by sample, locus, both, or neither.  To accomplish
-this, the 'Ploidies' slot of a "gendata" object must now be an object
-of the class "ploidysuper", a virtual class which includes four new classes
-called "ploidymatrix", "ploidysample", "ploidylocus", and "ploidyone".  Generic
-functions 'pld', 'pld<-', and 'plCollapse' have been defined with methods for
-these four new classes, in order to access and replace ploidy values and convert
-ploidy data between classes, respectively.  The 'Ploidies' function now has
-'sample' and 'locus' arguments so that ploidies can be retrieved in the same way
-regardless of how they are stored.  'reformatPloidies' is a new function for use
-on "gendata" objects, to change the class of the 'Ploidies' slot.  The 'Loci'
-function now has a "ploidies" argument so that loci can be retrieved by ploidy,
-as could be done with samples in previous versions.  Most functions in polysat
-have undergone minor changes in order to utilize the new flexibility in
-ploidy indexing.
+* Ploidies can now be indexed by sample, locus, both, or neither.  To accomplish
+  this, the 'Ploidies' slot of a "gendata" object must now be an object
+  of the class "ploidysuper", a virtual class which includes four new classes
+  called "ploidymatrix", "ploidysample", "ploidylocus", and "ploidyone".  Generic
+  functions 'pld', 'pld<-', and 'plCollapse' have been defined with methods for
+  these four new classes, in order to access and replace ploidy values and convert
+  ploidy data between classes, respectively.  The 'Ploidies' function now has
+  'sample' and 'locus' arguments so that ploidies can be retrieved in the same way
+  regardless of how they are stored.  'reformatPloidies' is a new function for use
+  on "gendata" objects, to change the class of the 'Ploidies' slot.  The 'Loci'
+  function now has a "ploidies" argument so that loci can be retrieved by ploidy,
+  as could be done with samples in previous versions.  Most functions in polysat
+  have undergone minor changes in order to utilize the new flexibility in
+  ploidy indexing.
 
-genotypeDiversiy, Simpson, Shannon functions: Calculations are now based on
-counts rather than frequencies, which in the case of the Simpson index, allows
-correction for sample size.
+* genotypeDiversiy, Simpson, Shannon functions: Calculations are now based on
+  counts rather than frequencies, which in the case of the Simpson index, allows
+  correction for sample size.
 
-genotypeDiversity: bug fix for cases in which a population only has one sample
-with non-missing data at a given locus.
+* genotypeDiversity: bug fix for cases in which a population only has one sample
+  with non-missing data at a given locus.
 
-assignClones: bug fix for cases in which there is just one sample.
+* assignClones: bug fix for cases in which there is just one sample.
 
-'Genotypes' method of "genbinary" class: Bug fixed that would have simplified the
-genotypes matrix to a vector if a locus had only one allele.  This also
-fixes an issue that came up with 'genbinary.to.genambig'.
+* 'Genotypes' method of "genbinary" class: Bug fixed that would have simplified the
+  genotypes matrix to a vector if a locus had only one allele.  This also
+  fixes an issue that came up with 'genbinary.to.genambig'.
 
-'genambig.to.genbinary' and 'genbinary.to.genambig' functions:  Minor bug fix
-to prevent warning messages if nothing has been stored to the 'PopInfo' slot.
-Also, bug fix in 'genambig.to.genbinary' to allow for loci at which all data is
-missing.
+* 'genambig.to.genbinary' and 'genbinary.to.genambig' functions:  Minor bug fix
+  to prevent warning messages if nothing has been stored to the 'PopInfo' slot.
+  Also, bug fix in 'genambig.to.genbinary' to allow for loci at which all data is
+  missing.
 
 Changes in version 1.2-1
 
-Bruvo2.distance function has been added.  This calculates an alternate version
-of the distance measure of Bruvo et al. (2004), under the models of genome
-loss and/or addition.
+* Bruvo2.distance function has been added.  This calculates an alternate version
+  of the distance measure of Bruvo et al. (2004), under the models of genome
+  loss and/or addition.
 
-genotypeDiversity function: Default value of d has been changed to being
-calculated with Lynch.distance, since the default threshold value is 0 and
-Lynch.distance is faster.
+* genotypeDiversity function: Default value of d has been changed to being
+  calculated with Lynch.distance, since the default threshold value is 0 and
+  Lynch.distance is faster.
 
-Bruvo.distance function: If both genotypes are equal to the missing data value,
-the distance returned is now NA instead of 0.
+* Bruvo.distance function: If both genotypes are equal to the missing data value,
+  the distance returned is now NA instead of 0.
 
-read.GenoDive: Now correctly finds the "Individual" column, and uses it to
-extract sample names, whether or not a "Clones" column is included.
+* read.GenoDive: Now correctly finds the "Individual" column, and uses it to
+  extract sample names, whether or not a "Clones" column is included.
 
-read.GeneMapper: Sample and locus names may now consist of any combination of
-letters and numbers.  (There had been a bug that caused an error if samples or
-loci were named with non-consecutive numbers.)
+* read.GeneMapper: Sample and locus names may now consist of any combination of
+  letters and numbers.  (There had been a bug that caused an error if samples or
+  loci were named with non-consecutive numbers.)
 
-Locus names are now allowed to be shorter versions of other locus names,
-e.g. "ABC1" and "ABC12".  Fixed: 'Genotypes' method of "genbinary" class
-(this affects 'simpleFreq' and 'genbinary.to.genambig'), 'deleteLoci' method
-of "genbinary" class, 'Loci<-' method of "genbinary" class, 'deSilvaFreq',
-'calcFst', 'write.freq.SPAGeDi', and 'freq.to.genpop'.
+* Locus names are now allowed to be shorter versions of other locus names,
+  e.g. "ABC1" and "ABC12".  Fixed: 'Genotypes' method of "genbinary" class
+  (this affects 'simpleFreq' and 'genbinary.to.genambig'), 'deleteLoci' method
+  of "genbinary" class, 'Loci<-' method of "genbinary" class, 'deSilvaFreq',
+  'calcFst', 'write.freq.SPAGeDi', and 'freq.to.genpop'.
 
 Changes in version 1.2-0
 
-The internal functions .G, .indexg, .genlist, .ranmul, and .selfmat have been
-added.  Previously, these existed only within the environment of the
-deSilvaFreq function.  They have been moved to the polysat package environment
-in order to be used for the calculation of genotype probabilities in
-additional functions (i.e. meandistance.matrix2).
+* The internal functions .G, .indexg, .genlist, .ranmul, and .selfmat have been
+  added.  Previously, these existed only within the environment of the
+  deSilvaFreq function.  They have been moved to the polysat package environment
+  in order to be used for the calculation of genotype probabilities in
+  additional functions (i.e. meandistance.matrix2).
 
-Functions genotypeProbs and meandistance.matrix2 have been added.  This allows
-ambiguous genotypes to be dealt with in a more sophisticated way, calculating
-the probabiliity of each possible unambiguous genotype based on allele
-frequencies and selfing rate.
+* Functions genotypeProbs and meandistance.matrix2 have been added.  This allows
+  ambiguous genotypes to be dealt with in a more sophisticated way, calculating
+  the probabiliity of each possible unambiguous genotype based on allele
+  frequencies and selfing rate.
 
-Functions assignClones, genotypeDiversity, Shannon, and Simpson have been added.
-These use distance matrices to assign individuals to clonal groups, and
-calculate diversity indices based on genotype frequencies.
+* Functions assignClones, genotypeDiversity, Shannon, and Simpson have been added.
+  These use distance matrices to assign individuals to clonal groups, and
+  calculate diversity indices based on genotype frequencies.
 
-Bruvo.distance function: Before any calculation is done, the function checks
-to see if usatnt is NA.  If so, an error message is given telling the user
-to fill in the Usatnts slot.  The error that the function would previously
-give in this case was not particularly informative.
+* Bruvo.distance function: Before any calculation is done, the function checks
+  to see if usatnt is NA.  If so, an error message is given telling the user
+  to fill in the Usatnts slot.  The error that the function would previously
+  give in this case was not particularly informative.
 
-deSilvaFreq function: Now checks to see if the 'self' argument is missing
-before performing any calculations.  This means that a more informative
-error message is given if the selfing rate is not provided.  Also, the line
-smatt <- smat/smatdiv has been moved out of the while loop and is now
-performed immediately after the calculation of smat, to reduce computation time.
+* deSilvaFreq function: Now checks to see if the 'self' argument is missing
+  before performing any calculations.  This means that a more informative
+  error message is given if the selfing rate is not provided.  Also, the line
+  smatt <- smat/smatdiv has been moved out of the while loop and is now
+  performed immediately after the calculation of smat, to reduce computation time.
 
-Bug fix in write.GeneMapper.  It can now write files correctly when there are
-more alleles than the ploidy of the individual.
+* Bug fix in write.GeneMapper.  It can now write files correctly when there are
+  more alleles than the ploidy of the individual.
 
 Changes in version 1.1-0
 
-read.POPDIST, write.POPDIST, and freq.to.genpop functions added.
+* read.POPDIST, write.POPDIST, and freq.to.genpop functions added.
 
-read.Tetrasat function changed so that the comment line can't be accidentally
-read as a "Pop" line if it contains the letters "pop".  The documentation for
-this function now also instructs the user not to have any locus name contain
-the letters "pop" adjacent to each other.
+* read.Tetrasat function changed so that the comment line can't be accidentally
+  read as a "Pop" line if it contains the letters "pop".  The documentation for
+  this function now also instructs the user not to have any locus name contain
+  the letters "pop" adjacent to each other.
 
-write.Tetrasat function changed so that if the 'samples' argument excludes
-some populations, there won't be a "Pop" line for these populations.
+* write.Tetrasat function changed so that if the 'samples' argument excludes
+  some populations, there won't be a "Pop" line for these populations.
 
 Changes in version 1.0-1
 
-Bug fixed in the 'editGenotypes' method for "genambig" objects.
-stringsAsFactors=FALSE was added for the data frame that is sent to the
-'edit' function, so that samples and loci are indexed correctly when genotypes
-are written back to the object that is returned.  Version 1.0 would rearrange
-the genotypes if the samples or loci were not in alphabetical order.
+* Bug fixed in the 'editGenotypes' method for "genambig" objects.
+  stringsAsFactors=FALSE was added for the data frame that is sent to the
+  'edit' function, so that samples and loci are indexed correctly when genotypes
+  are written back to the object that is returned.  Version 1.0 would rearrange
+  the genotypes if the samples or loci were not in alphabetical order.
 
 Changes in version 1.0
 
-The S4 classes "gendata", "genambig", and "genbinary" and their accompanying
-methods have been added.  This allows genotypes, population identities,
-population names, ploidies, microsatellite repeat lengths, and a description
-to all be stored in one object, while in version 0.1 they had to be stored in
-separate objects.  Because of this, many of the functions require fewer
-arguments, and user error should be reduced.
+* The S4 classes "gendata", "genambig", and "genbinary" and their accompanying
+  methods have been added.  This allows genotypes, population identities,
+  population names, ploidies, microsatellite repeat lengths, and a description
+  to all be stored in one object, while in version 0.1 they had to be stored in
+  separate objects.  Because of this, many of the functions require fewer
+  arguments, and user error should be reduced.
 
-The functions 'viewGenotypes' and 'editGenotypes' have been added so that
-genotypes can be more neatly printed to the console, and can be edited with
-the Data Editor as an alternative to command-line genotype editing.
+* The functions 'viewGenotypes' and 'editGenotypes' have been added so that
+  genotypes can be more neatly printed to the console, and can be edited with
+  the Data Editor as an alternative to command-line genotype editing.
 
-The 'isMissing' function is added to simplify the identification of missing
-genotypes.
+* The 'isMissing' function is added to simplify the identification of missing
+  genotypes.
 
-The function 'estimatePloidy' now directly opens the Data Editor and then
-returns the ploidies to the appropriate slot in the "gendata" object.
-Previously, the function produced an array from which ploidies had to be
-manually extracted.
+* The function 'estimatePloidy' now directly opens the Data Editor and then
+  returns the ploidies to the appropriate slot in the "gendata" object.
+  Previously, the function produced an array from which ploidies had to be
+  manually extracted.
 
-The function 'distance.matrix.1locus' no longer exists since it has been
-consolidated into the 'meandistance.matrix' function.  'Lynch.distance' has a
-'usatnt' argument added to it for the sake of simplifying the code for
-'meandistance.matrix'; this argument is ignored by 'Lynch.distance'.
+* The function 'distance.matrix.1locus' no longer exists since it has been
+  consolidated into the 'meandistance.matrix' function.  'Lynch.distance' has a
+  'usatnt' argument added to it for the sake of simplifying the code for
+  'meandistance.matrix'; this argument is ignored by 'Lynch.distance'.
 
-The new function 'deSilvaFreq' performs an iterative computation to estimate
-allele freqencies in populations with uniform, even-numbered ploidy and a
-known selfing rate.  The old function 'estimate.freq' is renamed 'simpleFreq'.
+* The new function 'deSilvaFreq' performs an iterative computation to estimate
+  allele freqencies in populations with uniform, even-numbered ploidy and a
+  known selfing rate.  The old function 'estimate.freq' is renamed 'simpleFreq'.
 
-A function 'write.freq.SPAGeDi' is added to export allele frequencies to
-SPAGeDi.
+* A function 'write.freq.SPAGeDi' is added to export allele frequencies to
+  SPAGeDi.
