@@ -896,7 +896,7 @@ PIC <- function(freqs, pops=row.names(freqs),
       } else {
         genomes <- freqs[,"Genomes"]
       }
-      meanfreq <- apply(freqs[,lcol], 2, function(x) weighted.mean(x, w = genomes))
+      meanfreq <- apply(freqs[,lcol, drop = FALSE], 2, function(x) weighted.mean(x, w = genomes))
       results["Overall",L] <- pic(meanfreq)
     }
   }
